@@ -37,6 +37,8 @@ dependencies:
   get: ^4.7.2
   google_fonts: ^6.3.2
   intl_phone_field: ^3.2.0
+  dio: ^5.9.0
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:
