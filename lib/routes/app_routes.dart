@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:speechspectrum/view/AWARENESS/AWARENESS_screen.dart';
+import 'package:speechspectrum/view/auth/name_screen.dart';
+import 'package:speechspectrum/view/auth/phone_screen.dart';
+import 'package:speechspectrum/view/auth/role_selection_screen.dart';
 import 'package:speechspectrum/view/home/QUESTIONNAIRE_screen.dart';
 import 'package:speechspectrum/view/home/home_screen.dart';
 import 'package:speechspectrum/view/home/voice_upload_screen.dart';
@@ -43,6 +46,12 @@ class AppRoutes {
   static const String help = '/help';
   static const String learn = '/learn';
 
+  static const String roleSelection = '/role-selection';
+  static const String nameScreen = '/name-screen';
+  static const String phoneScreen = '/phone-screen';
+  // static const String emailPasswordScreen = '/email-password-screen';
+
+
   static final List<GetPage> routes = [
     GetPage<Route<dynamic>>(
       name: splashScreen,
@@ -67,10 +76,24 @@ class AppRoutes {
       name: login,
       page: () => LoginScreen(),
     ),
+    //
     GetPage<Route<dynamic>>(
-      name: signup,
-      page: () => SignUpScreen(),
+      name: roleSelection,
+      page: () => RoleSelectionScreen(),
     ),
+     GetPage<Route<dynamic>>(
+      name: nameScreen,
+      page: () => NameScreen(),
+    ),
+     GetPage<Route<dynamic>>(
+      name: phoneScreen,
+      page: () => PhoneScreen(),
+    ),
+     GetPage<Route<dynamic>>(
+      name: signup,
+      page: () => EmailPasswordScreen(),
+    ),
+
     GetPage<Route<dynamic>>(
       name: resetPassword,
       page: () => ResetPasswordScreen(),

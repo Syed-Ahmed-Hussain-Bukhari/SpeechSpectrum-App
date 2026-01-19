@@ -183,7 +183,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => Get.toNamed(AppRoutes.signup),
+                      onTap: () => Get.toNamed(AppRoutes.roleSelection),
                       child: Text(
                         'Sign Up',
                         style: GoogleFonts.poppins(
