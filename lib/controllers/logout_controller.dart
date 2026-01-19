@@ -93,6 +93,7 @@ class LogoutController extends GetxController {
   final LogoutService _logoutService = LogoutService();
   
   final RxBool isLoading = false.obs;
+  
 
   Future<void> logout() async {
     try {

@@ -485,6 +485,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:speechspectrum/constants/app_colors.dart';
 import 'package:speechspectrum/constants/custom_size.dart';
 import 'package:speechspectrum/routes/app_routes.dart';
+import 'package:speechspectrum/services/profile_service.dart';
 import 'package:speechspectrum/services/shared_preferences_service.dart';
 import 'package:speechspectrum/view/AWARENESS/AWARENESS_screen.dart';
 import 'package:speechspectrum/view/home/home_content_screen.dart';
@@ -503,6 +504,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   String _fullName = '';
   String _email = '';
+  final ProfileService _profileService = ProfileService();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final List<Widget> _screens = [
@@ -512,9 +514,10 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   Future<void> _loadUserData() async {
+    // final name = await SharedPreferencesService.getFullName();
     final name = await SharedPreferencesService.getFullName();
     final email = await SharedPreferencesService.getEmail();
-
+  
     setState(() {
       _fullName = name ?? 'User';
       _email = email ?? '';

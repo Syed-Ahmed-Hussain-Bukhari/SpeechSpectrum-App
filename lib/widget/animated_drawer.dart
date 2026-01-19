@@ -563,7 +563,8 @@ class AnimatedDrawer extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            logoutController.logoutWithConfirmation();
+            _showLogoutDialog(context,logoutController);
+           
           },
           borderRadius: BorderRadius.circular(screenWidth * 0.025),
           child: Padding(
@@ -594,4 +595,75 @@ class AnimatedDrawer extends StatelessWidget {
       ),
     );
   }
+
+
+   void _showLogoutDialog(BuildContext context, LogoutController controller) {
+    final size = CustomSize();
+
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          'Logout',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            fontSize: size.customWidth(context) * 0.05,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: GoogleFonts.poppins(
+            fontSize: size.customWidth(context) * 0.038,
+            color: AppColors.textSecondaryColor,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.poppins(
+                color: AppColors.textSecondaryColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Obx(() => ElevatedButton(
+                onPressed: controller.isLoading.value
+                    ? null
+                    : () {
+                        Get.back();
+                         
+                        controller.logout();
+                         
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.errorColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: controller.isLoading.value
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: AppColors.whiteColor,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        'Logout',
+                        style: GoogleFonts.poppins(
+                          color: AppColors.whiteColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              )),
+        ],
+      ),
+    );
+}
 }

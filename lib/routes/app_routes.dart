@@ -51,11 +51,11 @@ class AppRoutes {
   static const String phoneScreen = '/phone-screen';
   // static const String emailPasswordScreen = '/email-password-screen';
 
+
   static final List<GetPage> routes = [
     GetPage<Route<dynamic>>(
       name: splashScreen,
-      // page: () => SplashScreen(),
-      page: () => HomeScreen(),
+      page: () => SplashScreen(),
     ),
 
     GetPage<Route<dynamic>>(
