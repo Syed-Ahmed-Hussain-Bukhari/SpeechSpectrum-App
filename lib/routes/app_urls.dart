@@ -10,4 +10,16 @@ class APIEndPoints {
   static const String profile = '$baseUrl/api/user/profile';
   static const String updateProfile = '$baseUrl/api/user/profile';
   static const String deleteProfile = '$baseUrl/api/user/profile';
+
+  // Children CRUD endpoints
+  static const String children = '$baseUrl/api/children';
+  
+  // Helper method to get single child endpoint
+  static String getChild(String childId) => '$children/$childId';
+  
+  // Helper method to update child endpoint
+  static String updateChild(String childId) => '$children/$childId';
+  
+  // Helper method to delete child endpoint
+  static String deleteChild(String childId) => '$children/$childId';
 }

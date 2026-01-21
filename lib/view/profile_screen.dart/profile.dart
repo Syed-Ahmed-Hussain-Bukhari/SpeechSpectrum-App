@@ -302,7 +302,9 @@ class ProfileScreen extends StatelessWidget {
                         icon: Icons.child_care,
                         title: 'My Children',
                         subtitle: 'Manage children profiles',
-                        onTap: () {},
+                        onTap: () {
+                          Get.toNamed(AppRoutes.childrenList);
+                        },
                       ),
                     ],
                     

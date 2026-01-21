@@ -4,6 +4,9 @@ import 'package:speechspectrum/view/AWARENESS/AWARENESS_screen.dart';
 import 'package:speechspectrum/view/auth/name_screen.dart';
 import 'package:speechspectrum/view/auth/phone_screen.dart';
 import 'package:speechspectrum/view/auth/role_selection_screen.dart';
+import 'package:speechspectrum/view/children/child_details_screen.dart';
+import 'package:speechspectrum/view/children/children_list_screen.dart';
+import 'package:speechspectrum/view/children/create_edit_child_screen.dart';
 import 'package:speechspectrum/view/home/QUESTIONNAIRE_screen.dart';
 import 'package:speechspectrum/view/home/home_screen.dart';
 import 'package:speechspectrum/view/home/voice_upload_screen.dart';
@@ -50,6 +53,10 @@ class AppRoutes {
   static const String nameScreen = '/name-screen';
   static const String phoneScreen = '/phone-screen';
   // static const String emailPasswordScreen = '/email-password-screen';
+  static const String childrenList = '/children-list';
+  static const String createChild = '/create-child';
+  static const String editChild = '/edit-child';
+  static const String childDetails = '/child-details';
 
 
   static final List<GetPage> routes = [
@@ -167,6 +174,31 @@ class AppRoutes {
     GetPage<Route<dynamic>>(
       name: learn,
       page: () => LearnScreen(),
+    ),
+
+     GetPage(
+      name: AppRoutes.childrenList,
+      page: () => const ChildrenListScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.createChild,
+      page: () => const CreateEditChildScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.editChild,
+      page: () => const CreateEditChildScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.childDetails,
+      page: () => const ChildDetailsScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
     ),
   ];
 }
