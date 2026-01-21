@@ -365,51 +365,53 @@ class ChildrenListScreen extends StatelessWidget {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.08),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 160,
-              height: 160,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primaryColor.withOpacity(0.1),
-                    AppColors.secondaryColor.withOpacity(0.1),
-                  ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 160,
+                height: 160,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryColor.withOpacity(0.1),
+                      AppColors.secondaryColor.withOpacity(0.1),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
                 ),
-                shape: BoxShape.circle,
+                child: const Icon(
+                  Icons.child_care_rounded,
+                  size: 85,
+                  color: AppColors.primaryColor,
+                ),
               ),
-              child: const Icon(
-                Icons.child_care_rounded,
-                size: 85,
-                color: AppColors.primaryColor,
+              SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+              Text(
+                controller.searchController.text.isNotEmpty
+                    ? 'No children found'
+                    : 'No Children Added Yet',
+                style: GoogleFonts.poppins(
+                  fontSize: MediaQuery.of(context).size.width * 0.052,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimaryColor,
+                ),
               ),
-            ),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-            Text(
-              controller.searchController.text.isNotEmpty
-                  ? 'No children found'
-                  : 'No Children Added Yet',
-              style: GoogleFonts.poppins(
-                fontSize: MediaQuery.of(context).size.width * 0.052,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimaryColor,
+              SizedBox(height: MediaQuery.of(context).size.height * 0.015),
+              Text(
+                controller.searchController.text.isNotEmpty
+                    ? 'Try searching with a different name'
+                    : 'Start by adding your first child profile\nto begin tracking their development',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: MediaQuery.of(context).size.width * 0.038,
+                  color: AppColors.textSecondaryColor,
+                  height: 1.5,
+                ),
               ),
-            ),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.015),
-            Text(
-              controller.searchController.text.isNotEmpty
-                  ? 'Try searching with a different name'
-                  : 'Start by adding your first child profile\nto begin tracking their development',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: MediaQuery.of(context).size.width * 0.038,
-                color: AppColors.textSecondaryColor,
-                height: 1.5,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

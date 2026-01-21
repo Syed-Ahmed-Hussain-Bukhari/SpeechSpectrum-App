@@ -306,6 +306,7 @@ class ProfileScreen extends StatelessWidget {
                           Get.toNamed(AppRoutes.childrenList);
                         },
                       ),
+                     
                     ],
                     
                     if (profileData.isExpert()) ...[
@@ -324,6 +325,14 @@ class ProfileScreen extends StatelessWidget {
                         onTap: () {},
                       ),
                     ],
+
+                     _buildProfileOption(
+                        context: context,
+                        icon: Icons.assessment,
+                        title: 'Screening History',
+                        subtitle: 'View past assessments',
+                        onTap: () => Get.toNamed(AppRoutes.history),
+                      ),
 
                     _buildProfileOption(
                       context: context,

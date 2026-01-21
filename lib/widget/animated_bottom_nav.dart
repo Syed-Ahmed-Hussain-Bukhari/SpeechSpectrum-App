@@ -29,13 +29,15 @@ class AnimatedBottomNavigation extends StatelessWidget {
     final screenWidth = size.customWidth(context);
     final screenHeight = size.customHeight(context);
 
-    return Container(
+    return 
+    Container(
       margin: EdgeInsets.symmetric(
         horizontal: screenWidth * 0.04,
         vertical: screenHeight * 0.012,
+        // vertical: screenHeight * 0.006,
       ),
       padding: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.015,
+        horizontal: screenWidth * 0.0,
         vertical: screenHeight * 0.008,
       ),
       decoration: BoxDecoration(

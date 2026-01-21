@@ -605,10 +605,19 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _screens[_selectedIndex],
       
       // OPTION 1: Horizontal Expanding Bottom Navigation (Default - Best for most screens)
-      bottomNavigationBar: AnimatedBottomNavigation(
-        onTap: _onBottomNavTap,
-      ),
+      // bottomNavigationBar: AnimatedBottomNavigation(
+      //   onTap: _onBottomNavTap,
+      // ),
       
+            bottomNavigationBar: SafeArea(
+       
+          child: AnimatedBottomNavigation(
+            onTap: _onBottomNavTap,
+          ),
+        ),
+  
+
+
       // OPTION 2: Floating Elevated Style (Uncomment to use)
       // bottomNavigationBar: AnimatedBottomNavigationStyle2(
       //   onTap: _onBottomNavTap,

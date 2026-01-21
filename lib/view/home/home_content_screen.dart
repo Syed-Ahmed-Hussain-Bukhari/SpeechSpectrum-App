@@ -79,7 +79,8 @@ class HomeContentScreen extends StatelessWidget {
               title: 'Structured Questionnaire',
               subtitle: 'Answer behavioral questions',
               number: '1',
-              onTap: () => Get.toNamed(AppRoutes.questionnaire),
+              // onTap: () => Get.toNamed(AppRoutes.questionnaire),
+              onTap: () => Get.toNamed(AppRoutes.patientInfo),
             ),
             
             SizedBox(height: size.customHeight(context) * 0.02),

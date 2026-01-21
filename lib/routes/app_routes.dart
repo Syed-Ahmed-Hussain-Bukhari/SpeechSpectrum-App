@@ -7,6 +7,9 @@ import 'package:speechspectrum/view/auth/role_selection_screen.dart';
 import 'package:speechspectrum/view/children/child_details_screen.dart';
 import 'package:speechspectrum/view/children/children_list_screen.dart';
 import 'package:speechspectrum/view/children/create_edit_child_screen.dart';
+import 'package:speechspectrum/view/history/child_history_screen.dart';
+import 'package:speechspectrum/view/history/history_screen.dart';
+import 'package:speechspectrum/view/history/submission_details_screen.dart';
 import 'package:speechspectrum/view/home/QUESTIONNAIRE_screen.dart';
 import 'package:speechspectrum/view/home/home_screen.dart';
 import 'package:speechspectrum/view/home/voice_upload_screen.dart';
@@ -14,6 +17,10 @@ import 'package:speechspectrum/view/learnScreen/learnScreen.dart';
 import 'package:speechspectrum/view/notification/notification.dart';
 import 'package:speechspectrum/view/profile_screen.dart/edit_profile.dart';
 import 'package:speechspectrum/view/profile_screen.dart/profile.dart';
+import 'package:speechspectrum/view/questionnaire/patient_info_screen.dart';
+import 'package:speechspectrum/view/questionnaire/questionnaire_history_screen.dart';
+import 'package:speechspectrum/view/questionnaire/questionnaire_result_screen.dart';
+import 'package:speechspectrum/view/questionnaire/questionnaire_screen.dart';
 import 'package:speechspectrum/view/result/result_screen.dart';
 import 'package:speechspectrum/view/setting/about_screen.dart';
 import 'package:speechspectrum/view/setting/help_and_support.dart';
@@ -57,6 +64,18 @@ class AppRoutes {
   static const String createChild = '/create-child';
   static const String editChild = '/edit-child';
   static const String childDetails = '/child-details';
+  
+  static const String questionnaireResults = '/questionnaireResults';
+  // static const String questionnaireHistory = '/questionnaireHistory';
+  static const String patientInfo = '/patientInfo';
+
+  // History routes
+  static const String history = '/history';
+  static const String childHistory = '/child-history';
+  static const String submissionDetails = '/submission-details';
+ 
+  
+
 
 
   static final List<GetPage> routes = [
@@ -71,7 +90,7 @@ class AppRoutes {
     ),
 
     GetPage<Route<dynamic>>(
-      name:questionnaire ,
+      name:questionnaire,
       page: () => QuestionnaireScreen(),
     ),
 
@@ -200,5 +219,25 @@ class AppRoutes {
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 300),
     ),
+    GetPage(
+  name: AppRoutes.patientInfo,
+  page: () => const PatientInfoScreen(),
+),
+GetPage(
+  name: AppRoutes.questionnaire,
+  page: () => const QuestionnaireScreen(),
+),
+GetPage(
+  name: AppRoutes.questionnaireResults,
+  page: () => const QuestionnaireResultsScreen(),
+),
+// GetPage(
+//   name: AppRoutes.questionnaireHistory,
+//   page: () => const QuestionnaireHistoryScreen(),
+// ),
+
+GetPage(name: AppRoutes.history, page: () => const HistoryScreen()),
+GetPage(name: AppRoutes.childHistory, page: () => const ChildHistoryScreen()),
+GetPage(name: AppRoutes.submissionDetails, page: () => const SubmissionDetailsScreen()),
   ];
 }

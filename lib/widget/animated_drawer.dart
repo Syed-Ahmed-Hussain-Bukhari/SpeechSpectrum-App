@@ -38,7 +38,7 @@ class AnimatedDrawer extends StatelessWidget {
           children: [
             // Header with user info
             _buildDrawerHeader(context, screenWidth, screenHeight),
-
+        
             // Scrollable menu items
             Expanded(
               child: ListView(
@@ -125,7 +125,7 @@ class AnimatedDrawer extends StatelessWidget {
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
                   ),
-
+        
                   SizedBox(height: screenHeight * 0.02),
                   _buildSectionLabel(context, 'SETTINGS', screenWidth),
                   
@@ -199,14 +199,23 @@ class AnimatedDrawer extends StatelessWidget {
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
                   ),
-
+        
                   SizedBox(height: screenHeight * 0.02),
                 ],
               ),
             ),
-
-            // Logout button at bottom
-            _buildLogoutButton(context, screenWidth, screenHeight),
+        
+        // Logout button at bottom
+          SafeArea(
+        top: false,
+        child: _buildLogoutButton(
+          context,
+          screenWidth,
+          screenHeight,
+        ),
+      ),
+            
+            // _buildLogoutButton(context, screenWidth, screenHeight),
           ],
         ),
       ),
