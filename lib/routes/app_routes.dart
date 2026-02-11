@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:speechspectrum/view/AWARENESS/AWARENESS_screen.dart';
+import 'package:speechspectrum/view/auth/expert_documents_screen.dart';
+import 'package:speechspectrum/view/auth/expert_info_screen.dart';
 import 'package:speechspectrum/view/auth/name_screen.dart';
 import 'package:speechspectrum/view/auth/phone_screen.dart';
 import 'package:speechspectrum/view/auth/role_selection_screen.dart';
@@ -73,6 +75,13 @@ class AppRoutes {
   static const String history = '/history';
   static const String childHistory = '/child-history';
   static const String submissionDetails = '/submission-details';
+
+   // Expert-specific routes
+  static const String expertInfo = '/expert-info';
+  static const String expertDocuments = '/expert-documents';
+  
+  // Main app routes
+  // static const String pendingApproval = '/pending-approval';
  
   
 
@@ -239,5 +248,8 @@ GetPage(
 GetPage(name: AppRoutes.history, page: () => const HistoryScreen()),
 GetPage(name: AppRoutes.childHistory, page: () => const ChildHistoryScreen()),
 GetPage(name: AppRoutes.submissionDetails, page: () => const SubmissionDetailsScreen()),
+
+GetPage(name: AppRoutes.expertInfo, page: () =>  ExpertInfoScreen()),
+GetPage(name: AppRoutes.expertDocuments, page: () =>  ExpertDocumentsScreen()),
   ];
 }

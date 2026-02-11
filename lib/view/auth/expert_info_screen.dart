@@ -1,4 +1,4 @@
-// view/auth/name_screen.dart
+// view/auth/expert_info_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,12 +7,14 @@ import '../../routes/app_routes.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/custom_size.dart';
 
-class NameScreen extends StatelessWidget {
-  NameScreen({super.key});
+class ExpertInfoScreen extends StatelessWidget {
+  ExpertInfoScreen({super.key});
 
   final _formKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
+  final _specializationController = TextEditingController();
+  final _organizationController = TextEditingController();
+  final _contactEmailController = TextEditingController();
+  final _pmdcNumberController = TextEditingController();
   final RegistrationController regController = Get.find();
 
   @override
@@ -31,57 +33,27 @@ class NameScreen extends StatelessWidget {
         title: Column(
           children: [
             SizedBox(height: size.customHeight(context) * 0.025),
-            // LinearProgressIndicator(
-            //   value: 2 / 4,
-            //   backgroundColor: AppColors.greyColor.withOpacity(0.3),
-            //   valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
-            //   minHeight: size.customHeight(context) * 0.008,
-            // ),
-            // SizedBox(height: size.customHeight(context) * 0.008),
-            // Text(
-            //   'STEP 2/4',
-            //   style: GoogleFonts.poppins(
-            //     fontSize: size.customWidth(context) * 0.03,
-            //     fontWeight: FontWeight.w600,
-            //     color: AppColors.primaryColor,
-            //   ),
-            // ),
-
-               Obx(() {
-              // Calculate progress based on role
-              final isExpert = regController.role.value == 'expert';
-              final currentStep = isExpert ? 2 : 2;
-              final totalSteps = isExpert ? 6 : 4;
-              final progress = currentStep / totalSteps;
-
-              return LinearProgressIndicator(
-                value: progress,
-                backgroundColor: AppColors.greyColor.withOpacity(0.3),
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
-                minHeight: size.customHeight(context) * 0.008,
-              );
-            }),
-
+            LinearProgressIndicator(
+              value: 4 / 6,
+              backgroundColor: AppColors.greyColor.withOpacity(0.3),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+              minHeight: size.customHeight(context) * 0.008,
+            ),
             SizedBox(height: size.customHeight(context) * 0.008),
-             Obx(() {
-              final isExpert = regController.role.value == 'expert';
-              final stepText = isExpert ? 'STEP 2/6' : 'STEP 2/4';
-              
-              return Text(
-                stepText,
-                style: GoogleFonts.poppins(
-                  fontSize: size.customWidth(context) * 0.03,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primaryColor,
-                ),
-              );
-            }),
+            Text(
+              'STEP 4/6',
+              style: GoogleFonts.poppins(
+                fontSize: size.customWidth(context) * 0.03,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primaryColor,
+              ),
+            ),
           ],
         ),
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: size.customWidth(context) * 0.05),
           child: Form(
             key: _formKey,
@@ -93,7 +65,7 @@ class NameScreen extends StatelessWidget {
                 /// Title
                 Center(
                   child: Text(
-                    'What\'s Your Name?',
+                    'Professional Information',
                     style: GoogleFonts.poppins(
                       fontSize: size.customWidth(context) * 0.06,
                       fontWeight: FontWeight.bold,
@@ -107,7 +79,7 @@ class NameScreen extends StatelessWidget {
                 /// Subtitle
                 Center(
                   child: Text(
-                    'Please enter your full name to continue',
+                    'Please provide your professional details',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       fontSize: size.customWidth(context) * 0.038,
@@ -116,31 +88,75 @@ class NameScreen extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(height: size.customHeight(context) * 0.05),
+                SizedBox(height: size.customHeight(context) * 0.04),
 
-                /// First Name Field
+                /// Specialization Field
                 _buildTextField(
                   context: context,
-                  controller: _firstNameController,
-                  hintText: 'First Name',
-                  icon: Icons.person_outline,
-                  validator: (val) =>
-                      val == null || val.trim().isEmpty ? 'First name is required' : null,
+                  controller: _specializationController,
+                  hintText: 'Specialization (e.g., Speech Therapy)',
+                  icon: Icons.medical_services_outlined,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return 'Specialization is required';
+                    }
+                    return null;
+                  },
                 ),
 
                 SizedBox(height: size.customHeight(context) * 0.02),
 
-                /// Last Name Field
+                /// Organization Field
                 _buildTextField(
                   context: context,
-                  controller: _lastNameController,
-                  hintText: 'Last Name',
-                  icon: Icons.person_outline,
-                  validator: (val) =>
-                      val == null || val.trim().isEmpty ? 'Last name is required' : null,
+                  controller: _organizationController,
+                  hintText: 'Organization (e.g., Medical Center)',
+                  icon: Icons.business_outlined,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return 'Organization is required';
+                    }
+                    return null;
+                  },
                 ),
 
-                const Spacer(),
+                SizedBox(height: size.customHeight(context) * 0.02),
+
+                /// Contact Email Field
+                _buildTextField(
+                  context: context,
+                  controller: _contactEmailController,
+                  hintText: 'Contact Email',
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return 'Contact email is required';
+                    }
+                    if (!val.contains('@') || !val.contains('.')) {
+                      return 'Enter a valid email';
+                    }
+                    return null;
+                  },
+                ),
+
+                SizedBox(height: size.customHeight(context) * 0.02),
+
+                /// PMDC Number Field
+                _buildTextField(
+                  context: context,
+                  controller: _pmdcNumberController,
+                  hintText: 'PMDC Number',
+                  icon: Icons.badge_outlined,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return 'PMDC number is required';
+                    }
+                    return null;
+                  },
+                ),
+
+                SizedBox(height: size.customHeight(context) * 0.05),
 
                 /// Continue Button
                 SizedBox(
@@ -149,11 +165,13 @@ class NameScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        regController.setNames(
-                          _firstNameController.text.trim(),
-                          _lastNameController.text.trim(),
+                        regController.setExpertInfo(
+                          specialization: _specializationController.text.trim(),
+                          organization: _organizationController.text.trim(),
+                          contactEmail: _contactEmailController.text.trim(),
+                          pmdcNumber: _pmdcNumberController.text.trim(),
                         );
-                        Get.toNamed(AppRoutes.phoneScreen);
+                        Get.toNamed(AppRoutes.expertDocuments);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -188,6 +206,7 @@ class NameScreen extends StatelessWidget {
     required TextEditingController controller,
     required String hintText,
     required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
   }) {
     final size = CustomSize();
@@ -207,6 +226,7 @@ class NameScreen extends StatelessWidget {
       ),
       child: TextFormField(
         controller: controller,
+        keyboardType: keyboardType,
         validator: validator,
         cursorColor: AppColors.primaryColor,
         style: GoogleFonts.poppins(

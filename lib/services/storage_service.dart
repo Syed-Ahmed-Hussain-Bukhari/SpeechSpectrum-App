@@ -100,3 +100,136 @@
 //     await prefs.clear();
 //   }
 // }
+
+// lib/app/services/storage_service.dart
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:speechspectrum/routes/app_urls.dart';
+
+class StorageService {
+  final Dio dio = Dio();
+
+  /// Upload image and get public_id
+  Future<String?> uploadImage(File imageFile) async {
+    final apiEndPoint = APIEndPoints.uploadImage;
+
+    try {
+      String fileName = imageFile.path.split('/').last;
+      FormData formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: fileName,
+        ),
+      });
+
+      debugPrint('Uploading image: $fileName');
+
+      final response = await dio.post(
+        apiEndPoint,
+        data: formData,
+        options: Options(
+          headers: {'Content-Type': 'multipart/form-data'},
+        ),
+      );
+
+      debugPrint('Image Upload Response Status: ${response.statusCode}');
+      debugPrint('Image Upload Response Data: ${response.data}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseData = response.data as Map<String, dynamic>;
+        
+        if (responseData['status'] == true && responseData['data'] != null) {
+          final imagePublicId = responseData['data']['image_public_id'] as String?;
+          
+          if (imagePublicId != null) {
+            debugPrint('Image uploaded successfully: $imagePublicId');
+            return imagePublicId;
+          }
+        }
+      }
+
+      debugPrint('Failed to upload image: Invalid response');
+      return null;
+    } on DioException catch (e) {
+      debugPrint('Dio Error uploading image: ${e.message}');
+      
+      if (e.response != null) {
+        debugPrint('Error Response Data: ${e.response!.data}');
+      }
+      
+      return null;
+    } catch (e) {
+      debugPrint('Error uploading image: $e');
+      return null;
+    }
+  }
+
+  /// Upload document (PDF only) and get public_id
+  Future<String?> uploadDocument(File documentFile) async {
+    final apiEndPoint = APIEndPoints.uploadDocument;
+
+    try {
+      String fileName = documentFile.path.split('/').last;
+      
+      // Check if file is PDF
+      if (!fileName.toLowerCase().endsWith('.pdf')) {
+        debugPrint('Only PDF files are allowed');
+        return null;
+      }
+
+      FormData formData = FormData.fromMap({
+        'document': await MultipartFile.fromFile(
+          documentFile.path,
+          filename: fileName,
+        ),
+      });
+
+      debugPrint('Uploading document: $fileName');
+
+      final response = await dio.post(
+        apiEndPoint,
+        data: formData,
+        options: Options(
+          headers: {'Content-Type': 'multipart/form-data'},
+        ),
+      );
+
+      debugPrint('Document Upload Response Status: ${response.statusCode}');
+      debugPrint('Document Upload Response Data: ${response.data}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseData = response.data as Map<String, dynamic>;
+        
+        if (responseData['status'] == true && responseData['data'] != null) {
+          final documentPublicId = responseData['data']['document_public_id'] as String?;
+          
+          if (documentPublicId != null) {
+            debugPrint('Document uploaded successfully: $documentPublicId');
+            return documentPublicId;
+          }
+        }
+      }
+
+      debugPrint('Failed to upload document: Invalid response');
+      return null;
+    } on DioException catch (e) {
+      debugPrint('Dio Error uploading document: ${e.message}');
+      
+      if (e.response != null) {
+        debugPrint('Error Response Data: ${e.response!.data}');
+        
+        // Check for file format error
+        final errorData = e.response!.data;
+        if (errorData is Map<String, dynamic> && errorData['message'] != null) {
+          debugPrint('Upload Error: ${errorData['message']}');
+        }
+      }
+      
+      return null;
+    } catch (e) {
+      debugPrint('Error uploading document: $e');
+      return null;
+    }
+  }
+}

@@ -30,21 +30,41 @@ class RoleSelectionScreen extends StatelessWidget {
         title: Column(
           children: [
             SizedBox(height: size.customHeight(context) * 0.025),
-            LinearProgressIndicator(
-              value: 1 / 4,
-              backgroundColor: AppColors.greyColor.withOpacity(0.3),
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
-              minHeight: size.customHeight(context) * 0.008,
-            ),
+            // LinearProgressIndicator(
+            //   value: 1 / 4,
+            //   backgroundColor: AppColors.greyColor.withOpacity(0.3),
+            //   valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+            //   minHeight: size.customHeight(context) * 0.008,
+            // ),
+                  Obx(() {
+              // Calculate progress based on role
+              final isExpert = regController.role.value == 'expert';
+              final currentStep = isExpert ? 1 : 1;
+              final totalSteps = isExpert ? 6 : 4;
+              final progress = currentStep / totalSteps;
+
+              return LinearProgressIndicator(
+                value: progress,
+                backgroundColor: AppColors.greyColor.withOpacity(0.3),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+                minHeight: size.customHeight(context) * 0.008,
+              );
+            }),
+
             SizedBox(height: size.customHeight(context) * 0.008),
-            Text(
-              'STEP 1/4',
-              style: GoogleFonts.poppins(
-                fontSize: size.customWidth(context) * 0.03,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primaryColor,
-              ),
-            ),
+             Obx(() {
+              final isExpert = regController.role.value == 'expert';
+              final stepText = isExpert ? 'STEP 1/6' : 'STEP 1/4';
+              
+              return Text(
+                stepText,
+                style: GoogleFonts.poppins(
+                  fontSize: size.customWidth(context) * 0.03,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primaryColor,
+                ),
+              );
+            }),
           ],
         ),
         centerTitle: true,

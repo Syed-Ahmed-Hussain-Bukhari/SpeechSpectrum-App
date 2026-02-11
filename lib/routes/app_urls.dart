@@ -25,4 +25,9 @@ class APIEndPoints {
 
   // static const String questionnaire = '/api/questionnaire';
    static const String questionnaire = '$baseUrl/api/questionnaire';
+
+  // Storage endpoints
+  static const String uploadImage = '$baseUrl/api/storage/images';
+  static const String uploadDocument = '$baseUrl/api/storage/documents';
+  
 }
