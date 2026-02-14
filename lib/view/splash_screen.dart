@@ -491,7 +491,29 @@ class _SplashScreenState extends State<SplashScreen>
       final isExpired = await SharedPreferencesService.isTokenExpired();
 
       if (!isExpired) {
-        Get.offAllNamed(AppRoutes.home);
+          final userRole = await SharedPreferencesService.getRole();
+
+        // Navigate based on role
+        if (userRole?.toLowerCase() == 'expert') {
+          // Navigate to Expert Home
+          debugPrint('✅ Navigating to Expert Home');
+          Get.offAllNamed(AppRoutes.expertHome);
+        } else if (userRole?.toLowerCase() == 'parent') {
+          // Navigate to Parent Home
+          debugPrint('✅ Navigating to Parent Home');
+          Get.offAllNamed(AppRoutes.home);
+        } else {
+          // Fallback - use shared preferences role
+          final savedRole = await SharedPreferencesService.getRole();
+          debugPrint('⚠️ Unknown role from response: $userRole, checking saved role: $savedRole');
+          
+          if (savedRole?.toLowerCase() == 'expert') {
+            Get.offAllNamed(AppRoutes.expertHome);
+          } else {
+            Get.offAllNamed(AppRoutes.home);
+          }
+        }
+        
       } else {
         Get.offAllNamed(AppRoutes.login);
       }

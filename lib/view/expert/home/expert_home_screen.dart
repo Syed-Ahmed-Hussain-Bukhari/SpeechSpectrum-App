@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:speechspectrum/constants/app_colors.dart';
 import 'package:speechspectrum/constants/custom_size.dart';
+import 'package:speechspectrum/controllers/logout_controller.dart';
 import 'package:speechspectrum/routes/app_routes.dart';
 
 class ExpertHomeScreen extends StatelessWidget {
@@ -30,25 +31,27 @@ class ExpertHomeScreen extends StatelessWidget {
           // Consultations Icon
           IconButton(
             icon: const Icon(
-              Icons.medical_services_outlined,
-              color: AppColors.primaryColor,
+              Icons.logout,
+              color: AppColors.errorColor,
             ),
-            tooltip: 'View Consultations',
+            // tooltip: 'View Consultations',
             onPressed: () {
-              Get.toNamed(AppRoutes.expertConsultations);
+              LogoutController controller=LogoutController();
+              controller.logout();
+             
             },
           ),
           // Linked Families Icon
-          IconButton(
-            icon: const Icon(
-              Icons.link_outlined,
-              color: AppColors.primaryColor,
-            ),
-            tooltip: 'Linked Families',
-            onPressed: () {
-              Get.toNamed(AppRoutes.expertLinkedParents);
-            },
-          ),
+          // IconButton(
+          //   icon: const Icon(
+          //     Icons.link_outlined,
+          //     color: AppColors.primaryColor,
+          //   ),
+          //   tooltip: 'Linked Families',
+          //   onPressed: () {
+          //     Get.toNamed(AppRoutes.expertLinkedParents);
+          //   },
+          // ),
           SizedBox(width: size.customWidth(context) * 0.02),
         ],
       ),
