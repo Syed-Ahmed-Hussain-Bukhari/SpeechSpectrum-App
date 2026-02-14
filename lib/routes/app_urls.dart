@@ -30,4 +30,16 @@ class APIEndPoints {
   static const String uploadImage = '$baseUrl/api/storage/images';
   static const String uploadDocument = '$baseUrl/api/storage/documents';
   
+  // Expert endpoints
+  static const String experts = '$baseUrl/api/experts';
+  static const String consultations = '$baseUrl/api/consultations/request';
+  static const String parentConsultations = '$baseUrl/api/consultations/parent';
+  static const String parentLinks = '$baseUrl/api/links/parent';
+  
+  // Expert-specific endpoints
+  static const String expertConsultations ='$baseUrl/api/consultations/expert';
+  static const String respondConsultation = '$baseUrl/api/consultations/respond';
+  static const String createLink = '$baseUrl/api/links/create';
+  static const String expertLinks = '$baseUrl/api/links/expert';
+
 }

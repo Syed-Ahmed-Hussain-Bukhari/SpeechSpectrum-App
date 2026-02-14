@@ -9,6 +9,9 @@ import 'package:speechspectrum/view/auth/role_selection_screen.dart';
 import 'package:speechspectrum/view/children/child_details_screen.dart';
 import 'package:speechspectrum/view/children/children_list_screen.dart';
 import 'package:speechspectrum/view/children/create_edit_child_screen.dart';
+import 'package:speechspectrum/view/expert/expert_consultations_screen.dart';
+import 'package:speechspectrum/view/expert/expert_linked_parents_screen.dart';
+import 'package:speechspectrum/view/expert/home/expert_home_screen.dart';
 import 'package:speechspectrum/view/history/child_history_screen.dart';
 import 'package:speechspectrum/view/history/history_screen.dart';
 import 'package:speechspectrum/view/history/submission_details_screen.dart';
@@ -17,6 +20,10 @@ import 'package:speechspectrum/view/home/home_screen.dart';
 import 'package:speechspectrum/view/home/voice_upload_screen.dart';
 import 'package:speechspectrum/view/learnScreen/learnScreen.dart';
 import 'package:speechspectrum/view/notification/notification.dart';
+import 'package:speechspectrum/view/parents/experts/consultations_screen.dart';
+import 'package:speechspectrum/view/parents/experts/expert_detail_screen.dart';
+import 'package:speechspectrum/view/parents/experts/experts_list_screen.dart';
+import 'package:speechspectrum/view/parents/experts/linked_experts_screen.dart';
 import 'package:speechspectrum/view/profile_screen.dart/edit_profile.dart';
 import 'package:speechspectrum/view/profile_screen.dart/profile.dart';
 import 'package:speechspectrum/view/questionnaire/patient_info_screen.dart';
@@ -82,8 +89,17 @@ class AppRoutes {
   
   // Main app routes
   // static const String pendingApproval = '/pending-approval';
- 
-  
+
+   // Expert routes
+  static const String expertsList = '/experts-list';
+  static const String expertDetail = '/expert-detail';
+  static const String consultations = '/consultations';
+  static const String linkedExperts = '/linked-experts';
+
+   // Expert user routes (for expert users)
+  static const String expertConsultations = '/expert-consultations';
+  static const String expertLinkedParents = '/expert-linked-parents';
+  static const String expertHome = '/expert-home';
 
 
 
@@ -251,5 +267,19 @@ GetPage(name: AppRoutes.submissionDetails, page: () => const SubmissionDetailsSc
 
 GetPage(name: AppRoutes.expertInfo, page: () =>  ExpertInfoScreen()),
 GetPage(name: AppRoutes.expertDocuments, page: () =>  ExpertDocumentsScreen()),
+
+ 
+GetPage(name: AppRoutes.expertsList, page: () =>  ExpertsListScreen()),
+GetPage(name: AppRoutes.expertDetail, page: () =>  ExpertDetailScreen()),
+GetPage(name: AppRoutes.consultations, page: () =>  ConsultationsScreen()),
+GetPage(name: AppRoutes.linkedExperts, page: () =>  LinkedExpertsScreen()),
+
+  GetPage(name: AppRoutes.expertConsultations, page: () =>  ExpertConsultationsScreen()),
+  GetPage(name: AppRoutes.expertLinkedParents, page: () =>  ExpertLinkedParentsScreen()),
+
+  GetPage(name: AppRoutes.expertHome, page: () =>  ExpertHomeScreen()),
+  
+
+  
   ];
 }
