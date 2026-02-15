@@ -848,6 +848,21 @@ class AnimatedDrawer extends StatelessWidget {
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
                   ),
+
+                   _buildMenuItem(
+                    context: context,
+                    icon: Icons.event_note_outlined,
+                    selectedIcon: Icons.event_note,
+                    title: 'My Appointments',
+                    index: 19,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Get.toNamed(AppRoutes.parentAppointments);
+                    },
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
+                  ),
+                  
         
                   SizedBox(height: screenHeight * 0.02),
                   _buildSectionLabel(context, 'SETTINGS', screenWidth),

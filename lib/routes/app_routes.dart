@@ -9,9 +9,13 @@ import 'package:speechspectrum/view/auth/role_selection_screen.dart';
 import 'package:speechspectrum/view/children/child_details_screen.dart';
 import 'package:speechspectrum/view/children/children_list_screen.dart';
 import 'package:speechspectrum/view/children/create_edit_child_screen.dart';
+import 'package:speechspectrum/view/expert/appointment_details_screen.dart';
+import 'package:speechspectrum/view/expert/expert_appointments_screen.dart';
 import 'package:speechspectrum/view/expert/expert_consultations_screen.dart';
 import 'package:speechspectrum/view/expert/expert_linked_parents_screen.dart';
 import 'package:speechspectrum/view/expert/home/expert_home_screen.dart';
+import 'package:speechspectrum/view/expert/save_feedback_screen.dart';
+import 'package:speechspectrum/view/expert/save_notes_screen.dart';
 import 'package:speechspectrum/view/history/child_history_screen.dart';
 import 'package:speechspectrum/view/history/history_screen.dart';
 import 'package:speechspectrum/view/history/submission_details_screen.dart';
@@ -20,6 +24,8 @@ import 'package:speechspectrum/view/home/home_screen.dart';
 import 'package:speechspectrum/view/home/voice_upload_screen.dart';
 import 'package:speechspectrum/view/learnScreen/learnScreen.dart';
 import 'package:speechspectrum/view/notification/notification.dart';
+import 'package:speechspectrum/view/parent/parent_appointment_details_screen.dart';
+import 'package:speechspectrum/view/parent/parent_appointments_screen.dart';
 import 'package:speechspectrum/view/parents/experts/consultations_screen.dart';
 import 'package:speechspectrum/view/parents/experts/expert_detail_screen.dart';
 import 'package:speechspectrum/view/parents/experts/experts_list_screen.dart';
@@ -101,7 +107,13 @@ class AppRoutes {
   static const String expertLinkedParents = '/expert-linked-parents';
   static const String expertHome = '/expert-home';
 
+  static const String expertAppointments = '/expert-appointments';
+  static const String saveNotes = '/save-notes';
+  static const String saveFeedback = '/save-feedback';
+  static const String appointmentDetails = '/appointment-details';
 
+  static const String parentAppointmentDetails = '/parent-appointment-details';
+  static const String parentAppointments = '/parent-appointments'; 
 
   static final List<GetPage> routes = [
     GetPage<Route<dynamic>>(
@@ -279,7 +291,33 @@ GetPage(name: AppRoutes.linkedExperts, page: () =>  LinkedExpertsScreen()),
 
   GetPage(name: AppRoutes.expertHome, page: () =>  ExpertHomeScreen()),
   
+  // Route definitions (add to GetPage list):
+    GetPage(
+      name: AppRoutes.expertAppointments,
+      page: () => const ExpertAppointmentsScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.saveNotes,
+      page: () => const SaveNotesScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.saveFeedback,
+      page: () => const SaveFeedbackScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.appointmentDetails,
+      page: () => const AppointmentDetailsScreen(),
+    ),
 
+    GetPage(
+      name: AppRoutes.parentAppointments,
+      page: () => const ParentAppointmentsScreen(),
+    ),
+
+    GetPage(
+      name: AppRoutes.parentAppointmentDetails,
+      page: () => const ParentAppointmentDetailsScreen(),
+    ),
   
   ];
 }

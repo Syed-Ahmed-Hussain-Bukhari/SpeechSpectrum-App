@@ -42,4 +42,16 @@ class APIEndPoints {
   static const String createLink = '$baseUrl/api/links/create';
   static const String expertLinks = '$baseUrl/api/links/expert';
 
+  // Appointment endpoints
+  static const String generateZoomLink = '$baseUrl/api/appointments/generate-zoom-link';
+  static const String createAppointment = '$baseUrl/api/appointments/create';
+  static const String expertAppointments = '$baseUrl/api/appointments/expert';
+  static const String appointmentNotes = '$baseUrl/api/appointments';  // Base for notes/feedback/details
+ 
+  static const String parentAppointments = '$baseUrl/api/appointments/parent';  // Base for notes/feedback/details
+
+  // Note: For specific appointment operations, append the appointment_id:
+// - Save notes: '$baseUrl/api/appointments/{appointment_id}/notes'
+// - Save feedback: '$baseUrl/api/appointments/{appointment_id}/feedback'  
+// - Get details: '$baseUrl/api/appointments/{appointment_id}/details'
 }
