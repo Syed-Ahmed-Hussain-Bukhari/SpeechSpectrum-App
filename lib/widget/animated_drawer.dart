@@ -862,7 +862,20 @@ class AnimatedDrawer extends StatelessWidget {
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
                   ),
-                  
+
+                    _buildMenuItem(
+                      context: context,
+                      icon: Icons.chat_bubble_outline,
+                      selectedIcon: Icons.chat_bubble,
+                      title: 'Messages',
+                      index: 20,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Get.toNamed(AppRoutes.parentChats);
+                      },
+                      screenWidth: screenWidth,
+                      screenHeight: screenHeight,
+                    ),          
         
                   SizedBox(height: screenHeight * 0.02),
                   _buildSectionLabel(context, 'SETTINGS', screenWidth),

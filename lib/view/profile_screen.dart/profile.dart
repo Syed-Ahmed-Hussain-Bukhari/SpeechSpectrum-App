@@ -334,15 +334,15 @@ class ProfileScreen extends StatelessWidget {
                         onTap: () => Get.toNamed(AppRoutes.history),
                       ),
 
-                    _buildProfileOption(
-                      context: context,
-                      icon: Icons.history,
-                      title: 'History',
-                      subtitle: profileData.isParent() 
-                          ? 'View past screenings'
-                          : 'Session history',
-                      onTap: () => Get.toNamed(AppRoutes.results),
-                    ),
+                    // _buildProfileOption(
+                    //   context: context,
+                    //   icon: Icons.history,
+                    //   title: 'History',
+                    //   subtitle: profileData.isParent() 
+                    //       ? 'View past screenings'
+                    //       : 'Session history',
+                    //   onTap: () => Get.toNamed(AppRoutes.results),
+                    // ),
 
                     _buildProfileOption(
                       context: context,

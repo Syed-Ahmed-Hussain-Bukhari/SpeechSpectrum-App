@@ -488,6 +488,7 @@ import 'package:speechspectrum/routes/app_routes.dart';
 import 'package:speechspectrum/services/profile_service.dart';
 import 'package:speechspectrum/services/shared_preferences_service.dart';
 import 'package:speechspectrum/view/AWARENESS/AWARENESS_screen.dart';
+import 'package:speechspectrum/view/chat/parent/parent_chats_list_screen.dart';
 import 'package:speechspectrum/view/home/home_content_screen.dart';
 import 'package:speechspectrum/view/profile_screen.dart/profile.dart';
 import 'package:speechspectrum/widget/animated_bottom_nav.dart';
@@ -509,7 +510,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
     const HomeContentScreen(),
-    const AwarenessScreen(),
+    const ParentChatsListScreen(),
     const ProfileScreen(),
   ];
 

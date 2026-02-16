@@ -6,6 +6,10 @@ import 'package:speechspectrum/view/auth/expert_info_screen.dart';
 import 'package:speechspectrum/view/auth/name_screen.dart';
 import 'package:speechspectrum/view/auth/phone_screen.dart';
 import 'package:speechspectrum/view/auth/role_selection_screen.dart';
+import 'package:speechspectrum/view/chat/expert/expert_chat_conversation_screen.dart';
+import 'package:speechspectrum/view/chat/expert/expert_chats_list_screen.dart';
+import 'package:speechspectrum/view/chat/parent/parent_chat_conversation_screen.dart';
+import 'package:speechspectrum/view/chat/parent/parent_chats_list_screen.dart';
 import 'package:speechspectrum/view/children/child_details_screen.dart';
 import 'package:speechspectrum/view/children/children_list_screen.dart';
 import 'package:speechspectrum/view/children/create_edit_child_screen.dart';
@@ -114,6 +118,14 @@ class AppRoutes {
 
   static const String parentAppointmentDetails = '/parent-appointment-details';
   static const String parentAppointments = '/parent-appointments'; 
+
+   // ✅ NEW: Expert Chat routes
+  static const String expertChats = '/expert-chats';
+  static const String expertChatConversation = '/expert-chat-conversation';
+  
+  // ✅ NEW: Parent Chat routes
+  static const String parentChats = '/parent-chats';
+  static const String parentChatConversation = '/parent-chat-conversation';
 
   static final List<GetPage> routes = [
     GetPage<Route<dynamic>>(
@@ -318,6 +330,31 @@ GetPage(name: AppRoutes.linkedExperts, page: () =>  LinkedExpertsScreen()),
       name: AppRoutes.parentAppointmentDetails,
       page: () => const ParentAppointmentDetailsScreen(),
     ),
-  
+
+    
+        
+      
+    // ✅ NEW: Expert Parent Chat Routes
+    GetPage(
+      name: AppRoutes.expertChats,
+      page: () => const ExpertChatsListScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.expertChatConversation,
+      page: () => const ExpertChatConversationScreen(),
+    ),
+
+    // ✅ NEW: Parent Chat Routes
+    GetPage(
+      name: AppRoutes.parentChats,
+      page: () => const ParentChatsListScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.parentChatConversation,
+      page: () => const ParentChatConversationScreen(),
+    ),
+
+
+
   ];
 }

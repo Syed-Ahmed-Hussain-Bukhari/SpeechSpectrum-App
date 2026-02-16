@@ -50,6 +50,13 @@ class APIEndPoints {
  
   static const String parentAppointments = '$baseUrl/api/appointments/parent';  // Base for notes/feedback/details
 
+  // ✅ NEW: Chat endpoints
+  static const String chatBase = '$baseUrl/api/chat';
+  static const String createChat = '$baseUrl/api/chat/create';
+  static const String expertChats = '$baseUrl/api/chat/expert';
+  static const String parentChats = '$baseUrl/api/chat/parent';
+  
+
   // Note: For specific appointment operations, append the appointment_id:
 // - Save notes: '$baseUrl/api/appointments/{appointment_id}/notes'
 // - Save feedback: '$baseUrl/api/appointments/{appointment_id}/feedback'  
