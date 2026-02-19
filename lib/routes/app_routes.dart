@@ -46,6 +46,9 @@ import 'package:speechspectrum/view/setting/help_and_support.dart';
 import 'package:speechspectrum/view/setting/privacy_and_policy_screen.dart';
 import 'package:speechspectrum/view/setting/settings.dart';
 import 'package:speechspectrum/view/setting/terms_and_conditions_screen.dart';
+import 'package:speechspectrum/view/speech/speech_detail_screen.dart';
+import 'package:speechspectrum/view/speech/speech_recording_screen.dart';
+import 'package:speechspectrum/view/speech/speech_submissions_screen.dart';
 import '../view/splash_screen.dart';
 import '../view/onboarding_screen.dart';
 import '../view/auth/login_screen.dart';
@@ -126,6 +129,11 @@ class AppRoutes {
   // ✅ NEW: Parent Chat routes
   static const String parentChats = '/parent-chats';
   static const String parentChatConversation = '/parent-chat-conversation';
+
+  // Speech Assessment routes
+  static const String speechRecording = '/speech-recording';
+  static const String speechSubmissions = '/speech-submissions';
+  static const String speechDetail = '/speech-detail';
 
   static final List<GetPage> routes = [
     GetPage<Route<dynamic>>(
@@ -354,6 +362,18 @@ GetPage(name: AppRoutes.linkedExperts, page: () =>  LinkedExpertsScreen()),
       page: () => const ParentChatConversationScreen(),
     ),
 
+    GetPage(
+      name: AppRoutes.speechRecording,
+      page: () => const SpeechRecordingScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.speechSubmissions,
+      page: () => const SpeechSubmissionsScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.speechDetail,
+      page: () => const SpeechDetailScreen(),
+    ),
 
 
   ];
