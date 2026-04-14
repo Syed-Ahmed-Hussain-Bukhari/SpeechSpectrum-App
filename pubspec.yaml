@@ -49,6 +49,8 @@ dependencies:
   flutter_map: ^8.2.2
   latlong2: ^0.9.1
   geocoding: ^4.0.0
+  webview_flutter: ^4.13.0
+  android_intent_plus: ^6.0.0
   # geolocator: ^14.0.2
 
 dev_dependencies:

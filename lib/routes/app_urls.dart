@@ -86,6 +86,11 @@ class APIEndPoints {
   static const String myAppointments = '$baseUrl/api/appointments/my';
   static const String appointmentsBase = '$baseUrl/api/appointments';
 
+// ── Payment endpoints ──────────────────────────────────────
+  static const String paymentsInitiate = '$baseUrl/api/payments/initiate';
+  static const String paymentsVerify = '$baseUrl/api/payments/verify';
+  static const String paymentsStatus = '$baseUrl/api/payments/status';
+
 
   // Note: For specific appointment operations, append the appointment_id:
 // - Save notes: '$baseUrl/api/appointments/{appointment_id}/notes'

@@ -720,6 +720,368 @@
 // }
 
 
+// // lib/models/my_appointment_model.dart
+
+// class MyAppointmentListModel {
+//   final bool success;
+//   final List<MyAppointmentItem> data;
+
+//   MyAppointmentListModel({required this.success, required this.data});
+
+//   factory MyAppointmentListModel.fromJson(Map<String, dynamic> json) {
+//     return MyAppointmentListModel(
+//       success: json['success'] ?? false,
+//       data: (json['data'] as List<dynamic>?)
+//               ?.map((e) => MyAppointmentItem.fromJson(e as Map<String, dynamic>))
+//               .toList() ??
+//           [],
+//     );
+//   }
+// }
+
+// class MyAppointmentSingleModel {
+//   final bool success;
+//   final MyAppointmentItem data;
+
+//   MyAppointmentSingleModel({required this.success, required this.data});
+
+//   factory MyAppointmentSingleModel.fromJson(Map<String, dynamic> json) {
+//     return MyAppointmentSingleModel(
+//       success: json['success'] ?? false,
+//       data: MyAppointmentItem.fromJson(json['data'] as Map<String, dynamic>),
+//     );
+//   }
+// }
+
+// class MyAppointmentItem {
+//   final String appointmentId;
+//   final String slotId;
+//   final String expertId;
+//   final String parentId;
+//   final String childId;
+//   final String bookedMode;
+//   final double feeCharged;
+//   final String currency;
+//   final String scheduledAt;
+//   final int durationMinutes;
+//   final String status;
+//    final String? paymentStatus;   // ← NEW FIELD
+//   final String? meetLink;
+//   final String? cancelledBy;
+//   final String? cancellationReason;
+//   final String? cancelledAt;
+//   final String createdAt;
+//   final String updatedAt;
+//   final AppointmentChild? children;
+//   final AppointmentExpert? expertUsers;
+//   final AppointmentSlot? appointmentSlots;
+
+//   MyAppointmentItem({
+//     required this.appointmentId,
+//     required this.slotId,
+//     required this.expertId,
+//     required this.parentId,
+//     required this.childId,
+//     required this.bookedMode,
+//     required this.feeCharged,
+//     required this.currency,
+//     required this.scheduledAt,
+//     required this.durationMinutes,
+//     required this.status,
+//     this.paymentStatus,             // ← NEW
+//     this.meetLink,
+//     this.cancelledBy,
+//     this.cancellationReason,
+//     this.cancelledAt,
+//     required this.createdAt,
+//     required this.updatedAt,
+//     this.children,
+//     this.expertUsers,
+//     this.appointmentSlots,
+//   });
+
+//   factory MyAppointmentItem.fromJson(Map<String, dynamic> json) {
+//     return MyAppointmentItem(
+//       appointmentId: (json['appointment_id'] ?? '').toString(),
+//       slotId: (json['slot_id'] ?? '').toString(),
+//       expertId: (json['expert_id'] ?? '').toString(),
+//       parentId: (json['parent_id'] ?? '').toString(),
+//       childId: (json['child_id'] ?? '').toString(),
+//       bookedMode: (json['booked_mode'] ?? 'online').toString(),
+//       feeCharged: (json['fee_charged'] as num?)?.toDouble() ?? 0.0,
+//       currency: (json['currency'] ?? 'PKR').toString(),
+//       scheduledAt: (json['scheduled_at'] ?? '').toString(),
+//       durationMinutes: (json['duration_minutes'] as num?)?.toInt() ?? 30,
+//       status: (json['status'] ?? 'scheduled').toString(),
+//       paymentStatus: json['payment_status'],  // ← NEW
+//       meetLink: json['meet_link']?.toString(),
+//       cancelledBy: json['cancelled_by']?.toString(),
+//       cancellationReason: json['cancellation_reason']?.toString(),
+//       cancelledAt: json['cancelled_at']?.toString(),
+//       createdAt: (json['created_at'] ?? '').toString(),
+//       updatedAt: (json['updated_at'] ?? '').toString(),
+//       children: json['children'] != null
+//           ? AppointmentChild.fromJson(json['children'] as Map<String, dynamic>)
+//           : null,
+//       expertUsers: json['expert_users'] != null
+//           ? AppointmentExpert.fromJson(json['expert_users'] as Map<String, dynamic>)
+//           : null,
+//       appointmentSlots: json['appointment_slots'] != null
+//           ? AppointmentSlot.fromJson(json['appointment_slots'] as Map<String, dynamic>)
+//           : null,
+//     );
+//   }
+
+//   // Status helpers
+//   bool get isScheduled => status.toLowerCase() == 'scheduled';
+//   bool get isConfirmed => status.toLowerCase() == 'confirmed';
+//   bool get isCompleted => status.toLowerCase() == 'completed';
+//   bool get isCancelled => status.toLowerCase() == 'cancelled';
+//   bool get isNoShow => status.toLowerCase() == 'no_show';
+
+//   String get formattedDate {
+//     try {
+//       final dt = DateTime.parse(scheduledAt).toLocal();
+//       const months = [
+//         '',
+//         'Jan',
+//         'Feb',
+//         'Mar',
+//         'Apr',
+//         'May',
+//         'Jun',
+//         'Jul',
+//         'Aug',
+//         'Sep',
+//         'Oct',
+//         'Nov',
+//         'Dec'
+//       ];
+//       const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+//       return '${days[dt.weekday - 1]}, ${dt.day} ${months[dt.month]} ${dt.year}';
+//     } catch (_) {
+//       return scheduledAt;
+//     }
+//   }
+
+//   String get formattedTime {
+//     try {
+//       final dt = DateTime.parse(scheduledAt).toLocal();
+//       int h = dt.hour;
+//       final m = dt.minute.toString().padLeft(2, '0');
+//       final ampm = h >= 12 ? 'PM' : 'AM';
+//       if (h > 12) h -= 12;
+//       if (h == 0) h = 12;
+//       return '$h:$m $ampm';
+//     } catch (_) {
+//       return '';
+//     }
+//   }
+
+//   String get childInitials {
+//     final name = children?.childName ?? '';
+//     final parts = name.trim().split(' ');
+//     if (parts.length >= 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
+//       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+//     }
+//     return name.isNotEmpty ? name[0].toUpperCase() : 'C';
+//   }
+// }
+
+// class AppointmentChild {
+//   final String childId;
+//   final String childName;
+
+//   AppointmentChild({required this.childId, required this.childName});
+
+//   factory AppointmentChild.fromJson(Map<String, dynamic> json) {
+//     return AppointmentChild(
+//       childId: (json['child_id'] ?? '').toString(),
+//       childName: (json['child_name'] ?? '').toString(),
+//     );
+//   }
+// }
+
+// class AppointmentExpert {
+//   final String expertId;
+//   final String fullName;
+//   final String specialization;
+//   final String? phone;
+//   final String? contactEmail;
+
+//   AppointmentExpert({
+//     required this.expertId,
+//     required this.fullName,
+//     required this.specialization,
+//     this.phone,
+//     this.contactEmail,
+//   });
+
+//   factory AppointmentExpert.fromJson(Map<String, dynamic> json) {
+//     return AppointmentExpert(
+//       expertId: (json['expert_id'] ?? '').toString(),
+//       fullName: (json['full_name'] ?? '').toString(),
+//       specialization: (json['specialization'] ?? '').toString(),
+//       phone: json['phone']?.toString(),
+//       contactEmail: json['contact_email']?.toString(),
+//     );
+//   }
+// }
+
+// class AppointmentSlot {
+//   final String slotId;
+//   final String slotDate;
+//   final String startTime;
+//   final String endTime;
+//   final String mode;
+//   final String? locationId;
+//   final String? status;
+
+//   AppointmentSlot({
+//     required this.slotId,
+//     required this.slotDate,
+//     required this.startTime,
+//     required this.endTime,
+//     required this.mode,
+//     this.locationId,
+//     this.status,
+//   });
+
+//   factory AppointmentSlot.fromJson(Map<String, dynamic> json) {
+//     return AppointmentSlot(
+//       slotId: (json['slot_id'] ?? '').toString(),
+//       slotDate: (json['slot_date'] ?? '').toString(),
+//       startTime: (json['start_time'] ?? '').toString(),
+//       endTime: (json['end_time'] ?? '').toString(),
+//       mode: (json['mode'] ?? '').toString(),
+//       locationId: json['location_id']?.toString(),
+//       status: json['status']?.toString(),
+//     );
+//   }
+
+//   String get formattedStart {
+//     try {
+//       final parts = startTime.split(':');
+//       int h = int.parse(parts[0]);
+//       final m = parts[1];
+//       final ampm = h >= 12 ? 'PM' : 'AM';
+//       if (h > 12) h -= 12;
+//       if (h == 0) h = 12;
+//       return '$h:$m $ampm';
+//     } catch (_) {
+//       return startTime;
+//     }
+//   }
+
+//   String get formattedEnd {
+//     try {
+//       final parts = endTime.split(':');
+//       int h = int.parse(parts[0]);
+//       final m = parts[1];
+//       final ampm = h >= 12 ? 'PM' : 'AM';
+//       if (h > 12) h -= 12;
+//       if (h == 0) h = 12;
+//       return '$h:$m $ampm';
+//     } catch (_) {
+//       return endTime;
+//     }
+//   }
+// }
+
+// // ── Appointment Record Models ──────────────────────────────────
+
+// class AppointmentRecordListModel {
+//   final bool success;
+//   final List<AppointmentRecordItem> data;
+
+//   AppointmentRecordListModel({required this.success, required this.data});
+
+//   factory AppointmentRecordListModel.fromJson(Map<String, dynamic> json) {
+//     return AppointmentRecordListModel(
+//       success: json['success'] ?? false,
+//       data: (json['data'] as List<dynamic>?)
+//               ?.map((e) => AppointmentRecordItem.fromJson(e as Map<String, dynamic>))
+//               .toList() ??
+//           [],
+//     );
+//   }
+// }
+
+// class AppointmentRecordSingleModel {
+//   final bool success;
+//   final AppointmentRecordItem data;
+
+//   AppointmentRecordSingleModel({required this.success, required this.data});
+
+//   factory AppointmentRecordSingleModel.fromJson(Map<String, dynamic> json) {
+//     return AppointmentRecordSingleModel(
+//       success: json['success'] ?? false,
+//       data: AppointmentRecordItem.fromJson(json['data'] as Map<String, dynamic>),
+//     );
+//   }
+// }
+
+// class AppointmentRecordItem {
+//   final String recordId;
+//   final String appointmentId;
+//   final String notes;
+//   final String therapyPlan;
+//   final Map<String, dynamic>? medication;
+//   final String progressFeedback;
+//   final String createdAt;
+
+//   AppointmentRecordItem({
+//     required this.recordId,
+//     required this.appointmentId,
+//     required this.notes,
+//     required this.therapyPlan,
+//     this.medication,
+//     required this.progressFeedback,
+//     required this.createdAt,
+//   });
+
+//   factory AppointmentRecordItem.fromJson(Map<String, dynamic> json) {
+//     return AppointmentRecordItem(
+//       recordId: (json['record_id'] ?? '').toString(),
+//       appointmentId: (json['appointment_id'] ?? '').toString(),
+//       notes: (json['notes'] ?? '').toString(),
+//       therapyPlan: (json['therapy_plan'] ?? '').toString(),
+//       medication: json['medication'] != null
+//           ? Map<String, dynamic>.from(json['medication'] as Map)
+//           : null,
+//       progressFeedback: (json['progress_feedback'] ?? '').toString(),
+//       createdAt: (json['created_at'] ?? '').toString(),
+//     );
+//   }
+
+//   String get formattedDate {
+//     try {
+//       final dt = DateTime.parse(createdAt).toLocal();
+//       const months = [
+//         '',
+//         'Jan',
+//         'Feb',
+//         'Mar',
+//         'Apr',
+//         'May',
+//         'Jun',
+//         'Jul',
+//         'Aug',
+//         'Sep',
+//         'Oct',
+//         'Nov',
+//         'Dec'
+//       ];
+//       return '${dt.day} ${months[dt.month]} ${dt.year}';
+//     } catch (_) {
+//       return createdAt;
+//     }
+//   }
+  
+// }
+
+
+
 // lib/models/my_appointment_model.dart
 
 class MyAppointmentListModel {
@@ -765,6 +1127,7 @@ class MyAppointmentItem {
   final String scheduledAt;
   final int durationMinutes;
   final String status;
+  final String? paymentStatus;
   final String? meetLink;
   final String? cancelledBy;
   final String? cancellationReason;
@@ -787,6 +1150,7 @@ class MyAppointmentItem {
     required this.scheduledAt,
     required this.durationMinutes,
     required this.status,
+    this.paymentStatus,
     this.meetLink,
     this.cancelledBy,
     this.cancellationReason,
@@ -811,6 +1175,7 @@ class MyAppointmentItem {
       scheduledAt: (json['scheduled_at'] ?? '').toString(),
       durationMinutes: (json['duration_minutes'] as num?)?.toInt() ?? 30,
       status: (json['status'] ?? 'scheduled').toString(),
+      paymentStatus: json['payment_status']?.toString(),
       meetLink: json['meet_link']?.toString(),
       cancelledBy: json['cancelled_by']?.toString(),
       cancellationReason: json['cancellation_reason']?.toString(),
@@ -818,23 +1183,33 @@ class MyAppointmentItem {
       createdAt: (json['created_at'] ?? '').toString(),
       updatedAt: (json['updated_at'] ?? '').toString(),
       children: json['children'] != null
-          ? AppointmentChild.fromJson(json['children'] as Map<String, dynamic>)
+          ? AppointmentChild.fromJson(
+              json['children'] as Map<String, dynamic>)
           : null,
       expertUsers: json['expert_users'] != null
-          ? AppointmentExpert.fromJson(json['expert_users'] as Map<String, dynamic>)
+          ? AppointmentExpert.fromJson(
+              json['expert_users'] as Map<String, dynamic>)
           : null,
       appointmentSlots: json['appointment_slots'] != null
-          ? AppointmentSlot.fromJson(json['appointment_slots'] as Map<String, dynamic>)
+          ? AppointmentSlot.fromJson(
+              json['appointment_slots'] as Map<String, dynamic>)
           : null,
     );
   }
 
-  // Status helpers
+  // ── Status helpers ─────────────────────────────────────────
   bool get isScheduled => status.toLowerCase() == 'scheduled';
   bool get isConfirmed => status.toLowerCase() == 'confirmed';
   bool get isCompleted => status.toLowerCase() == 'completed';
   bool get isCancelled => status.toLowerCase() == 'cancelled';
   bool get isNoShow => status.toLowerCase() == 'no_show';
+
+  // ── Payment helpers ────────────────────────────────────────
+  /// Returns true when payment_status == 'paid' (case-insensitive)
+  bool get isPaid => paymentStatus?.toLowerCase() == 'paid';
+
+  /// Returns true when payment is pending (anything that is NOT 'paid')
+  bool get isPaymentPending => !isPaid;
 
   String get formattedDate {
     try {
@@ -997,7 +1372,8 @@ class AppointmentRecordListModel {
     return AppointmentRecordListModel(
       success: json['success'] ?? false,
       data: (json['data'] as List<dynamic>?)
-              ?.map((e) => AppointmentRecordItem.fromJson(e as Map<String, dynamic>))
+              ?.map((e) =>
+                  AppointmentRecordItem.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
     );
@@ -1013,7 +1389,8 @@ class AppointmentRecordSingleModel {
   factory AppointmentRecordSingleModel.fromJson(Map<String, dynamic> json) {
     return AppointmentRecordSingleModel(
       success: json['success'] ?? false,
-      data: AppointmentRecordItem.fromJson(json['data'] as Map<String, dynamic>),
+      data: AppointmentRecordItem.fromJson(
+          json['data'] as Map<String, dynamic>),
     );
   }
 }

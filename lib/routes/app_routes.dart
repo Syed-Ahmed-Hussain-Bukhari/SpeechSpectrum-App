@@ -43,6 +43,9 @@ import 'package:speechspectrum/view/parents/experts/consultations_screen.dart';
 import 'package:speechspectrum/view/parents/experts/expert_detail_screen.dart';
 import 'package:speechspectrum/view/parents/experts/experts_list_screen.dart';
 import 'package:speechspectrum/view/parents/experts/linked_experts_screen.dart';
+import 'package:speechspectrum/view/payment/payment_cancel_screen.dart';
+import 'package:speechspectrum/view/payment/payment_success_screen.dart';
+import 'package:speechspectrum/view/payment/payment_webview_screen.dart';
 import 'package:speechspectrum/view/profile_screen.dart/edit_profile.dart';
 import 'package:speechspectrum/view/profile_screen.dart/profile.dart';
 import 'package:speechspectrum/view/questionnaire/patient_info_screen.dart';
@@ -163,6 +166,12 @@ class AppRoutes {
   // expert profile
   static const String expertMain       = '/expert-main';
   static const String expertEditProfile = '/expert-edit-profile';
+
+  // payments
+  static const String paymentWebView = '/payment/webview';
+  static const String paymentSuccess  = '/payment/success';
+  static const String paymentCancel   = '/payment/cancel';
+
 
 
   static final List<GetPage> routes = [
@@ -445,6 +454,20 @@ GetPage(name: AppRoutes.parentAppointmentDetail, page: () => const ParentAppoint
 
 GetPage(name: AppRoutes.expertMain, page: () => const ExpertMainScreen()),
 GetPage(name: AppRoutes.expertEditProfile, page: () => const ExpertEditProfileScreen()),
+
+  // ── Payment pages ─────────────────────────────────────────
+    GetPage(
+      name: AppRoutes.paymentWebView,
+      page: () => const WebViewPaymentScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.paymentSuccess,
+      page: () => const PaymentSuccessScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.paymentCancel,
+      page: () => const PaymentCancelScreen(),
+    ),
 
   ];
 }
