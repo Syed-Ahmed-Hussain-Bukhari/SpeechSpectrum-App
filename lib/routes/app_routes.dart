@@ -14,12 +14,19 @@ import 'package:speechspectrum/view/children/child_details_screen.dart';
 import 'package:speechspectrum/view/children/children_list_screen.dart';
 import 'package:speechspectrum/view/children/create_edit_child_screen.dart';
 import 'package:speechspectrum/view/expert/appointment_details_screen.dart';
+import 'package:speechspectrum/view/expert/appointments/appointment_detail_screen.dart';
+import 'package:speechspectrum/view/expert/appointments/my_appointments_screen.dart';
 import 'package:speechspectrum/view/expert/expert_appointments_screen.dart';
 import 'package:speechspectrum/view/expert/expert_consultations_screen.dart';
 import 'package:speechspectrum/view/expert/expert_linked_parents_screen.dart';
 import 'package:speechspectrum/view/expert/home/expert_home_screen.dart';
+import 'package:speechspectrum/view/expert/home/expert_main_screen.dart';
+import 'package:speechspectrum/view/expert/location/expert_locations_screen.dart';
+import 'package:speechspectrum/view/expert/location/location_picker_screen.dart';
+import 'package:speechspectrum/view/expert/profile/expert_edit_profile_screen.dart';
 import 'package:speechspectrum/view/expert/save_feedback_screen.dart';
 import 'package:speechspectrum/view/expert/save_notes_screen.dart';
+import 'package:speechspectrum/view/expert/slots/expert_slots_screen.dart';
 import 'package:speechspectrum/view/history/child_history_screen.dart';
 import 'package:speechspectrum/view/history/history_screen.dart';
 import 'package:speechspectrum/view/history/submission_details_screen.dart';
@@ -30,6 +37,8 @@ import 'package:speechspectrum/view/learnScreen/learnScreen.dart';
 import 'package:speechspectrum/view/notification/notification.dart';
 import 'package:speechspectrum/view/parent/parent_appointment_details_screen.dart';
 import 'package:speechspectrum/view/parent/parent_appointments_screen.dart';
+import 'package:speechspectrum/view/parents/booking/expert_slots_booking_screen.dart';
+import 'package:speechspectrum/view/parents/booking/parent_my_appointments_screen.dart';
 import 'package:speechspectrum/view/parents/experts/consultations_screen.dart';
 import 'package:speechspectrum/view/parents/experts/expert_detail_screen.dart';
 import 'package:speechspectrum/view/parents/experts/experts_list_screen.dart';
@@ -112,7 +121,7 @@ class AppRoutes {
    // Expert user routes (for expert users)
   static const String expertConsultations = '/expert-consultations';
   static const String expertLinkedParents = '/expert-linked-parents';
-  static const String expertHome = '/expert-home';
+  // static const String expertHome = '/expert-home';
 
   static const String expertAppointments = '/expert-appointments';
   static const String saveNotes = '/save-notes';
@@ -134,6 +143,27 @@ class AppRoutes {
   static const String speechRecording = '/speech-recording';
   static const String speechSubmissions = '/speech-submissions';
   static const String speechDetail = '/speech-detail';
+
+  // location
+  static const String expertLocations = '/expert-locations';
+  static const String locationPicker = '/location-picker';
+
+  // slot
+  static const String expertSlots = '/expert-slots';
+
+  // appoinments
+  static const String myAppointments = '/my-appointments';
+  static const String myAppointmentDetail = '/my-appointment-detail';
+
+  // booking
+  static const String expertSlotsBooking = '/expert-slots-booking';
+  static const String parentMyAppointments = '/parent-my-appointments';
+  static const String parentAppointmentDetail = '/parent-appointment-detail';
+
+  // expert profile
+  static const String expertMain       = '/expert-main';
+  static const String expertEditProfile = '/expert-edit-profile';
+
 
   static final List<GetPage> routes = [
     GetPage<Route<dynamic>>(
@@ -309,7 +339,7 @@ GetPage(name: AppRoutes.linkedExperts, page: () =>  LinkedExpertsScreen()),
   GetPage(name: AppRoutes.expertConsultations, page: () =>  ExpertConsultationsScreen()),
   GetPage(name: AppRoutes.expertLinkedParents, page: () =>  ExpertLinkedParentsScreen()),
 
-  GetPage(name: AppRoutes.expertHome, page: () =>  ExpertHomeScreen()),
+  // GetPage(name: AppRoutes.expertHome, page: () =>  ExpertHomeScreen()),
   
   // Route definitions (add to GetPage list):
     GetPage(
@@ -375,6 +405,46 @@ GetPage(name: AppRoutes.linkedExperts, page: () =>  LinkedExpertsScreen()),
       page: () => const SpeechDetailScreen(),
     ),
 
+   // location
+    GetPage(
+      name: AppRoutes.expertLocations,
+      page: () => const ExpertLocationsScreen(),
+    ),
+
+    GetPage(
+      name: AppRoutes.locationPicker,
+      page: () => const LocationPickerScreen(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+
+    GetPage(
+  name: AppRoutes.expertSlots,
+  page: () => const ExpertSlotsScreen(),
+  transition: Transition.rightToLeft,
+  transitionDuration: const Duration(milliseconds: 300),
+),
+
+GetPage(
+  name: AppRoutes.myAppointments,
+  page: () => const MyAppointmentsScreen(),
+  transition: Transition.rightToLeft,
+  transitionDuration: const Duration(milliseconds: 300),
+),
+GetPage(
+  name: AppRoutes.myAppointmentDetail,
+  page: () => const AppointmentDetailScreen(),
+  transition: Transition.rightToLeft,
+  transitionDuration: const Duration(milliseconds: 300),
+),
+
+// GetPages
+GetPage(name: AppRoutes.expertSlotsBooking, page: () => const ExpertSlotsBookingScreen()),
+GetPage(name: AppRoutes.parentMyAppointments, page: () => const ParentMyAppointmentsScreen()),
+GetPage(name: AppRoutes.parentAppointmentDetail, page: () => const ParentAppointmentDetailScreen()),
+
+GetPage(name: AppRoutes.expertMain, page: () => const ExpertMainScreen()),
+GetPage(name: AppRoutes.expertEditProfile, page: () => const ExpertEditProfileScreen()),
 
   ];
 }

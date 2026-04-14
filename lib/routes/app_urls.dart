@@ -57,6 +57,36 @@ class APIEndPoints {
   static const String parentChats = '$baseUrl/api/chat/parent';
   
 
+  
+  // ── Location endpoints ──────────────────────────────────────
+  
+  static const String expertLocations = '$baseUrl/api/experts/locations';
+  static String expertOwnLocations(String expertId) =>
+      '$baseUrl/api/experts/$expertId/locations';
+  static String locationById(String locationId) =>
+      '$expertLocations/$locationId';
+
+       // ── Slot endpoints ──────────────────────────────────────────
+
+  static const String slots = '$baseUrl/api/slots';
+  static const String mySlots = '$baseUrl/api/slots/my';
+  static String slotById(String slotId) => '$slots/$slotId';
+
+
+  // ── My Appointment endpoints ────────────────────────────────
+  // GET  /api/appointments/my              → all my appointments
+  // GET  /api/appointments/{id}            → single appointment
+  // POST /api/appointments/{id}/confirm    → confirm
+  // POST /api/appointments/{id}/complete   → complete
+  // POST /api/appointments/{id}/cancel     → cancel (body: reason)
+  // POST /api/appointments/{id}/no-show    → no-show
+  // GET  /api/appointments/{id}/records    → get records
+  // POST /api/appointments/{id}/records    → create record
+  // PUT  /api/appointments/{id}/records/{recordId} → update record
+  static const String myAppointments = '$baseUrl/api/appointments/my';
+  static const String appointmentsBase = '$baseUrl/api/appointments';
+
+
   // Note: For specific appointment operations, append the appointment_id:
 // - Save notes: '$baseUrl/api/appointments/{appointment_id}/notes'
 // - Save feedback: '$baseUrl/api/appointments/{appointment_id}/feedback'  

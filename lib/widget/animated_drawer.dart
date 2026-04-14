@@ -738,73 +738,114 @@ class AnimatedDrawer extends StatelessWidget {
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
                   ),
+                  // _buildMenuItem(
+                  //   context: context,
+                  //   icon: Icons.assignment_outlined,
+                  //   selectedIcon: Icons.assignment,
+                  //   title: 'Screening',
+                  //   index: 1,
+                  //   onTap: () {
+                  //     Navigator.pop(context);
+                  //     Get.toNamed(AppRoutes.questionnaire);
+                  //   },
+                  //   screenWidth: screenWidth,
+                  //   screenHeight: screenHeight,
+                  // ),
+                  // _buildMenuItem(
+                  //   context: context,
+                  //   icon: Icons.bar_chart_outlined,
+                  //   selectedIcon: Icons.bar_chart,
+                  //   title: 'Results',
+                  //   index: 2,
+                  //   onTap: () {
+                  //     Navigator.pop(context);
+                  //     Get.toNamed(AppRoutes.results);
+                  //   },
+                  //   screenWidth: screenWidth,
+                  //   screenHeight: screenHeight,
+                  // ),
+                  // _buildMenuItem(
+                  //   context: context,
+                  //   icon: Icons.calendar_today_outlined,
+                  //   selectedIcon: Icons.calendar_today,
+                  //   title: 'Schedules',
+                  //   index: 3,
+                  //   onTap: () {
+                  //     Navigator.pop(context);
+                  //   },
+                  //   screenWidth: screenWidth,
+                  //   screenHeight: screenHeight,
+                  // ),
+                  // _buildExpandableMenuItem(
+                  //   context: context,
+                  //   icon: Icons.trending_up,
+                  //   title: 'Income',
+                  //   index: 4,
+                  //   isExpanded: drawerController.isIncomeExpanded,
+                  //   onTap: drawerController.toggleIncome,
+                  //   children: [
+                  //     _buildSubMenuItem(context, 'Earnings', 5, screenWidth, screenHeight),
+                  //     _buildSubMenuItem(context, 'Refunds', 6, screenWidth, screenHeight),
+                  //     _buildSubMenuItem(context, 'Declines', 7, screenWidth, screenHeight),
+                  //     _buildSubMenuItem(context, 'Payouts', 8, screenWidth, screenHeight),
+                  //   ],
+                  //   screenWidth: screenWidth,
+                  //   screenHeight: screenHeight,
+                  // ),
+                  // _buildMenuItem(
+                  //   context: context,
+                  //   icon: Icons.lightbulb_outline,
+                  //   selectedIcon: Icons.lightbulb,
+                  //   title: 'Awareness',
+                  //   index: 9,
+                  //   onTap: () {
+                  //     Navigator.pop(context);
+                  //     onAwarenessPressed();
+                  //   },
+                  //   screenWidth: screenWidth,
+                  //   screenHeight: screenHeight,
+                  // ),
                   _buildMenuItem(
-                    context: context,
-                    icon: Icons.assignment_outlined,
-                    selectedIcon: Icons.assignment,
-                    title: 'Screening',
-                    index: 1,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Get.toNamed(AppRoutes.questionnaire);
-                    },
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight,
-                  ),
-                  _buildMenuItem(
-                    context: context,
-                    icon: Icons.bar_chart_outlined,
-                    selectedIcon: Icons.bar_chart,
-                    title: 'Results',
-                    index: 2,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Get.toNamed(AppRoutes.results);
-                    },
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight,
-                  ),
-                  _buildMenuItem(
-                    context: context,
-                    icon: Icons.calendar_today_outlined,
-                    selectedIcon: Icons.calendar_today,
-                    title: 'Schedules',
-                    index: 3,
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight,
-                  ),
-                  _buildExpandableMenuItem(
-                    context: context,
-                    icon: Icons.trending_up,
-                    title: 'Income',
-                    index: 4,
-                    isExpanded: drawerController.isIncomeExpanded,
-                    onTap: drawerController.toggleIncome,
-                    children: [
-                      _buildSubMenuItem(context, 'Earnings', 5, screenWidth, screenHeight),
-                      _buildSubMenuItem(context, 'Refunds', 6, screenWidth, screenHeight),
-                      _buildSubMenuItem(context, 'Declines', 7, screenWidth, screenHeight),
-                      _buildSubMenuItem(context, 'Payouts', 8, screenWidth, screenHeight),
-                    ],
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight,
-                  ),
-                  _buildMenuItem(
-                    context: context,
-                    icon: Icons.lightbulb_outline,
-                    selectedIcon: Icons.lightbulb,
-                    title: 'Awareness',
-                    index: 9,
-                    onTap: () {
-                      Navigator.pop(context);
-                      onAwarenessPressed();
-                    },
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight,
-                  ),
+  context: context,
+  icon: Icons.mic_outlined,
+  selectedIcon: Icons.mic,
+  title: 'Speech Assessment',
+  index: 2,
+  onTap: () {
+    Navigator.pop(context);
+    Get.toNamed(AppRoutes.speechSubmissions);
+  },
+  screenWidth: screenWidth,
+  screenHeight: screenHeight,
+),
+
+_buildMenuItem(
+  context: context,
+  icon: Icons.child_care_outlined,
+  selectedIcon: Icons.child_care,
+  title: 'My Children',
+  index: 3,
+  onTap: () {
+    Navigator.pop(context);
+    Get.toNamed(AppRoutes.childrenList);
+  },
+  screenWidth: screenWidth,
+  screenHeight: screenHeight,
+),
+
+_buildMenuItem(
+  context: context,
+  icon: Icons.bar_chart_outlined,
+  selectedIcon: Icons.bar_chart,
+  title: 'Progress & Results',
+  index: 4,
+  onTap: () {
+    Navigator.pop(context);
+    Get.toNamed(AppRoutes.history);
+  },
+  screenWidth: screenWidth,
+  screenHeight: screenHeight,
+),
 
                   SizedBox(height: screenHeight * 0.01),
                   _buildSectionLabel(context, 'EXPERT SERVICES', screenWidth),
@@ -822,32 +863,32 @@ class AnimatedDrawer extends StatelessWidget {
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
                   ),
-                  _buildMenuItem(
-                    context: context,
-                    icon: Icons.medical_services_outlined,
-                    selectedIcon: Icons.medical_services,
-                    title: 'My Consultations',
-                    index: 17,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Get.toNamed(AppRoutes.consultations);
-                    },
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight,
-                  ),
-                  _buildMenuItem(
-                    context: context,
-                    icon: Icons.link_outlined,
-                    selectedIcon: Icons.link,
-                    title: 'Linked Experts',
-                    index: 18,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Get.toNamed(AppRoutes.linkedExperts);
-                    },
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight,
-                  ),
+                  // _buildMenuItem(
+                  //   context: context,
+                  //   icon: Icons.medical_services_outlined,
+                  //   selectedIcon: Icons.medical_services,
+                  //   title: 'My Consultations',
+                  //   index: 17,
+                  //   onTap: () {
+                  //     Navigator.pop(context);
+                  //     Get.toNamed(AppRoutes.consultations);
+                  //   },
+                  //   screenWidth: screenWidth,
+                  //   screenHeight: screenHeight,
+                  // ),
+                  // _buildMenuItem(
+                  //   context: context,
+                  //   icon: Icons.link_outlined,
+                  //   selectedIcon: Icons.link,
+                  //   title: 'Linked Experts',
+                  //   index: 18,
+                  //   onTap: () {
+                  //     Navigator.pop(context);
+                  //     Get.toNamed(AppRoutes.linkedExperts);
+                  //   },
+                  //   screenWidth: screenWidth,
+                  //   screenHeight: screenHeight,
+                  // ),
 
                    _buildMenuItem(
                     context: context,
@@ -857,25 +898,26 @@ class AnimatedDrawer extends StatelessWidget {
                     index: 19,
                     onTap: () {
                       Navigator.pop(context);
-                      Get.toNamed(AppRoutes.parentAppointments);
+                      // Get.toNamed(AppRoutes.parentAppointments);
+                      Get.toNamed(AppRoutes.parentMyAppointments);
                     },
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
                   ),
 
-                    _buildMenuItem(
-                      context: context,
-                      icon: Icons.chat_bubble_outline,
-                      selectedIcon: Icons.chat_bubble,
-                      title: 'Messages',
-                      index: 20,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Get.toNamed(AppRoutes.parentChats);
-                      },
-                      screenWidth: screenWidth,
-                      screenHeight: screenHeight,
-                    ),          
+                    // _buildMenuItem(
+                    //   context: context,
+                    //   icon: Icons.chat_bubble_outline,
+                    //   selectedIcon: Icons.chat_bubble,
+                    //   title: 'Messages',
+                    //   index: 20,
+                    //   onTap: () {
+                    //     Navigator.pop(context);
+                    //     Get.toNamed(AppRoutes.parentChats);
+                    //   },
+                    //   screenWidth: screenWidth,
+                    //   screenHeight: screenHeight,
+                    // ),          
         
                   SizedBox(height: screenHeight * 0.02),
                   _buildSectionLabel(context, 'SETTINGS', screenWidth),
@@ -945,7 +987,9 @@ class AnimatedDrawer extends StatelessWidget {
                     title: 'Help',
                     index: 15,
                     onTap: () {
-                      Navigator.pop(context);
+                     Navigator.pop(context);
+                     Get.toNamed(AppRoutes.help);
+                  
                     },
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,

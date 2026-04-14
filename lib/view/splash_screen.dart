@@ -497,7 +497,8 @@ class _SplashScreenState extends State<SplashScreen>
         if (userRole?.toLowerCase() == 'expert') {
           // Navigate to Expert Home
           debugPrint('✅ Navigating to Expert Home');
-          Get.offAllNamed(AppRoutes.expertHome);
+          // Get.offAllNamed(AppRoutes.expertHome);
+          Get.offAllNamed(AppRoutes.expertMain);
         } else if (userRole?.toLowerCase() == 'parent') {
           // Navigate to Parent Home
           debugPrint('✅ Navigating to Parent Home');
@@ -508,7 +509,8 @@ class _SplashScreenState extends State<SplashScreen>
           debugPrint('⚠️ Unknown role from response: $userRole, checking saved role: $savedRole');
           
           if (savedRole?.toLowerCase() == 'expert') {
-            Get.offAllNamed(AppRoutes.expertHome);
+            // Get.offAllNamed(AppRoutes.expertHome);
+            Get.offAllNamed(AppRoutes.expertMain);
           } else {
             Get.offAllNamed(AppRoutes.home);
           }

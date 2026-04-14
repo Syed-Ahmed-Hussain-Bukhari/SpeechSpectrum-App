@@ -491,7 +491,8 @@ class _SaveFeedbackScreenState extends State<SaveFeedbackScreen> {
               child: OutlinedButton(
                 onPressed: () {
                   // Navigate to home
-                  Get.offAllNamed(AppRoutes.expertHome);
+                  // Get.offAllNamed(AppRoutes.expertHome);
+                  Get.offAllNamed(AppRoutes.expertMain);
                 },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textSecondaryColor,
@@ -548,8 +549,10 @@ class _SaveFeedbackScreenState extends State<SaveFeedbackScreen> {
       await Future.delayed(const Duration(milliseconds: 500));
 
       // Navigate to expert home and refresh appointments
-      Get.offAllNamed(AppRoutes.expertHome);
+      // Get.offAllNamed(AppRoutes.expertHome);
+      Get.offAllNamed(AppRoutes.expertMain);
       
+
       // Refresh appointments list in background
       controller.fetchExpertAppointments();
     }

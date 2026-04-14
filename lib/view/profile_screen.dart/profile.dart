@@ -944,13 +944,13 @@ class ProfileScreen extends StatelessWidget {
                     SizedBox(height: size.customHeight(context) * 0.02),
 
                     // App Version
-                    Text(
-                      'App Version 2.3',
-                      style: GoogleFonts.poppins(
-                        fontSize: size.customWidth(context) * 0.032,
-                        color: AppColors.textSecondaryColor,
-                      ),
-                    ),
+                    // Text(
+                    //   'App Version 2.3',
+                    //   style: GoogleFonts.poppins(
+                    //     fontSize: size.customWidth(context) * 0.032,
+                    //     color: AppColors.textSecondaryColor,
+                    //   ),
+                    // ),
 
                     SizedBox(height: size.customHeight(context) * 0.03),
                   ],
