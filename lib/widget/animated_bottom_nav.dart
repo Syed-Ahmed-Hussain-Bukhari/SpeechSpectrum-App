@@ -71,9 +71,9 @@ class AnimatedBottomNavigation extends StatelessWidget {
               ),
              _buildNavItem(
                 context: context,
-                icon: Icons.chat_bubble_outline,
-                activeIcon: Icons.chat_bubble,
-                label: 'Chat',
+                icon: Icons.psychology_outlined,
+                activeIcon: Icons.psychology,
+                label: 'Therapists',
                 index: 1,
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,

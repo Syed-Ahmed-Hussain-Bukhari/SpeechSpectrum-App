@@ -439,6 +439,485 @@
 // }
 
 
+// // lib/view/questionnaire/patient_info_screen.dart
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/controllers/child_controller.dart';
+// import 'package:speechspectrum/controllers/questionnaire_controller.dart';
+// import 'package:speechspectrum/routes/app_routes.dart';
+
+// class PatientInfoScreen extends StatefulWidget {
+//   const PatientInfoScreen({super.key});
+
+//   @override
+//   State<PatientInfoScreen> createState() => _PatientInfoScreenState();
+// }
+
+// class _PatientInfoScreenState extends State<PatientInfoScreen> {
+//   final childController = Get.put(ChildController());
+//   final questionnaireController = Get.put(QuestionnaireController());
+//   final ageController = TextEditingController();
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     questionnaireController.resetQuestionnaire();
+//   }
+
+//   @override
+//   void dispose() {
+//     ageController.dispose();
+//     super.dispose();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+
+//     return Scaffold(
+//       backgroundColor: AppColors.lightGreyColor,
+//       appBar: AppBar(
+//         backgroundColor: AppColors.whiteColor,
+//         elevation: 0,
+//         leading: IconButton(
+//           icon: Icon(Icons.arrow_back, color: AppColors.textPrimaryColor),
+//           onPressed: () => Get.back(),
+//         ),
+//         title: Text(
+//           'Patient Information',
+//           style: GoogleFonts.poppins(
+//             color: AppColors.textPrimaryColor,
+//             fontSize: 18,
+//             fontWeight: FontWeight.w600,
+//           ),
+//         ),
+//       ),
+//       body: Obx(() {
+//         if (childController.isLoading.value) {
+//           return Center(
+//             child: CircularProgressIndicator(
+//               color: AppColors.primaryColor,
+//             ),
+//           );
+//         }
+
+//         return SingleChildScrollView(
+//           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//           child: Column(
+//             children: [
+//               // Header Card
+//               Container(
+//                 padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//                 decoration: BoxDecoration(
+//                   gradient: LinearGradient(
+//                     colors: [AppColors.primaryColor, AppColors.secondaryColor],
+//                     begin: Alignment.topLeft,
+//                     end: Alignment.bottomRight,
+//                   ),
+//                   borderRadius: BorderRadius.circular(20),
+//                 ),
+//                 child: Column(
+//                   children: [
+//                     Icon(
+//                       Icons.assignment_outlined,
+//                       size: 50,
+//                       color: AppColors.whiteColor,
+//                     ),
+//                     SizedBox(height: size.customHeight(context) * 0.015),
+//                     Text(
+//                       'Patient Information',
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.055,
+//                         fontWeight: FontWeight.bold,
+//                         color: AppColors.whiteColor,
+//                       ),
+//                     ),
+//                     SizedBox(height: size.customHeight(context) * 0.008),
+//                     Text(
+//                       'Please provide accurate details for the best assessment experience',
+//                       textAlign: TextAlign.center,
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.035,
+//                         color: AppColors.whiteColor.withOpacity(0.9),
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.03),
+
+//               // Form Container
+//               Container(
+//                 padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//                 decoration: BoxDecoration(
+//                   color: AppColors.whiteColor,
+//                   borderRadius: BorderRadius.circular(20),
+//                   boxShadow: [
+//                     BoxShadow(
+//                       color: Colors.black.withOpacity(0.05),
+//                       blurRadius: 10,
+//                       offset: Offset(0, 4),
+//                     ),
+//                   ],
+//                 ),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     // Child Name Selection
+//                     Text(
+//                       'Child\'s Name',
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.04,
+//                         fontWeight: FontWeight.w600,
+//                         color: AppColors.textPrimaryColor,
+//                       ),
+//                     ),
+//                     Text(
+//                       '*',
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.04,
+//                         color: AppColors.errorColor,
+//                       ),
+//                     ),
+//                     SizedBox(height: size.customHeight(context) * 0.01),
+//                     Container(
+//                       decoration: BoxDecoration(
+//                         color: AppColors.lightGreyColor,
+//                         borderRadius: BorderRadius.circular(12),
+//                         border: Border.all(
+//                           color: AppColors.greyColor.withOpacity(0.2),
+//                         ),
+//                       ),
+//                       child: DropdownButtonFormField<String>(
+//                          dropdownColor: AppColors.whiteColor,
+//                         icon: Icon(Icons.arrow_drop_down, color: AppColors.primaryColor),
+                       
+//                         decoration: InputDecoration(
+                          
+//                           hintText: 'Select child',
+//                           hintStyle: GoogleFonts.poppins(
+//                             color: AppColors.greyColor,
+//                             fontSize: size.customWidth(context) * 0.038,
+//                           ),
+//                           border: InputBorder.none,
+//                           contentPadding: EdgeInsets.symmetric(
+//                             horizontal: size.customWidth(context) * 0.04,
+//                             vertical: size.customHeight(context) * 0.018,
+//                           ),
+//                         ),
+//                         items: childController.children.map((child) {
+//                           return DropdownMenuItem<String>(
+//                             value: child.childId,
+//                             child: Text(
+//                               child.childName,
+//                               style: GoogleFonts.poppins(
+//                                 fontSize: size.customWidth(context) * 0.038,
+//                               ),
+//                             ),
+//                           );
+//                         }).toList(),
+//                         onChanged: (value) {
+//                           if (value != null) {
+//                             questionnaireController.selectedChildId.value = value;
+//                             final selectedChild = childController.children
+//                                 .firstWhere((child) => child.childId == value);
+                            
+//                             // Auto-fill gender
+//                             questionnaireController.selectedGender.value =
+//                                 selectedChild.gender.toLowerCase() == 'male' ? 1 : 0;
+//                           }
+//                         },
+//                       ),
+//                     ),
+
+//                     SizedBox(height: size.customHeight(context) * 0.025),
+
+//                     // Age in Months
+//                     Row(
+//                       children: [
+//                         Expanded(
+//                           child: Column(
+//                             crossAxisAlignment: CrossAxisAlignment.start,
+//                             children: [
+//                               Text(
+//                                 'Age (Months)',
+//                                 style: GoogleFonts.poppins(
+//                                   fontSize: size.customWidth(context) * 0.04,
+//                                   fontWeight: FontWeight.w600,
+//                                   color: AppColors.textPrimaryColor,
+//                                 ),
+//                               ),
+//                               SizedBox(height: size.customHeight(context) * 0.01),
+//                               Container(
+//                                 decoration: BoxDecoration(
+//                                   color: AppColors.lightGreyColor,
+//                                   borderRadius: BorderRadius.circular(12),
+//                                   border: Border.all(
+//                                     color: AppColors.greyColor.withOpacity(0.2),
+//                                   ),
+//                                 ),
+//                                 child: TextField(
+//                                   controller: ageController,
+//                                   keyboardType: TextInputType.number,
+//                                   onChanged: (value) {
+//                                     questionnaireController.ageMonths.value =
+//                                         int.tryParse(value) ?? 0;
+//                                   },
+//                                   style: GoogleFonts.poppins(
+//                                     fontSize: size.customWidth(context) * 0.038,
+//                                   ),
+//                                   decoration: InputDecoration(
+//                                     hintText: '36',
+//                                     hintStyle: GoogleFonts.poppins(
+//                                       color: AppColors.greyColor,
+//                                     ),
+//                                     border: InputBorder.none,
+//                                     contentPadding: EdgeInsets.symmetric(
+//                                       horizontal: size.customWidth(context) * 0.04,
+//                                       vertical: size.customHeight(context) * 0.018,
+//                                     ),
+//                                   ),
+//                                 ),
+//                               ),
+//                             ],
+//                           ),
+//                         ),
+//                         SizedBox(width: size.customWidth(context) * 0.04),
+
+//                         // Gender
+//                         Expanded(
+//                           child: Column(
+//                             crossAxisAlignment: CrossAxisAlignment.start,
+//                             children: [
+//                               Text(
+//                                 'Gender',
+//                                 style: GoogleFonts.poppins(
+//                                   fontSize: size.customWidth(context) * 0.04,
+//                                   fontWeight: FontWeight.w600,
+//                                   color: AppColors.textPrimaryColor,
+//                                 ),
+//                               ),
+//                               SizedBox(height: size.customHeight(context) * 0.01),
+//                               Container(
+//                                 decoration: BoxDecoration(
+//                                   color: AppColors.lightGreyColor,
+//                                   borderRadius: BorderRadius.circular(12),
+//                                   border: Border.all(
+//                                     color: AppColors.greyColor.withOpacity(0.2),
+//                                   ),
+//                                 ),
+//                                 child: Obx(() => DropdownButtonFormField<int>(
+//                                   dropdownColor: AppColors.whiteColor,
+//                         icon: Icon(Icons.arrow_drop_down, color: AppColors.primaryColor),
+                       
+//                                       value: questionnaireController.selectedGender.value,
+//                                       decoration: InputDecoration(
+//                                         border: InputBorder.none,
+//                                         contentPadding: EdgeInsets.symmetric(
+//                                           horizontal: size.customWidth(context) * 0.04,
+//                                           vertical: size.customHeight(context) * 0.018,
+//                                         ),
+//                                       ),
+//                                       items: [
+//                                         DropdownMenuItem(
+//                                           value: 1,
+//                                           child: Text(
+//                                             'Male',
+//                                             style: GoogleFonts.poppins(
+//                                               fontSize: size.customWidth(context) * 0.038,
+//                                             ),
+//                                           ),
+//                                         ),
+//                                         DropdownMenuItem(
+//                                           value: 0,
+//                                           child: Text(
+//                                             'Female',
+//                                             style: GoogleFonts.poppins(
+//                                               fontSize: size.customWidth(context) * 0.038,
+//                                             ),
+//                                           ),
+//                                         ),
+//                                       ],
+//                                       onChanged: (value) {
+//                                         if (value != null) {
+//                                           questionnaireController.selectedGender.value = value;
+//                                         }
+//                                       },
+//                                     )),
+//                               ),
+//                             ],
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+
+//                     SizedBox(height: size.customHeight(context) * 0.025),
+
+//                     // Jaundice
+//                     Text(
+//                       'Has the child experienced jaundice?',
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.04,
+//                         fontWeight: FontWeight.w600,
+//                         color: AppColors.textPrimaryColor,
+//                       ),
+//                     ),
+//                     SizedBox(height: size.customHeight(context) * 0.01),
+//                     Container(
+//                       decoration: BoxDecoration(
+//                         color: AppColors.lightGreyColor,
+//                         borderRadius: BorderRadius.circular(12),
+//                         border: Border.all(
+//                           color: AppColors.greyColor.withOpacity(0.2),
+//                         ),
+//                       ),
+//                       child: Obx(() => DropdownButtonFormField<int>(
+//                         dropdownColor: AppColors.whiteColor,
+//                         icon: Icon(Icons.arrow_drop_down, color: AppColors.primaryColor),
+                       
+//                             value: questionnaireController.hasJaundice.value,
+//                             decoration: InputDecoration(
+//                               border: InputBorder.none,
+//                               contentPadding: EdgeInsets.symmetric(
+//                                 horizontal: size.customWidth(context) * 0.04,
+//                                 vertical: size.customHeight(context) * 0.018,
+//                               ),
+//                             ),
+//                             items: [
+//                               DropdownMenuItem(
+//                                 value: 0,
+//                                 child: Text(
+//                                   'No',
+//                                   style: GoogleFonts.poppins(
+//                                     fontSize: size.customWidth(context) * 0.038,
+//                                   ),
+//                                 ),
+//                               ),
+//                               DropdownMenuItem(
+//                                 value: 1,
+//                                 child: Text(
+//                                   'Yes',
+//                                   style: GoogleFonts.poppins(
+//                                     fontSize: size.customWidth(context) * 0.038,
+//                                   ),
+//                                 ),
+//                               ),
+//                             ],
+//                             onChanged: (value) {
+//                               if (value != null) {
+//                                 questionnaireController.hasJaundice.value = value;
+//                               }
+//                             },
+//                           )),
+//                     ),
+
+//                     SizedBox(height: size.customHeight(context) * 0.025),
+
+//                     // Family History of ASD
+//                     Text(
+//                       'Family history of ASD?',
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.04,
+//                         fontWeight: FontWeight.w600,
+//                         color: AppColors.textPrimaryColor,
+//                       ),
+//                     ),
+//                     SizedBox(height: size.customHeight(context) * 0.01),
+//                     Container(
+//                       decoration: BoxDecoration(
+//                         color: AppColors.lightGreyColor,
+//                         borderRadius: BorderRadius.circular(12),
+//                         border: Border.all(
+//                           color: AppColors.greyColor.withOpacity(0.2),
+//                         ),
+//                       ),
+//                       child: Obx(() => DropdownButtonFormField<int>(
+//                         dropdownColor: AppColors.whiteColor,
+//                         icon: Icon(Icons.arrow_drop_down, color: AppColors.primaryColor),
+                       
+//                             value: questionnaireController.hasFamilyASD.value,
+//                             decoration: InputDecoration(
+//                               border: InputBorder.none,
+//                               contentPadding: EdgeInsets.symmetric(
+//                                 horizontal: size.customWidth(context) * 0.04,
+//                                 vertical: size.customHeight(context) * 0.018,
+//                               ),
+//                             ),
+//                             items: [
+//                               DropdownMenuItem(
+//                                 value: 0,
+//                                 child: Text(
+//                                   'No',
+//                                   style: GoogleFonts.poppins(
+//                                     fontSize: size.customWidth(context) * 0.038,
+//                                   ),
+//                                 ),
+//                               ),
+//                               DropdownMenuItem(
+//                                 value: 1,
+//                                 child: Text(
+//                                   'Yes',
+//                                   style: GoogleFonts.poppins(
+//                                     fontSize: size.customWidth(context) * 0.038,
+//                                   ),
+//                                 ),
+//                               ),
+//                             ],
+//                             onChanged: (value) {
+//                               if (value != null) {
+//                                 questionnaireController.hasFamilyASD.value = value;
+//                               }
+//                             },
+//                           )),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.03),
+
+//               // Begin Screening Button
+//               SizedBox(
+//                 width: double.infinity,
+//                 height: size.customHeight(context) * 0.06,
+//                 child: Obx(() => ElevatedButton(
+//                       onPressed: questionnaireController.selectedChildId.value.isEmpty ||
+//                               questionnaireController.ageMonths.value == 0
+//                           ? null
+//                           : () => Get.toNamed(AppRoutes.questionnaire),
+//                       style: ElevatedButton.styleFrom(
+//                         backgroundColor: AppColors.primaryColor,
+//                         disabledBackgroundColor: AppColors.greyColor.withOpacity(0.5),
+//                         shape: RoundedRectangleBorder(
+//                           borderRadius: BorderRadius.circular(15),
+//                         ),
+//                         elevation: 0,
+//                       ),
+//                       child: Text(
+//                         'Begin Screening',
+//                         style: GoogleFonts.poppins(
+//                           fontSize: size.customWidth(context) * 0.042,
+//                           fontWeight: FontWeight.w600,
+//                           color: AppColors.whiteColor,
+//                         ),
+//                       ),
+//                     )),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.02),
+//             ],
+//           ),
+//         );
+//       }),
+//     );
+//   }
+// }
+
+
 // lib/view/questionnaire/patient_info_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -471,6 +950,19 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
   void dispose() {
     ageController.dispose();
     super.dispose();
+  }
+
+  // ── Auto-calculate age in months from date of birth ──────────────────────
+  int _calculateAgeInMonths(String dateOfBirth) {
+    try {
+      final dob = DateTime.parse(dateOfBirth);
+      final now = DateTime.now();
+      int months = (now.year - dob.year) * 12 + (now.month - dob.month);
+      if (now.day < dob.day) months--;
+      return months < 0 ? 0 : months;
+    } catch (_) {
+      return 0;
+    }
   }
 
   @override
@@ -593,11 +1085,10 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                         ),
                       ),
                       child: DropdownButtonFormField<String>(
-                         dropdownColor: AppColors.whiteColor,
-                        icon: Icon(Icons.arrow_drop_down, color: AppColors.primaryColor),
-                       
+                        dropdownColor: AppColors.whiteColor,
+                        icon: Icon(Icons.arrow_drop_down,
+                            color: AppColors.primaryColor),
                         decoration: InputDecoration(
-                          
                           hintText: 'Select child',
                           hintStyle: GoogleFonts.poppins(
                             color: AppColors.greyColor,
@@ -622,13 +1113,37 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                         }).toList(),
                         onChanged: (value) {
                           if (value != null) {
-                            questionnaireController.selectedChildId.value = value;
+                            // ── Store child ID ──────────────────────────────
+                            questionnaireController.selectedChildId.value =
+                                value;
+
                             final selectedChild = childController.children
-                                .firstWhere((child) => child.childId == value);
-                            
-                            // Auto-fill gender
+                                .firstWhere(
+                                    (child) => child.childId == value);
+
+                            // ── Store child name ────────────────────────────
+                            questionnaireController.selectedChildName.value =
+                                selectedChild.childName;
+
+                            // ── Auto-fill gender ────────────────────────────
                             questionnaireController.selectedGender.value =
-                                selectedChild.gender.toLowerCase() == 'male' ? 1 : 0;
+                                selectedChild.gender.toLowerCase() == 'male'
+                                    ? 1
+                                    : 0;
+
+                            // ── Auto-calculate age in months from DOB ───────
+                            // Assumes child model has a dateOfBirth field.
+                            // Adjust the field name if yours is different
+                            // (e.g. child.dob, child.birthDate, child.dateOfBirth)
+                            final int calculatedMonths =
+                                _calculateAgeInMonths(
+                                    selectedChild.dateOfBirth);
+                            questionnaireController.ageMonths.value =
+                                calculatedMonths;
+                            ageController.text =
+                                calculatedMonths > 0
+                                    ? calculatedMonths.toString()
+                                    : '';
                           }
                         },
                       ),
@@ -651,13 +1166,16 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                                   color: AppColors.textPrimaryColor,
                                 ),
                               ),
-                              SizedBox(height: size.customHeight(context) * 0.01),
+                              SizedBox(
+                                  height:
+                                      size.customHeight(context) * 0.01),
                               Container(
                                 decoration: BoxDecoration(
                                   color: AppColors.lightGreyColor,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: AppColors.greyColor.withOpacity(0.2),
+                                    color: AppColors.greyColor
+                                        .withOpacity(0.2),
                                   ),
                                 ),
                                 child: TextField(
@@ -668,7 +1186,8 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                                         int.tryParse(value) ?? 0;
                                   },
                                   style: GoogleFonts.poppins(
-                                    fontSize: size.customWidth(context) * 0.038,
+                                    fontSize:
+                                        size.customWidth(context) * 0.038,
                                   ),
                                   decoration: InputDecoration(
                                     hintText: '36',
@@ -677,8 +1196,10 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                                     ),
                                     border: InputBorder.none,
                                     contentPadding: EdgeInsets.symmetric(
-                                      horizontal: size.customWidth(context) * 0.04,
-                                      vertical: size.customHeight(context) * 0.018,
+                                      horizontal:
+                                          size.customWidth(context) * 0.04,
+                                      vertical:
+                                          size.customHeight(context) * 0.018,
                                     ),
                                   ),
                                 ),
@@ -701,25 +1222,35 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                                   color: AppColors.textPrimaryColor,
                                 ),
                               ),
-                              SizedBox(height: size.customHeight(context) * 0.01),
+                              SizedBox(
+                                  height:
+                                      size.customHeight(context) * 0.01),
                               Container(
                                 decoration: BoxDecoration(
                                   color: AppColors.lightGreyColor,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: AppColors.greyColor.withOpacity(0.2),
+                                    color: AppColors.greyColor
+                                        .withOpacity(0.2),
                                   ),
                                 ),
-                                child: Obx(() => DropdownButtonFormField<int>(
-                                  dropdownColor: AppColors.whiteColor,
-                        icon: Icon(Icons.arrow_drop_down, color: AppColors.primaryColor),
-                       
-                                      value: questionnaireController.selectedGender.value,
+                                child: Obx(() =>
+                                    DropdownButtonFormField<int>(
+                                      dropdownColor: AppColors.whiteColor,
+                                      icon: Icon(Icons.arrow_drop_down,
+                                          color: AppColors.primaryColor),
+                                      value: questionnaireController
+                                          .selectedGender.value,
                                       decoration: InputDecoration(
                                         border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: size.customWidth(context) * 0.04,
-                                          vertical: size.customHeight(context) * 0.018,
+                                        contentPadding:
+                                            EdgeInsets.symmetric(
+                                          horizontal:
+                                              size.customWidth(context) *
+                                                  0.04,
+                                          vertical:
+                                              size.customHeight(context) *
+                                                  0.018,
                                         ),
                                       ),
                                       items: [
@@ -728,7 +1259,9 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                                           child: Text(
                                             'Male',
                                             style: GoogleFonts.poppins(
-                                              fontSize: size.customWidth(context) * 0.038,
+                                              fontSize:
+                                                  size.customWidth(context) *
+                                                      0.038,
                                             ),
                                           ),
                                         ),
@@ -737,14 +1270,17 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                                           child: Text(
                                             'Female',
                                             style: GoogleFonts.poppins(
-                                              fontSize: size.customWidth(context) * 0.038,
+                                              fontSize:
+                                                  size.customWidth(context) *
+                                                      0.038,
                                             ),
                                           ),
                                         ),
                                       ],
                                       onChanged: (value) {
                                         if (value != null) {
-                                          questionnaireController.selectedGender.value = value;
+                                          questionnaireController
+                                              .selectedGender.value = value;
                                         }
                                       },
                                     )),
@@ -776,15 +1312,18 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                         ),
                       ),
                       child: Obx(() => DropdownButtonFormField<int>(
-                        dropdownColor: AppColors.whiteColor,
-                        icon: Icon(Icons.arrow_drop_down, color: AppColors.primaryColor),
-                       
-                            value: questionnaireController.hasJaundice.value,
+                            dropdownColor: AppColors.whiteColor,
+                            icon: Icon(Icons.arrow_drop_down,
+                                color: AppColors.primaryColor),
+                            value:
+                                questionnaireController.hasJaundice.value,
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               contentPadding: EdgeInsets.symmetric(
-                                horizontal: size.customWidth(context) * 0.04,
-                                vertical: size.customHeight(context) * 0.018,
+                                horizontal:
+                                    size.customWidth(context) * 0.04,
+                                vertical:
+                                    size.customHeight(context) * 0.018,
                               ),
                             ),
                             items: [
@@ -793,7 +1332,8 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                                 child: Text(
                                   'No',
                                   style: GoogleFonts.poppins(
-                                    fontSize: size.customWidth(context) * 0.038,
+                                    fontSize:
+                                        size.customWidth(context) * 0.038,
                                   ),
                                 ),
                               ),
@@ -802,14 +1342,16 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                                 child: Text(
                                   'Yes',
                                   style: GoogleFonts.poppins(
-                                    fontSize: size.customWidth(context) * 0.038,
+                                    fontSize:
+                                        size.customWidth(context) * 0.038,
                                   ),
                                 ),
                               ),
                             ],
                             onChanged: (value) {
                               if (value != null) {
-                                questionnaireController.hasJaundice.value = value;
+                                questionnaireController.hasJaundice.value =
+                                    value;
                               }
                             },
                           )),
@@ -836,15 +1378,18 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                         ),
                       ),
                       child: Obx(() => DropdownButtonFormField<int>(
-                        dropdownColor: AppColors.whiteColor,
-                        icon: Icon(Icons.arrow_drop_down, color: AppColors.primaryColor),
-                       
-                            value: questionnaireController.hasFamilyASD.value,
+                            dropdownColor: AppColors.whiteColor,
+                            icon: Icon(Icons.arrow_drop_down,
+                                color: AppColors.primaryColor),
+                            value:
+                                questionnaireController.hasFamilyASD.value,
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               contentPadding: EdgeInsets.symmetric(
-                                horizontal: size.customWidth(context) * 0.04,
-                                vertical: size.customHeight(context) * 0.018,
+                                horizontal:
+                                    size.customWidth(context) * 0.04,
+                                vertical:
+                                    size.customHeight(context) * 0.018,
                               ),
                             ),
                             items: [
@@ -853,7 +1398,8 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                                 child: Text(
                                   'No',
                                   style: GoogleFonts.poppins(
-                                    fontSize: size.customWidth(context) * 0.038,
+                                    fontSize:
+                                        size.customWidth(context) * 0.038,
                                   ),
                                 ),
                               ),
@@ -862,14 +1408,16 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                                 child: Text(
                                   'Yes',
                                   style: GoogleFonts.poppins(
-                                    fontSize: size.customWidth(context) * 0.038,
+                                    fontSize:
+                                        size.customWidth(context) * 0.038,
                                   ),
                                 ),
                               ),
                             ],
                             onChanged: (value) {
                               if (value != null) {
-                                questionnaireController.hasFamilyASD.value = value;
+                                questionnaireController.hasFamilyASD.value =
+                                    value;
                               }
                             },
                           )),
@@ -885,13 +1433,15 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                 width: double.infinity,
                 height: size.customHeight(context) * 0.06,
                 child: Obx(() => ElevatedButton(
-                      onPressed: questionnaireController.selectedChildId.value.isEmpty ||
+                      onPressed: questionnaireController
+                                  .selectedChildId.value.isEmpty ||
                               questionnaireController.ageMonths.value == 0
                           ? null
                           : () => Get.toNamed(AppRoutes.questionnaire),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
-                        disabledBackgroundColor: AppColors.greyColor.withOpacity(0.5),
+                        disabledBackgroundColor:
+                            AppColors.greyColor.withOpacity(0.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),

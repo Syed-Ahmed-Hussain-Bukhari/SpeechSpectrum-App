@@ -71,7 +71,7 @@ class _ExpertsListScreenState extends State<ExpertsListScreen> {
           onPressed: () => Get.back(),
         ),
         title: Text(
-          childName != null ? 'Experts for $childName' : 'Find Experts',
+          childName != null ? 'Therapists for $childName' : 'Find Therapists',
           style: GoogleFonts.poppins(
             color: AppColors.textPrimaryColor,
             fontSize: 18,

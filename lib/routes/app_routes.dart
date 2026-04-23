@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:speechspectrum/view/AWARENESS/AWARENESS_screen.dart';
+import 'package:speechspectrum/view/auth/add_children_screen.dart';
 import 'package:speechspectrum/view/auth/expert_documents_screen.dart';
 import 'package:speechspectrum/view/auth/expert_info_screen.dart';
 import 'package:speechspectrum/view/auth/name_screen.dart';
@@ -11,6 +12,9 @@ import 'package:speechspectrum/view/chat/expert/expert_chats_list_screen.dart';
 import 'package:speechspectrum/view/chat/parent/parent_chat_conversation_screen.dart';
 import 'package:speechspectrum/view/chat/parent/parent_chats_list_screen.dart';
 import 'package:speechspectrum/view/children/child_details_screen.dart';
+import 'package:speechspectrum/view/children/child_screening_history_screen.dart';
+import 'package:speechspectrum/view/children/child_speech_detail_screen.dart';
+import 'package:speechspectrum/view/children/child_speech_history_screen.dart';
 import 'package:speechspectrum/view/children/children_list_screen.dart';
 import 'package:speechspectrum/view/children/create_edit_child_screen.dart';
 import 'package:speechspectrum/view/expert/appointment_details_screen.dart';
@@ -48,6 +52,7 @@ import 'package:speechspectrum/view/payment/payment_success_screen.dart';
 import 'package:speechspectrum/view/payment/payment_webview_screen.dart';
 import 'package:speechspectrum/view/profile_screen.dart/edit_profile.dart';
 import 'package:speechspectrum/view/profile_screen.dart/profile.dart';
+import 'package:speechspectrum/view/progress/progress_hub_screen.dart';
 import 'package:speechspectrum/view/questionnaire/patient_info_screen.dart';
 import 'package:speechspectrum/view/questionnaire/questionnaire_history_screen.dart';
 import 'package:speechspectrum/view/questionnaire/questionnaire_result_screen.dart';
@@ -172,6 +177,13 @@ class AppRoutes {
   static const String paymentSuccess  = '/payment/success';
   static const String paymentCancel   = '/payment/cancel';
 
+  static const String progressHub      = '/progress-hub'; 
+
+  static const String addChildren = '/add-children';
+   
+  static const String childScreeningHistory = '/child-screening-history';
+  static const String childSpeechHistory    = '/child-speech-history';
+  static const String childSpeechDetail     = '/child-speech-detail';
 
 
   static final List<GetPage> routes = [
@@ -469,5 +481,28 @@ GetPage(name: AppRoutes.expertEditProfile, page: () => const ExpertEditProfileSc
       page: () => const PaymentCancelScreen(),
     ),
 
+    GetPage(
+    name: AppRoutes.progressHub,
+    page: () => const ProgressHubScreen(),
+  ),
+
+  // In GetPages list add:
+  GetPage(
+    name: AppRoutes.addChildren,
+    page: () => const AddChildrenScreen(),
+  ),
+
+  GetPage(
+  name: AppRoutes.childScreeningHistory,
+  page: () => const ChildScreeningHistoryScreen(),
+),
+GetPage(
+  name: AppRoutes.childSpeechHistory,
+  page: () => const ChildSpeechHistoryScreen(),
+),
+GetPage(
+  name: AppRoutes.childSpeechDetail,
+  page: () => const ChildSpeechDetailScreen(),
+),
   ];
 }

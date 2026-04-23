@@ -17176,6 +17176,1510 @@
 
 
 
+// // lib/view/expert/appointments/appointment_detail_screen.dart
+// import 'package:flutter/material.dart';
+// import 'package:flutter/services.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:android_intent_plus/android_intent.dart';
+// import 'package:android_intent_plus/flag.dart';
+// import 'dart:io' show Platform;
+// import 'package:url_launcher/url_launcher.dart';
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/controllers/my_appointment_controller.dart';
+// import 'package:speechspectrum/models/my_appointment_model.dart';
+
+// Future<void> _openUrl(String url) async {
+//   final uri = Uri.parse(url);
+//   if (Platform.isAndroid) {
+//     try {
+//       final intent = AndroidIntent(
+//         action: 'action_view',
+//         data: url,
+//         flags: <int>[Flag.FLAG_ACTIVITY_NEW_TASK],
+//       );
+//       await intent.launch();
+//       return;
+//     } catch (_) {}
+//   }
+//   if (await canLaunchUrl(uri)) {
+//     await launchUrl(uri, mode: LaunchMode.externalApplication);
+//   } else {
+//     await launchUrl(uri, mode: LaunchMode.platformDefault);
+//   }
+// }
+
+// class AppointmentDetailScreen extends StatefulWidget {
+//   const AppointmentDetailScreen({super.key});
+
+//   @override
+//   State<AppointmentDetailScreen> createState() =>
+//       _AppointmentDetailScreenState();
+// }
+
+// class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
+//   late final MyAppointmentController _c;
+//   late final String _appointmentId;
+//   late final String _argChildName;
+//   late final String _argExpertName;
+//   late final String _argSpecialization;
+//   late final String _argChildInitials;
+//   late final String _argStatus;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _c = Get.find<MyAppointmentController>();
+//     final args = Get.arguments;
+//     if (args is Map) {
+//       _appointmentId = (args['appointmentId'] ?? '').toString();
+//       _argChildName = (args['childName'] ?? '').toString();
+//       _argExpertName = (args['expertName'] ?? '').toString();
+//       _argSpecialization = (args['specialization'] ?? '').toString();
+//       _argChildInitials = (args['childInitials'] ?? '').toString();
+//       _argStatus = (args['status'] ?? '').toString();
+//     } else {
+//       _appointmentId = args?.toString() ?? '';
+//       _argChildName = '';
+//       _argExpertName = '';
+//       _argSpecialization = '';
+//       _argChildInitials = '';
+//       _argStatus = '';
+//     }
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       if (_appointmentId.isNotEmpty) {
+//         _c.fetchAppointmentDetail(_appointmentId);
+//         _c.fetchRecords(_appointmentId);
+//       }
+//     });
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+//     return Scaffold(
+//       backgroundColor: AppColors.lightGreyColor,
+//       body: Obx(() {
+//         if (_c.isLoadingDetail.value && _c.selectedAppointment.value == null) {
+//           return _buildLoadingWithHeader(context, size);
+//         }
+//         final appt = _c.selectedAppointment.value;
+//         if (appt == null) return _buildError();
+//         return _buildBody(context, size, appt);
+//       }),
+//     );
+//   }
+
+//   Widget _buildLoadingWithHeader(BuildContext context, CustomSize size) {
+//     final meta = _statusMeta(_argStatus);
+//     return CustomScrollView(
+//       slivers: [
+//         SliverAppBar(
+//           expandedHeight: size.customHeight(context) * 0.26,
+//           pinned: true,
+//           backgroundColor: AppColors.primaryColor,
+//           surfaceTintColor: Colors.transparent,
+//           leading: GestureDetector(
+//             onTap: () => Get.back(),
+//             child: Container(
+//               margin: const EdgeInsets.all(8),
+//               decoration: BoxDecoration(
+//                   color: Colors.white.withOpacity(0.2),
+//                   borderRadius: BorderRadius.circular(12)),
+//               child: const Icon(Icons.arrow_back_ios_new_rounded,
+//                   color: Colors.white, size: 18),
+//             ),
+//           ),
+//           flexibleSpace: FlexibleSpaceBar(
+//             background: _buildHeaderBackground(
+//               context, size,
+//               initials: _argChildInitials,
+//               childName: _argChildName,
+//               expertName: _argExpertName,
+//               specialization: _argSpecialization,
+//               status: _argStatus,
+//               isPaid: false,
+//               meta: meta,
+//             ),
+//           ),
+//         ),
+//         const SliverFillRemaining(
+//           child: Center(
+//             child: CircularProgressIndicator(
+//                 color: AppColors.primaryColor, strokeWidth: 3),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+
+//   Widget _buildBody(BuildContext context, CustomSize size, MyAppointmentItem appt) {
+//     final meta = _statusMeta(appt.status);
+//     return CustomScrollView(
+//       slivers: [
+//         SliverAppBar(
+//           expandedHeight: size.customHeight(context) * 0.26,
+//           pinned: true,
+//           backgroundColor: AppColors.primaryColor,
+//           surfaceTintColor: Colors.transparent,
+//           leading: GestureDetector(
+//             onTap: () => Get.back(),
+//             child: Container(
+//               margin: const EdgeInsets.all(8),
+//               decoration: BoxDecoration(
+//                   color: Colors.white.withOpacity(0.2),
+//                   borderRadius: BorderRadius.circular(12)),
+//               child: const Icon(Icons.arrow_back_ios_new_rounded,
+//                   color: Colors.white, size: 18),
+//             ),
+//           ),
+//           flexibleSpace: FlexibleSpaceBar(
+//             background: _buildHeaderBackground(
+//               context, size,
+//               initials: appt.childInitials,
+//               childName: appt.children?.childName ?? _argChildName,
+//               expertName: appt.expertUsers?.fullName ?? _argExpertName,
+//               specialization: appt.expertUsers?.specialization ?? _argSpecialization,
+//               status: appt.status,
+//               isPaid: appt.isPaid,
+//               meta: meta,
+//             ),
+//           ),
+//         ),
+//         SliverPadding(
+//           padding: EdgeInsets.fromLTRB(
+//             size.customWidth(context) * 0.045,
+//             size.customHeight(context) * 0.02,
+//             size.customWidth(context) * 0.045,
+//             size.customHeight(context) * 0.06,
+//           ),
+//           sliver: SliverList(
+//             delegate: SliverChildListDelegate([
+//               _buildActionButtons(context, size, appt),
+//               SizedBox(height: size.customHeight(context) * 0.022),
+
+//               // ── CONFIRMED ONLY: payment card ─────────────────
+//               if (appt.isConfirmed) ...[
+//                 _buildPaymentStatusCard(context, size, appt),
+//                 SizedBox(height: size.customHeight(context) * 0.018),
+//               ],
+
+//               // ── CONFIRMED ONLY: meeting link card ────────────
+//               if (appt.isConfirmed &&
+//                   appt.meetLink != null &&
+//                   appt.meetLink!.isNotEmpty) ...[
+//                 _buildMeetLinkCard(context, size, appt.meetLink!),
+//                 SizedBox(height: size.customHeight(context) * 0.018),
+//               ],
+
+//               _buildInfoCard(context, size, appt),
+//               SizedBox(height: size.customHeight(context) * 0.018),
+
+//               if (appt.appointmentSlots != null) ...[
+//                 _buildSlotCard(context, size, appt.appointmentSlots!),
+//                 SizedBox(height: size.customHeight(context) * 0.018),
+//               ],
+
+//               if (appt.expertUsers != null) ...[
+//                 _buildExpertCard(context, size, appt.expertUsers!),
+//                 SizedBox(height: size.customHeight(context) * 0.018),
+//               ],
+
+//               if (appt.isCancelled) ...[
+//                 _buildCancellationCard(context, size, appt),
+//                 SizedBox(height: size.customHeight(context) * 0.018),
+//               ],
+
+//               _buildRecordsSection(context, size, appt),
+//             ]),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+
+//   // ── Header: payment badge ONLY for confirmed ───────────────
+//   Widget _buildHeaderBackground(
+//     BuildContext context, CustomSize size, {
+//     required String initials,
+//     required String childName,
+//     required String expertName,
+//     required String specialization,
+//     required String status,
+//     required bool isPaid,
+//     required _StatusMeta meta,
+//   }) {
+//     final isConfirmedStatus = status.toLowerCase() == 'confirmed';
+//     return Container(
+//       decoration: const BoxDecoration(
+//         gradient: LinearGradient(
+//           colors: [AppColors.primaryColor, AppColors.secondaryColor],
+//           begin: Alignment.topLeft,
+//           end: Alignment.bottomRight,
+//         ),
+//       ),
+//       child: SafeArea(
+//         child: Padding(
+//           padding: EdgeInsets.fromLTRB(
+//             size.customWidth(context) * 0.05,
+//             size.customHeight(context) * 0.07,
+//             size.customWidth(context) * 0.05,
+//             16,
+//           ),
+//           child: Column(
+//             mainAxisAlignment: MainAxisAlignment.end,
+//             children: [
+//               Row(
+//                 children: [
+//                   Container(
+//                     width: 68, height: 68,
+//                     decoration: BoxDecoration(
+//                       color: Colors.white.withOpacity(0.2),
+//                       borderRadius: BorderRadius.circular(20),
+//                       border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
+//                     ),
+//                     child: Center(
+//                       child: Text(
+//                         initials.isNotEmpty ? initials : 'C',
+//                         style: GoogleFonts.poppins(
+//                             color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+//                       ),
+//                     ),
+//                   ),
+//                   SizedBox(width: size.customWidth(context) * 0.04),
+//                   Expanded(
+//                     child: Column(
+//                       crossAxisAlignment: CrossAxisAlignment.start,
+//                       children: [
+//                         Text(
+//                           childName.isNotEmpty ? childName : 'Loading...',
+//                           style: GoogleFonts.poppins(
+//                               color: Colors.white,
+//                               fontSize: size.customWidth(context) * 0.048,
+//                               fontWeight: FontWeight.bold),
+//                         ),
+//                         const SizedBox(height: 2),
+//                         if (expertName.isNotEmpty)
+//                           Text(expertName,
+//                               style: GoogleFonts.poppins(
+//                                   color: Colors.white.withOpacity(0.9),
+//                                   fontSize: size.customWidth(context) * 0.033)),
+//                         if (specialization.isNotEmpty)
+//                           Text(specialization,
+//                               style: GoogleFonts.poppins(
+//                                   color: Colors.white.withOpacity(0.75),
+//                                   fontSize: size.customWidth(context) * 0.029)),
+//                         const SizedBox(height: 8),
+//                         Wrap(
+//                           spacing: 6, runSpacing: 4,
+//                           children: [
+//                             if (status.isNotEmpty)
+//                               Container(
+//                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+//                                 decoration: BoxDecoration(
+//                                   color: meta.color.withOpacity(0.25),
+//                                   borderRadius: BorderRadius.circular(20),
+//                                   border: Border.all(color: Colors.white.withOpacity(0.4)),
+//                                 ),
+//                                 child: Row(
+//                                   mainAxisSize: MainAxisSize.min,
+//                                   children: [
+//                                     Icon(meta.icon, color: Colors.white, size: 13),
+//                                     const SizedBox(width: 5),
+//                                     Text(meta.label,
+//                                         style: GoogleFonts.poppins(
+//                                             color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+//                                   ],
+//                                 ),
+//                               ),
+//                             // Payment badge — CONFIRMED only
+//                             if (isConfirmedStatus)
+//                               Container(
+//                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+//                                 decoration: BoxDecoration(
+//                                   color: isPaid
+//                                       ? AppColors.successColor.withOpacity(0.3)
+//                                       : AppColors.warningColor.withOpacity(0.3),
+//                                   borderRadius: BorderRadius.circular(20),
+//                                   border: Border.all(color: Colors.white.withOpacity(0.4)),
+//                                 ),
+//                                 child: Row(
+//                                   mainAxisSize: MainAxisSize.min,
+//                                   children: [
+//                                     Icon(
+//                                       isPaid ? Icons.check_circle_outline : Icons.warning_amber_rounded,
+//                                       color: Colors.white, size: 12,
+//                                     ),
+//                                     const SizedBox(width: 4),
+//                                     Text(
+//                                       isPaid ? 'Paid' : 'Unpaid',
+//                                       style: GoogleFonts.poppins(
+//                                           color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+//                                     ),
+//                                   ],
+//                                 ),
+//                               ),
+//                           ],
+//                         ),
+//                       ],
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ── Payment status card — Confirmed only ───────────────────
+//   Widget _buildPaymentStatusCard(BuildContext context, CustomSize size, MyAppointmentItem appt) {
+//     final isPaid = appt.isPaid;
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.045),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(18),
+//         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3))],
+//         border: Border.all(
+//           color: isPaid ? AppColors.successColor.withOpacity(0.3) : AppColors.warningColor.withOpacity(0.4),
+//           width: 1.5,
+//         ),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(children: [
+//             Container(
+//               padding: const EdgeInsets.all(8),
+//               decoration: BoxDecoration(
+//                   color: isPaid ? AppColors.successColor.withOpacity(0.1) : AppColors.warningColor.withOpacity(0.1),
+//                   borderRadius: BorderRadius.circular(10)),
+//               child: Icon(
+//                 isPaid ? Icons.check_circle_rounded : Icons.payment_rounded,
+//                 color: isPaid ? AppColors.successColor : AppColors.warningColor,
+//                 size: 18,
+//               ),
+//             ),
+//             const SizedBox(width: 10),
+//             Text('Payment Status',
+//                 style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimaryColor)),
+//           ]),
+//           SizedBox(height: size.customHeight(context) * 0.014),
+//           Divider(height: 1, color: AppColors.greyColor.withOpacity(0.15)),
+//           SizedBox(height: size.customHeight(context) * 0.012),
+//           _row(context, size, 'Amount',
+//               '${appt.currency} ${appt.feeCharged.toStringAsFixed(0)}', Icons.payments_outlined),
+//           Padding(
+//             padding: EdgeInsets.only(bottom: size.customHeight(context) * 0.01),
+//             child: Row(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Icon(isPaid ? Icons.circle : Icons.error_outline_rounded,
+//                     size: 14, color: isPaid ? AppColors.successColor : AppColors.warningColor),
+//                 const SizedBox(width: 10),
+//                 SizedBox(
+//                   width: size.customWidth(context) * 0.26,
+//                   child: Text('Status',
+//                       style: GoogleFonts.poppins(
+//                           fontSize: 12, color: AppColors.textSecondaryColor, fontWeight: FontWeight.w500)),
+//                 ),
+//                 Expanded(
+//                   child: Text(
+//                     isPaid ? 'Paid ✓' : 'Pending — patient has not paid yet',
+//                     style: GoogleFonts.poppins(
+//                         fontSize: 13, fontWeight: FontWeight.w600,
+//                         color: isPaid ? AppColors.successColor : AppColors.warningColor),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//           if (!isPaid) ...[
+//             SizedBox(height: size.customHeight(context) * 0.008),
+//             Container(
+//               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+//               decoration: BoxDecoration(
+//                 color: AppColors.warningColor.withOpacity(0.06),
+//                 borderRadius: BorderRadius.circular(10),
+//               ),
+//               child: Row(children: [
+//                 const Icon(Icons.info_outline_rounded, size: 14, color: AppColors.warningColor),
+//                 const SizedBox(width: 8),
+//                 Expanded(
+//                   child: Text(
+//                     'Note: Payment is still pending from the patient\'s side.',
+//                     style: GoogleFonts.poppins(fontSize: 11.5, color: AppColors.warningColor.withOpacity(0.9)),
+//                   ),
+//                 ),
+//               ]),
+//             ),
+//           ],
+//         ],
+//       ),
+//     );
+//   }
+
+//   // ── Meeting link card — Confirmed only ─────────────────────
+//   Widget _buildMeetLinkCard(BuildContext context, CustomSize size, String url) {
+//     return GestureDetector(
+//       onTap: () => _openUrl(url),
+//       child: Container(
+//         padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//         decoration: BoxDecoration(
+//           gradient: const LinearGradient(
+//             colors: [Color(0xFF2196F3), Color(0xFF1565C0)],
+//             begin: Alignment.topLeft, end: Alignment.bottomRight,
+//           ),
+//           borderRadius: BorderRadius.circular(18),
+//           boxShadow: [BoxShadow(color: const Color(0xFF2196F3).withOpacity(0.3), blurRadius: 14, offset: const Offset(0, 4))],
+//         ),
+//         child: Row(children: [
+//           Container(
+//             padding: const EdgeInsets.all(10),
+//             decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
+//             child: const Icon(Icons.videocam_rounded, color: Colors.white, size: 22),
+//           ),
+//           SizedBox(width: size.customWidth(context) * 0.035),
+//           Expanded(
+//             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//               Text('Join Meeting',
+//                   style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+//               Text('Tap to open in browser / Zoom',
+//                   style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.8), fontSize: 11)),
+//             ]),
+//           ),
+//           GestureDetector(
+//             onTap: () {
+//               Clipboard.setData(ClipboardData(text: url));
+//               Get.snackbar('Copied', 'Meeting link copied to clipboard',
+//                   snackPosition: SnackPosition.BOTTOM,
+//                   backgroundColor: AppColors.textPrimaryColor,
+//                   colorText: Colors.white,
+//                   margin: const EdgeInsets.all(16),
+//                   borderRadius: 12,
+//                   duration: const Duration(seconds: 2));
+//             },
+//             child: Container(
+//               padding: const EdgeInsets.all(8),
+//               decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+//               child: const Icon(Icons.copy_outlined, color: Colors.white, size: 17),
+//             ),
+//           ),
+//           const SizedBox(width: 8),
+//           const Icon(Icons.open_in_new_rounded, color: Colors.white, size: 20),
+//         ]),
+//       ),
+//     );
+//   }
+
+//   // ── Action buttons ─────────────────────────────────────────
+//   Widget _buildActionButtons(BuildContext context, CustomSize size, MyAppointmentItem appt) {
+//     final List<_ActionBtn> buttons = [];
+//     if (appt.isScheduled) {
+//       buttons.addAll([
+//         _ActionBtn(
+//           label: 'Confirm', icon: Icons.check_circle_outline_rounded, color: AppColors.primaryColor,
+//           onTap: () => _showConfirmDialog(context, appt),
+//         ),
+//         _ActionBtn(
+//           label: 'Cancel', icon: Icons.cancel_outlined, color: AppColors.errorColor,
+//           onTap: () => _showCancelDialog(context, appt.appointmentId),
+//         ),
+//         _ActionBtn(
+//           label: 'No Show', icon: Icons.person_off_outlined, color: AppColors.greyColor,
+//           onTap: () => _showNoShowDialog(context, appt.appointmentId),
+//         ),
+//       ]);
+//     } else if (appt.isConfirmed) {
+//       buttons.addAll([
+//         _ActionBtn(
+//           label: 'Complete', icon: Icons.task_alt_rounded, color: AppColors.successColor,
+//           // Complete: if unpaid show warning dialog first, if paid go straight to complete
+//           onTap: () => _showCompleteDialog(context, size, appt),
+//         ),
+//         _ActionBtn(
+//           label: 'Cancel', icon: Icons.cancel_outlined, color: AppColors.errorColor,
+//           onTap: () => _showCancelDialog(context, appt.appointmentId),
+//         ),
+//         _ActionBtn(
+//           label: 'No Show', icon: Icons.person_off_outlined, color: AppColors.greyColor,
+//           onTap: () => _showNoShowDialog(context, appt.appointmentId),
+//         ),
+//       ]);
+//     }
+//     if (buttons.isEmpty) return const SizedBox.shrink();
+//     return Row(
+//       children: buttons.map((b) {
+//         return Expanded(
+//           child: GestureDetector(
+//             onTap: b.onTap,
+//             child: Container(
+//               margin: const EdgeInsets.symmetric(horizontal: 4),
+//               padding: const EdgeInsets.symmetric(vertical: 14),
+//               decoration: BoxDecoration(
+//                 color: b.color.withOpacity(0.09),
+//                 borderRadius: BorderRadius.circular(16),
+//                 border: Border.all(color: b.color.withOpacity(0.35)),
+//               ),
+//               child: Column(mainAxisSize: MainAxisSize.min, children: [
+//                 Icon(b.icon, color: b.color, size: 22),
+//                 const SizedBox(height: 5),
+//                 Text(b.label,
+//                     style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: b.color)),
+//               ]),
+//             ),
+//           ),
+//         );
+//       }).toList(),
+//     );
+//   }
+
+//   Widget _buildInfoCard(BuildContext context, CustomSize size, MyAppointmentItem appt) {
+//     return _card(context, size,
+//         title: 'Appointment Details', icon: Icons.event_note_rounded, iconColor: AppColors.primaryColor,
+//         children: [
+//           _row(context, size, 'Date', appt.formattedDate, Icons.calendar_today_outlined),
+//           _row(context, size, 'Time', appt.formattedTime, Icons.access_time_rounded),
+//           _row(context, size, 'Duration', '${appt.durationMinutes} minutes', Icons.timer_outlined),
+//           _row(context, size, 'Mode',
+//               appt.bookedMode[0].toUpperCase() + appt.bookedMode.substring(1), _modeIcon(appt.bookedMode)),
+//           _row(context, size, 'Fee',
+//               '${appt.currency} ${appt.feeCharged.toStringAsFixed(0)}', Icons.payments_outlined),
+//           if (appt.meetLink != null && appt.meetLink!.isNotEmpty)
+//             _row(context, size, 'Meet Link', appt.meetLink!, Icons.link_rounded),
+//         ]);
+//   }
+
+//   Widget _buildSlotCard(BuildContext context, CustomSize size, AppointmentSlot slot) {
+//     return _card(context, size,
+//         title: 'Slot Information', icon: Icons.calendar_month_rounded, iconColor: AppColors.secondaryColor,
+//         children: [
+//           _row(context, size, 'Date', slot.slotDate, Icons.today_rounded),
+//           _row(context, size, 'Time', '${slot.formattedStart} – ${slot.formattedEnd}', Icons.schedule_rounded),
+//           _row(context, size, 'Mode',
+//               slot.mode.isNotEmpty ? slot.mode[0].toUpperCase() + slot.mode.substring(1) : slot.mode,
+//               _modeIcon(slot.mode)),
+//           if (slot.status != null)
+//             _row(context, size, 'Slot Status',
+//                 slot.status![0].toUpperCase() + slot.status!.substring(1), Icons.info_outline_rounded),
+//         ]);
+//   }
+
+//   Widget _buildExpertCard(BuildContext context, CustomSize size, AppointmentExpert expert) {
+//     return _card(context, size,
+//         title: 'Expert Information', icon: Icons.person_outline_rounded, iconColor: AppColors.accentColor,
+//         children: [
+//           _row(context, size, 'Name', expert.fullName, Icons.badge_outlined),
+//           _row(context, size, 'Specialization', expert.specialization, Icons.medical_information_outlined),
+//           if (expert.phone != null && expert.phone!.isNotEmpty)
+//             _row(context, size, 'Phone', expert.phone!, Icons.phone_outlined),
+//           if (expert.contactEmail != null && expert.contactEmail!.isNotEmpty)
+//             _row(context, size, 'Email', expert.contactEmail!, Icons.email_outlined),
+//         ]);
+//   }
+
+//   Widget _buildCancellationCard(BuildContext context, CustomSize size, MyAppointmentItem appt) {
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.045),
+//       decoration: BoxDecoration(
+//         color: AppColors.errorColor.withOpacity(0.05),
+//         borderRadius: BorderRadius.circular(18),
+//         border: Border.all(color: AppColors.errorColor.withOpacity(0.25)),
+//       ),
+//       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//         Row(children: [
+//           Container(
+//             padding: const EdgeInsets.all(7),
+//             decoration: BoxDecoration(color: AppColors.errorColor.withOpacity(0.12), borderRadius: BorderRadius.circular(9)),
+//             child: const Icon(Icons.cancel_outlined, color: AppColors.errorColor, size: 17),
+//           ),
+//           const SizedBox(width: 10),
+//           Text('Cancellation Info',
+//               style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.errorColor)),
+//         ]),
+//         const SizedBox(height: 14),
+//         if (appt.cancelledBy != null)
+//           _row(context, size, 'Cancelled By',
+//               appt.cancelledBy![0].toUpperCase() + appt.cancelledBy!.substring(1), Icons.person_outlined),
+//         if (appt.cancellationReason != null)
+//           _row(context, size, 'Reason', appt.cancellationReason!, Icons.info_outline_rounded),
+//         if (appt.cancelledAt != null)
+//           _row(context, size, 'Cancelled At', _formatDateTime(appt.cancelledAt!), Icons.schedule_rounded),
+//       ]),
+//     );
+//   }
+
+//   Widget _buildRecordsSection(BuildContext context, CustomSize size, MyAppointmentItem appt) {
+//     if (!appt.isCompleted) return const SizedBox.shrink();
+//     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+//         Row(children: [
+//           Container(width: 4, height: 20,
+//               decoration: BoxDecoration(color: AppColors.primaryColor, borderRadius: BorderRadius.circular(2))),
+//           const SizedBox(width: 10),
+//           Text('Session Records',
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.042, fontWeight: FontWeight.bold, color: AppColors.textPrimaryColor)),
+//         ]),
+//         GestureDetector(
+//           onTap: () { _c.clearRecordForm(); _openRecordSheet(context, size, appt.appointmentId); },
+//           child: Container(
+//             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+//             decoration: BoxDecoration(color: AppColors.primaryColor, borderRadius: BorderRadius.circular(10)),
+//             child: Row(mainAxisSize: MainAxisSize.min, children: [
+//               const Icon(Icons.add_rounded, color: Colors.white, size: 16),
+//               const SizedBox(width: 4),
+//               Text('Add Note', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
+//             ]),
+//           ),
+//         ),
+//       ]),
+//       SizedBox(height: size.customHeight(context) * 0.015),
+//       Obx(() {
+//         if (_c.isLoadingRecords.value) {
+//           return const Center(child: Padding(padding: EdgeInsets.all(30),
+//               child: CircularProgressIndicator(color: AppColors.primaryColor, strokeWidth: 2)));
+//         }
+//         if (_c.records.isEmpty) return _buildMissingNotesHighlight(context, size, appt);
+//         return Column(children: _c.records.map((r) => _buildRecordCard(context, size, r, appt)).toList());
+//       }),
+//     ]);
+//   }
+
+//   Widget _buildMissingNotesHighlight(BuildContext context, CustomSize size, MyAppointmentItem appt) {
+//     return GestureDetector(
+//       onTap: () { _c.clearRecordForm(); _openRecordSheet(context, size, appt.appointmentId); },
+//       child: Container(
+//         padding: EdgeInsets.all(size.customWidth(context) * 0.045),
+//         decoration: BoxDecoration(
+//           color: AppColors.warningColor.withOpacity(0.07),
+//           borderRadius: BorderRadius.circular(18),
+//           border: Border.all(color: AppColors.warningColor.withOpacity(0.5), width: 1.5),
+//         ),
+//         child: Row(children: [
+//           Container(
+//             padding: const EdgeInsets.all(10),
+//             decoration: BoxDecoration(color: AppColors.warningColor.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
+//             child: const Icon(Icons.warning_amber_rounded, color: AppColors.warningColor, size: 24),
+//           ),
+//           const SizedBox(width: 14),
+//           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//             Text('Session notes missing!',
+//                 style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.warningColor)),
+//             const SizedBox(height: 3),
+//             Text('Tap here to add session notes now.',
+//                 style: GoogleFonts.poppins(fontSize: 12, color: AppColors.warningColor.withOpacity(0.85))),
+//           ])),
+//           const SizedBox(width: 8),
+//           const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.warningColor),
+//         ]),
+//       ),
+//     );
+//   }
+
+//   Widget _buildRecordCard(BuildContext context, CustomSize size, AppointmentRecordItem record, MyAppointmentItem appt) {
+//     return Container(
+//       margin: EdgeInsets.only(bottom: size.customHeight(context) * 0.014),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(18),
+//         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3))],
+//       ),
+//       child: Padding(
+//         padding: EdgeInsets.all(size.customWidth(context) * 0.042),
+//         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+//             Row(children: [
+//               Container(
+//                 padding: const EdgeInsets.all(8),
+//                 decoration: BoxDecoration(color: AppColors.primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+//                 child: const Icon(Icons.description_outlined, color: AppColors.primaryColor, size: 18),
+//               ),
+//               const SizedBox(width: 10),
+//               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//                 Text('Session Note',
+//                     style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimaryColor)),
+//                 Text(record.formattedDate,
+//                     style: GoogleFonts.poppins(fontSize: 11, color: AppColors.textSecondaryColor)),
+//               ]),
+//             ]),
+//             GestureDetector(
+//               onTap: () { _c.populateRecordForm(record); _openRecordSheet(context, size, appt.appointmentId, editingRecord: record); },
+//               child: Container(
+//                 padding: const EdgeInsets.all(7),
+//                 decoration: BoxDecoration(color: AppColors.warningColor.withOpacity(0.1), borderRadius: BorderRadius.circular(9)),
+//                 child: const Icon(Icons.edit_outlined, color: AppColors.warningColor, size: 16),
+//               ),
+//             ),
+//           ]),
+//           SizedBox(height: size.customHeight(context) * 0.012),
+//           Divider(height: 1, color: AppColors.greyColor.withOpacity(0.15)),
+//           SizedBox(height: size.customHeight(context) * 0.012),
+//           _recordField('Notes', record.notes, Icons.notes_rounded),
+//           SizedBox(height: size.customHeight(context) * 0.01),
+//           _recordField('Therapy Plan', record.therapyPlan, Icons.health_and_safety_outlined),
+//           SizedBox(height: size.customHeight(context) * 0.01),
+//           _recordField('Progress Feedback', record.progressFeedback, Icons.trending_up_rounded),
+//           if (record.medication != null &&
+//               record.medication!['name'] != null &&
+//               record.medication!['name'].toString().toLowerCase() != 'none') ...[
+//             SizedBox(height: size.customHeight(context) * 0.01),
+//             _recordField(
+//                 'Medication',
+//                 '${record.medication!['name']}${record.medication!['dosage'] != null ? ' — ${record.medication!['dosage']}' : ''}',
+//                 Icons.medication_outlined),
+//           ],
+//         ]),
+//       ),
+//     );
+//   }
+
+//   Widget _recordField(String label, String value, IconData icon) {
+//     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//       Icon(icon, size: 14, color: AppColors.primaryColor.withOpacity(0.7)),
+//       const SizedBox(width: 8),
+//       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//         Text(label, style: GoogleFonts.poppins(fontSize: 11, color: AppColors.textSecondaryColor, fontWeight: FontWeight.w500)),
+//         const SizedBox(height: 2),
+//         Text(value, style: GoogleFonts.poppins(fontSize: 13, color: AppColors.textPrimaryColor)),
+//       ])),
+//     ]);
+//   }
+
+//   Widget _card(BuildContext context, CustomSize size, {
+//     required String title, required IconData icon, required Color iconColor, required List<Widget> children,
+//   }) {
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.045),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(18),
+//         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3))],
+//       ),
+//       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//         Row(children: [
+//           Container(
+//             padding: const EdgeInsets.all(8),
+//             decoration: BoxDecoration(color: iconColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+//             child: Icon(icon, color: iconColor, size: 18),
+//           ),
+//           const SizedBox(width: 10),
+//           Text(title, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimaryColor)),
+//         ]),
+//         SizedBox(height: size.customHeight(context) * 0.014),
+//         Divider(height: 1, color: AppColors.greyColor.withOpacity(0.15)),
+//         SizedBox(height: size.customHeight(context) * 0.012),
+//         ...children,
+//       ]),
+//     );
+//   }
+
+//   Widget _row(BuildContext context, CustomSize size, String label, String value, IconData icon) {
+//     return Padding(
+//       padding: EdgeInsets.only(bottom: size.customHeight(context) * 0.01),
+//       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//         Icon(icon, size: 14, color: AppColors.textSecondaryColor),
+//         const SizedBox(width: 10),
+//         SizedBox(
+//           width: size.customWidth(context) * 0.26,
+//           child: Text(label, style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondaryColor, fontWeight: FontWeight.w500)),
+//         ),
+//         Expanded(
+//           child: Text(value,
+//               style: GoogleFonts.poppins(fontSize: 13, color: AppColors.textPrimaryColor, fontWeight: FontWeight.w500),
+//               maxLines: 3, overflow: TextOverflow.ellipsis),
+//         ),
+//       ]),
+//     );
+//   }
+
+//   // ── Dialogs ────────────────────────────────────────────────
+
+//   void _showConfirmDialog(BuildContext context, MyAppointmentItem appt) {
+//     showDialog(
+//       context: context,
+//       barrierDismissible: false,
+//       builder: (_) => _ActionDialog(
+//         title: 'Confirm Appointment?',
+//         message: 'This will confirm the appointment for the patient.',
+//         confirmLabel: 'Yes, Confirm',
+//         confirmColor: AppColors.primaryColor,
+//         icon: Icons.check_circle_outline_rounded,
+//         onConfirm: () async => await _c.confirmAppointment(appt.appointmentId),
+//         onSuccess: () { _c.pendingTabIndex.value = 2; Navigator.pop(context); Get.back(); },
+//       ),
+//     );
+//   }
+
+//   // ── Complete: unpaid → warning dialog first; paid → direct ─
+//   void _showCompleteDialog(BuildContext context, CustomSize size, MyAppointmentItem appt) {
+//     if (appt.isPaymentPending) {
+//       showDialog(
+//         context: context,
+//         barrierDismissible: false,
+//         builder: (_) => _UnpaidCompleteDialog(
+//           appt: appt,
+//           onCompleteAnyway: () => _doComplete(context, size, appt),
+//         ),
+//       );
+//     } else {
+//       _doComplete(context, size, appt);
+//     }
+//   }
+
+//   void _doComplete(BuildContext context, CustomSize size, MyAppointmentItem appt) {
+//     showDialog(
+//       context: context,
+//       barrierDismissible: false,
+//       builder: (_) => _ActionDialog(
+//         title: 'Mark as Completed?',
+//         message: 'This will complete the appointment. You will be asked to add session notes next.',
+//         confirmLabel: 'Yes, Complete',
+//         confirmColor: AppColors.successColor,
+//         icon: Icons.task_alt_rounded,
+//         onConfirm: () async => await _c.completeAppointment(appt.appointmentId),
+//         onSuccess: () => _openPostCompleteNotesSheet(context, size, appt.appointmentId),
+//       ),
+//     );
+//   }
+
+//   void _openPostCompleteNotesSheet(BuildContext context, CustomSize size, String appointmentId) {
+//     _c.clearRecordForm();
+//     showModalBottomSheet(
+//       context: context, isScrollControlled: true, isDismissible: false,
+//       enableDrag: false, backgroundColor: Colors.transparent,
+//       builder: (_) => ConstrainedBox(
+//         constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.93),
+//         child: _PostCompleteNotesSheet(
+//           controller: _c, size: size, appointmentId: appointmentId,
+//           onDone: () { _c.pendingTabIndex.value = 3; Navigator.pop(context); Get.back(); },
+//         ),
+//       ),
+//     );
+//   }
+
+//   void _showCancelDialog(BuildContext context, String id) {
+//     showDialog(
+//       context: context, barrierDismissible: false,
+//       builder: (_) => _CancelDialog(
+//         id: id, controller: _c,
+//         onCancelled: () { _c.pendingTabIndex.value = 4; Navigator.pop(context); Get.back(); },
+//       ),
+//     );
+//   }
+
+//   void _showNoShowDialog(BuildContext context, String id) {
+//     showDialog(
+//       context: context, barrierDismissible: false,
+//       builder: (_) => _ActionDialog(
+//         title: 'Mark as No Show?',
+//         message: 'Patient did not attend the session. Mark as no-show?',
+//         confirmLabel: 'Mark No Show',
+//         confirmColor: AppColors.greyColor,
+//         icon: Icons.person_off_outlined,
+//         onConfirm: () async => await _c.markNoShow(id),
+//         onSuccess: () { _c.pendingTabIndex.value = 5; Navigator.pop(context); Get.back(); },
+//       ),
+//     );
+//   }
+
+//   void _openRecordSheet(BuildContext context, CustomSize size, String appointmentId,
+//       {AppointmentRecordItem? editingRecord}) {
+//     showModalBottomSheet(
+//       context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
+//       builder: (_) => ConstrainedBox(
+//         constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.93),
+//         child: _RecordFormSheet(
+//             controller: _c, size: size, appointmentId: appointmentId,
+//             editingRecord: editingRecord, onSaved: () {}),
+//       ),
+//     );
+//   }
+
+//   Widget _buildError() {
+//     return Scaffold(
+//       appBar: AppBar(
+//           backgroundColor: AppColors.whiteColor, elevation: 0, surfaceTintColor: Colors.transparent,
+//           leading: IconButton(
+//               icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimaryColor),
+//               onPressed: () => Get.back())),
+//       body: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+//         const Icon(Icons.error_outline_rounded, size: 60, color: AppColors.errorColor),
+//         const SizedBox(height: 16),
+//         Text('Appointment not found',
+//             style: GoogleFonts.poppins(fontSize: 16, color: AppColors.textPrimaryColor)),
+//         const SizedBox(height: 8),
+//         TextButton(
+//           onPressed: () => Get.back(),
+//           child: Text('Go Back', style: GoogleFonts.poppins(color: AppColors.primaryColor)),
+//         ),
+//       ])),
+//     );
+//   }
+
+//   String _formatDateTime(String raw) {
+//     try {
+//       final dt = DateTime.parse(raw).toLocal();
+//       const months = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+//       int h = dt.hour;
+//       final m = dt.minute.toString().padLeft(2, '0');
+//       final ampm = h >= 12 ? 'PM' : 'AM';
+//       if (h > 12) h -= 12;
+//       if (h == 0) h = 12;
+//       return '${dt.day} ${months[dt.month]} ${dt.year}, $h:$m $ampm';
+//     } catch (_) { return raw; }
+//   }
+
+//   _StatusMeta _statusMeta(String status) {
+//     switch (status.toLowerCase()) {
+//       case 'confirmed': return _StatusMeta(AppColors.primaryColor, 'Confirmed', Icons.check_circle_outlined);
+//       case 'completed': return _StatusMeta(AppColors.successColor, 'Completed', Icons.task_alt_rounded);
+//       case 'cancelled': return _StatusMeta(AppColors.errorColor, 'Cancelled', Icons.cancel_outlined);
+//       case 'no_show':   return _StatusMeta(AppColors.greyColor, 'No Show', Icons.person_off_outlined);
+//       default:          return _StatusMeta(AppColors.warningColor, 'Scheduled', Icons.schedule_rounded);
+//     }
+//   }
+
+//   IconData _modeIcon(String mode) {
+//     switch (mode.toLowerCase()) {
+//       case 'online':   return Icons.videocam_outlined;
+//       case 'physical': return Icons.location_on_outlined;
+//       default:         return Icons.swap_horiz_rounded;
+//     }
+//   }
+// }
+
+// // ── Data classes ───────────────────────────────────────────────
+// class _StatusMeta {
+//   final Color color;
+//   final String label;
+//   final IconData icon;
+//   _StatusMeta(this.color, this.label, this.icon);
+// }
+
+// class _ActionBtn {
+//   final String label;
+//   final IconData icon;
+//   final Color color;
+//   final VoidCallback onTap;
+//   _ActionBtn({required this.label, required this.icon, required this.color, required this.onTap});
+// }
+
+// // ══════════════════════════════════════════════════════════════
+// // Unpaid warning before completing (NEW)
+// // ══════════════════════════════════════════════════════════════
+// class _UnpaidCompleteDialog extends StatelessWidget {
+//   final MyAppointmentItem appt;
+//   final VoidCallback onCompleteAnyway;
+//   const _UnpaidCompleteDialog({required this.appt, required this.onCompleteAnyway});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return AlertDialog(
+//       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+//       contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+//       content: Column(mainAxisSize: MainAxisSize.min, children: [
+//         Container(
+//           padding: const EdgeInsets.all(16),
+//           decoration: BoxDecoration(color: AppColors.warningColor.withOpacity(0.12), shape: BoxShape.circle),
+//           child: const Icon(Icons.warning_amber_rounded, color: AppColors.warningColor, size: 36),
+//         ),
+//         const SizedBox(height: 16),
+//         Text('Payment Not Received',
+//             style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimaryColor),
+//             textAlign: TextAlign.center),
+//         const SizedBox(height: 10),
+//         Container(
+//           padding: const EdgeInsets.all(14),
+//           decoration: BoxDecoration(
+//             color: AppColors.warningColor.withOpacity(0.07),
+//             borderRadius: BorderRadius.circular(14),
+//             border: Border.all(color: AppColors.warningColor.withOpacity(0.35)),
+//           ),
+//           child: Column(children: [
+//             Row(children: [
+//               const Icon(Icons.payments_outlined, size: 15, color: AppColors.warningColor),
+//               const SizedBox(width: 8),
+//               Text('Amount due: ${appt.currency} ${appt.feeCharged.toStringAsFixed(0)}',
+//                   style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.warningColor)),
+//             ]),
+//             const SizedBox(height: 6),
+//             Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//               const Icon(Icons.info_outline_rounded, size: 14, color: AppColors.warningColor),
+//               const SizedBox(width: 8),
+//               Expanded(child: Text(
+//                 'The patient has not completed payment yet. Are you sure you want to mark this as complete?',
+//                 style: GoogleFonts.poppins(fontSize: 12, color: AppColors.warningColor.withOpacity(0.85)),
+//               )),
+//             ]),
+//           ]),
+//         ),
+//         const SizedBox(height: 22),
+//         Row(children: [
+//           Expanded(child: OutlinedButton(
+//             onPressed: () => Navigator.pop(context),
+//             style: OutlinedButton.styleFrom(
+//               foregroundColor: AppColors.textSecondaryColor,
+//               side: BorderSide(color: AppColors.greyColor.withOpacity(0.5)),
+//               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+//               padding: const EdgeInsets.symmetric(vertical: 13),
+//             ),
+//             child: Text('Cancel', style: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 13)),
+//           )),
+//           const SizedBox(width: 12),
+//           Expanded(child: ElevatedButton(
+//             onPressed: () { Navigator.pop(context); onCompleteAnyway(); },
+//             style: ElevatedButton.styleFrom(
+//               backgroundColor: AppColors.successColor,
+//               foregroundColor: Colors.white,
+//               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+//               padding: const EdgeInsets.symmetric(vertical: 13),
+//               elevation: 0,
+//             ),
+//             child: Text('Complete Anyway',
+//                 textAlign: TextAlign.center,
+//                 style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
+//           )),
+//         ]),
+//       ]),
+//     );
+//   }
+// }
+
+// // ══════════════════════════════════════════════════════════════
+// // Generic action confirm dialog
+// // ══════════════════════════════════════════════════════════════
+// class _ActionDialog extends StatefulWidget {
+//   final String title, message, confirmLabel;
+//   final Color confirmColor;
+//   final IconData icon;
+//   final Future<bool> Function() onConfirm;
+//   final VoidCallback? onSuccess;
+//   const _ActionDialog({required this.title, required this.message, required this.confirmLabel,
+//       required this.confirmColor, required this.icon, required this.onConfirm, this.onSuccess});
+//   @override
+//   State<_ActionDialog> createState() => _ActionDialogState();
+// }
+
+// class _ActionDialogState extends State<_ActionDialog> {
+//   bool _loading = false;
+//   @override
+//   Widget build(BuildContext context) {
+//     return AlertDialog(
+//       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+//       contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+//       content: Column(mainAxisSize: MainAxisSize.min, children: [
+//         Container(
+//           padding: const EdgeInsets.all(16),
+//           decoration: BoxDecoration(color: widget.confirmColor.withOpacity(0.1), shape: BoxShape.circle),
+//           child: Icon(widget.icon, color: widget.confirmColor, size: 34),
+//         ),
+//         const SizedBox(height: 16),
+//         Text(widget.title,
+//             style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimaryColor),
+//             textAlign: TextAlign.center),
+//         const SizedBox(height: 8),
+//         Text(widget.message,
+//             style: GoogleFonts.poppins(fontSize: 13, color: AppColors.textSecondaryColor),
+//             textAlign: TextAlign.center),
+//         const SizedBox(height: 24),
+//         Row(children: [
+//           Expanded(child: OutlinedButton(
+//             onPressed: _loading ? null : () => Navigator.pop(context),
+//             style: OutlinedButton.styleFrom(
+//               foregroundColor: AppColors.textSecondaryColor,
+//               side: BorderSide(color: AppColors.greyColor.withOpacity(0.5)),
+//               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+//               padding: const EdgeInsets.symmetric(vertical: 13),
+//             ),
+//             child: Text('Cancel', style: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 13)),
+//           )),
+//           const SizedBox(width: 12),
+//           Expanded(child: ElevatedButton(
+//             onPressed: _loading ? null : () async {
+//               setState(() => _loading = true);
+//               final ok = await widget.onConfirm();
+//               if (!mounted) return;
+//               setState(() => _loading = false);
+//               if (ok) {
+//                 Navigator.pop(context);
+//                 WidgetsBinding.instance.addPostFrameCallback((_) => widget.onSuccess?.call());
+//               }
+//             },
+//             style: ElevatedButton.styleFrom(
+//               backgroundColor: widget.confirmColor,
+//               foregroundColor: Colors.white,
+//               disabledBackgroundColor: widget.confirmColor.withOpacity(0.5),
+//               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+//               padding: const EdgeInsets.symmetric(vertical: 13),
+//               elevation: 0,
+//             ),
+//             child: _loading
+//                 ? const SizedBox(width: 18, height: 18,
+//                     child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+//                 : Text(widget.confirmLabel,
+//                     style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
+//           )),
+//         ]),
+//       ]),
+//     );
+//   }
+// }
+
+// // ══════════════════════════════════════════════════════════════
+// // Cancel dialog
+// // ══════════════════════════════════════════════════════════════
+// class _CancelDialog extends StatefulWidget {
+//   final String id;
+//   final MyAppointmentController controller;
+//   final VoidCallback? onCancelled;
+//   const _CancelDialog({required this.id, required this.controller, this.onCancelled});
+//   @override
+//   State<_CancelDialog> createState() => _CancelDialogState();
+// }
+
+// class _CancelDialogState extends State<_CancelDialog> {
+//   final _reasonCtrl = TextEditingController();
+//   bool _loading = false;
+//   @override
+//   void dispose() { _reasonCtrl.dispose(); super.dispose(); }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return AlertDialog(
+//       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+//       contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+//       content: Column(mainAxisSize: MainAxisSize.min, children: [
+//         Container(
+//           padding: const EdgeInsets.all(16),
+//           decoration: BoxDecoration(color: AppColors.errorColor.withOpacity(0.1), shape: BoxShape.circle),
+//           child: const Icon(Icons.cancel_outlined, color: AppColors.errorColor, size: 34),
+//         ),
+//         const SizedBox(height: 16),
+//         Text('Cancel Appointment',
+//             style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimaryColor),
+//             textAlign: TextAlign.center),
+//         const SizedBox(height: 6),
+//         Text('Please provide a cancellation reason.',
+//             style: GoogleFonts.poppins(fontSize: 13, color: AppColors.textSecondaryColor),
+//             textAlign: TextAlign.center),
+//         const SizedBox(height: 18),
+//         TextField(
+//           controller: _reasonCtrl, maxLines: 3,
+//           style: GoogleFonts.poppins(fontSize: 13, color: AppColors.textPrimaryColor),
+//           decoration: InputDecoration(
+//             hintText: 'Enter reason here...',
+//             hintStyle: GoogleFonts.poppins(fontSize: 13, color: AppColors.textSecondaryColor.withOpacity(0.6)),
+//             filled: true, fillColor: AppColors.lightGreyColor,
+//             contentPadding: const EdgeInsets.all(14),
+//             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+//             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+//                 borderSide: BorderSide(color: AppColors.greyColor.withOpacity(0.25))),
+//             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+//                 borderSide: const BorderSide(color: AppColors.primaryColor, width: 1.5)),
+//           ),
+//         ),
+//         const SizedBox(height: 20),
+//         Row(children: [
+//           Expanded(child: OutlinedButton(
+//             onPressed: _loading ? null : () => Navigator.pop(context),
+//             style: OutlinedButton.styleFrom(
+//               foregroundColor: AppColors.textSecondaryColor,
+//               side: BorderSide(color: AppColors.greyColor.withOpacity(0.5)),
+//               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+//               padding: const EdgeInsets.symmetric(vertical: 13),
+//             ),
+//             child: Text('Back', style: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 13)),
+//           )),
+//           const SizedBox(width: 12),
+//           Expanded(child: ElevatedButton(
+//             onPressed: _loading ? null : () async {
+//               final reason = _reasonCtrl.text.trim();
+//               if (reason.isEmpty) {
+//                 Get.snackbar('Required', 'Please enter a cancellation reason',
+//                     snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.warningColor,
+//                     colorText: Colors.white, margin: const EdgeInsets.all(16), borderRadius: 12);
+//                 return;
+//               }
+//               setState(() => _loading = true);
+//               final ok = await widget.controller.cancelAppointment(widget.id, reason);
+//               if (mounted) setState(() => _loading = false);
+//               if (ok) widget.onCancelled?.call();
+//             },
+//             style: ElevatedButton.styleFrom(
+//               backgroundColor: AppColors.errorColor, foregroundColor: Colors.white,
+//               disabledBackgroundColor: AppColors.errorColor.withOpacity(0.5),
+//               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+//               padding: const EdgeInsets.symmetric(vertical: 13), elevation: 0,
+//             ),
+//             child: _loading
+//                 ? const SizedBox(width: 18, height: 18,
+//                     child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+//                 : Text('Cancel Appt.', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
+//           )),
+//         ]),
+//       ]),
+//     );
+//   }
+// }
+
+// // ══════════════════════════════════════════════════════════════
+// // Post-complete notes sheet
+// // ══════════════════════════════════════════════════════════════
+// class _PostCompleteNotesSheet extends StatefulWidget {
+//   final MyAppointmentController controller;
+//   final CustomSize size;
+//   final String appointmentId;
+//   final VoidCallback? onDone;
+//   const _PostCompleteNotesSheet({required this.controller, required this.size, required this.appointmentId, this.onDone});
+//   @override
+//   State<_PostCompleteNotesSheet> createState() => _PostCompleteNotesSheetState();
+// }
+
+// class _PostCompleteNotesSheetState extends State<_PostCompleteNotesSheet> {
+//   final _formKey = GlobalKey<FormState>();
+//   bool _saving = false;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = widget.size;
+//     return Container(
+//       decoration: const BoxDecoration(color: AppColors.whiteColor, borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+//       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+//       child: SingleChildScrollView(
+//         physics: const ClampingScrollPhysics(),
+//         padding: EdgeInsets.fromLTRB(size.customWidth(context) * 0.05, 20, size.customWidth(context) * 0.05, size.customHeight(context) * 0.04),
+//         child: Form(
+//           key: _formKey,
+//           child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+//             Center(child: Container(width: 44, height: 4,
+//                 decoration: BoxDecoration(color: AppColors.greyColor.withOpacity(0.3), borderRadius: BorderRadius.circular(2)))),
+//             const SizedBox(height: 20),
+//             Container(
+//               padding: const EdgeInsets.all(16),
+//               decoration: BoxDecoration(
+//                 color: AppColors.successColor.withOpacity(0.08), borderRadius: BorderRadius.circular(16),
+//                 border: Border.all(color: AppColors.successColor.withOpacity(0.3)),
+//               ),
+//               child: Row(children: [
+//                 Container(
+//                   padding: const EdgeInsets.all(10),
+//                   decoration: BoxDecoration(color: AppColors.successColor.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
+//                   child: const Icon(Icons.task_alt_rounded, color: AppColors.successColor, size: 24),
+//                 ),
+//                 const SizedBox(width: 14),
+//                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//                   Text('Appointment Completed!',
+//                       style: GoogleFonts.poppins(fontSize: size.customWidth(context) * 0.04, fontWeight: FontWeight.bold, color: AppColors.successColor)),
+//                   Text('Please add session notes below.',
+//                       style: GoogleFonts.poppins(fontSize: size.customWidth(context) * 0.03, color: AppColors.successColor.withOpacity(0.8))),
+//                 ])),
+//               ]),
+//             ),
+//             SizedBox(height: size.customHeight(context) * 0.018),
+//             _field(context, size, 'Session Notes *', 'What happened during the session?', Icons.notes_rounded, widget.controller.notesCtrl, maxLines: 3, required: true),
+//             SizedBox(height: size.customHeight(context) * 0.016),
+//             _field(context, size, 'Therapy Plan *', 'Plan for upcoming sessions...', Icons.health_and_safety_outlined, widget.controller.therapyPlanCtrl, maxLines: 3, required: true),
+//             SizedBox(height: size.customHeight(context) * 0.016),
+//             _field(context, size, 'Progress Feedback *', 'How did the patient progress?', Icons.trending_up_rounded, widget.controller.progressFeedbackCtrl, maxLines: 2, required: true),
+//             SizedBox(height: size.customHeight(context) * 0.016),
+//             Text('Medication (optional)', style: GoogleFonts.poppins(fontSize: size.customWidth(context) * 0.034, fontWeight: FontWeight.w600, color: AppColors.textPrimaryColor)),
+//             const SizedBox(height: 8),
+//             Row(children: [
+//               Expanded(child: _field(context, size, 'Name', 'e.g. None', Icons.medication_outlined, widget.controller.medicationNameCtrl, maxLines: 1, required: false)),
+//               SizedBox(width: size.customWidth(context) * 0.03),
+//               Expanded(child: _field(context, size, 'Dosage', 'e.g. 5mg', Icons.science_outlined, widget.controller.medicationDosageCtrl, maxLines: 1, required: false)),
+//             ]),
+//             SizedBox(height: size.customHeight(context) * 0.028),
+//             SizedBox(
+//               width: double.infinity,
+//               child: ElevatedButton.icon(
+//                 onPressed: _saving ? null : () async {
+//                   if (!_formKey.currentState!.validate()) return;
+//                   setState(() => _saving = true);
+//                   final ok = await widget.controller.createRecord(widget.appointmentId);
+//                   if (mounted) setState(() => _saving = false);
+//                   if (ok) widget.onDone?.call();
+//                 },
+//                 icon: _saving ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+//                     : const Icon(Icons.save_rounded, size: 20),
+//                 label: Text(_saving ? 'Saving...' : 'Save Session Notes',
+//                     style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: size.customWidth(context) * 0.038)),
+//                 style: ElevatedButton.styleFrom(
+//                   backgroundColor: AppColors.successColor, foregroundColor: Colors.white,
+//                   disabledBackgroundColor: AppColors.successColor.withOpacity(0.4),
+//                   padding: EdgeInsets.symmetric(vertical: size.customHeight(context) * 0.02),
+//                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 2,
+//                 ),
+//               ),
+//             ),
+//             SizedBox(height: size.customHeight(context) * 0.008),
+//             SizedBox(
+//               width: double.infinity,
+//               child: TextButton(
+//                 onPressed: _saving ? null : () => widget.onDone?.call(),
+//                 child: Text('Skip for now (add later from session records)',
+//                     style: GoogleFonts.poppins(color: AppColors.textSecondaryColor, fontWeight: FontWeight.w500, fontSize: 12),
+//                     textAlign: TextAlign.center),
+//               ),
+//             ),
+//           ]),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _field(BuildContext context, CustomSize size, String label, String hint, IconData icon,
+//       TextEditingController ctrl, {int maxLines = 1, bool required = true}) {
+//     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//       Text(label, style: GoogleFonts.poppins(fontSize: size.customWidth(context) * 0.033, fontWeight: FontWeight.w600, color: AppColors.textPrimaryColor)),
+//       const SizedBox(height: 6),
+//       TextFormField(
+//         controller: ctrl, maxLines: maxLines,
+//         validator: required ? (v) => (v == null || v.trim().isEmpty) ? '$label is required' : null : null,
+//         style: GoogleFonts.poppins(fontSize: 13, color: AppColors.textPrimaryColor),
+//         decoration: InputDecoration(
+//           hintText: hint,
+//           hintStyle: GoogleFonts.poppins(fontSize: 13, color: AppColors.textSecondaryColor.withOpacity(0.6)),
+//           prefixIcon: maxLines == 1 ? Icon(icon, color: AppColors.primaryColor, size: 19) : null,
+//           filled: true, fillColor: AppColors.lightGreyColor,
+//           contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: maxLines > 1 ? 14 : 0),
+//           border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+//           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.greyColor.withOpacity(0.2))),
+//           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primaryColor, width: 1.5)),
+//           errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.errorColor, width: 1)),
+//           focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.errorColor, width: 1.5)),
+//         ),
+//       ),
+//     ]);
+//   }
+// }
+
+// // ══════════════════════════════════════════════════════════════
+// // Record form sheet (Add / Edit)
+// // ══════════════════════════════════════════════════════════════
+// class _RecordFormSheet extends StatefulWidget {
+//   final MyAppointmentController controller;
+//   final CustomSize size;
+//   final String appointmentId;
+//   final AppointmentRecordItem? editingRecord;
+//   final VoidCallback? onSaved;
+//   const _RecordFormSheet({required this.controller, required this.size, required this.appointmentId, this.editingRecord, this.onSaved});
+//   @override
+//   State<_RecordFormSheet> createState() => _RecordFormSheetState();
+// }
+
+// class _RecordFormSheetState extends State<_RecordFormSheet> {
+//   final _formKey = GlobalKey<FormState>();
+//   bool _saving = false;
+//   bool get _isEdit => widget.editingRecord != null;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = widget.size;
+//     return Container(
+//       decoration: const BoxDecoration(color: AppColors.whiteColor, borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+//       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+//       child: SingleChildScrollView(
+//         physics: const ClampingScrollPhysics(),
+//         padding: EdgeInsets.fromLTRB(size.customWidth(context) * 0.05, 20, size.customWidth(context) * 0.05, size.customHeight(context) * 0.04),
+//         child: Form(
+//           key: _formKey,
+//           child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+//             Center(child: Container(width: 44, height: 4,
+//                 decoration: BoxDecoration(color: AppColors.greyColor.withOpacity(0.3), borderRadius: BorderRadius.circular(2)))),
+//             const SizedBox(height: 20),
+//             Row(children: [
+//               Container(
+//                 padding: const EdgeInsets.all(10),
+//                 decoration: BoxDecoration(color: AppColors.primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+//                 child: Icon(_isEdit ? Icons.edit_note_rounded : Icons.note_add_rounded, color: AppColors.primaryColor, size: 22),
+//               ),
+//               const SizedBox(width: 12),
+//               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//                 Text(_isEdit ? 'Update Session Record' : 'New Session Record',
+//                     style: GoogleFonts.poppins(fontSize: size.customWidth(context) * 0.042, fontWeight: FontWeight.bold, color: AppColors.textPrimaryColor)),
+//                 Text(_isEdit ? 'Edit session details' : 'Document this session',
+//                     style: GoogleFonts.poppins(fontSize: size.customWidth(context) * 0.031, color: AppColors.textSecondaryColor)),
+//               ])),
+//             ]),
+//             SizedBox(height: size.customHeight(context) * 0.022),
+//             _field(context, size, 'Session Notes *', 'Describe what happened during the session...', Icons.notes_rounded, widget.controller.notesCtrl, maxLines: 3, required: true),
+//             SizedBox(height: size.customHeight(context) * 0.016),
+//             _field(context, size, 'Therapy Plan *', 'Outline the plan for next sessions...', Icons.health_and_safety_outlined, widget.controller.therapyPlanCtrl, maxLines: 3, required: true),
+//             SizedBox(height: size.customHeight(context) * 0.016),
+//             _field(context, size, 'Progress Feedback *', 'How did the patient progress?', Icons.trending_up_rounded, widget.controller.progressFeedbackCtrl, maxLines: 2, required: true),
+//             SizedBox(height: size.customHeight(context) * 0.016),
+//             Text('Medication (optional)', style: GoogleFonts.poppins(fontSize: size.customWidth(context) * 0.034, fontWeight: FontWeight.w600, color: AppColors.textPrimaryColor)),
+//             const SizedBox(height: 8),
+//             Row(children: [
+//               Expanded(child: _field(context, size, 'Name', 'e.g. None', Icons.medication_outlined, widget.controller.medicationNameCtrl, maxLines: 1, required: false)),
+//               SizedBox(width: size.customWidth(context) * 0.03),
+//               Expanded(child: _field(context, size, 'Dosage', 'e.g. 5mg', Icons.science_outlined, widget.controller.medicationDosageCtrl, maxLines: 1, required: false)),
+//             ]),
+//             SizedBox(height: size.customHeight(context) * 0.028),
+//             SizedBox(
+//               width: double.infinity,
+//               child: ElevatedButton(
+//                 onPressed: _saving ? null : () async {
+//                   if (!_formKey.currentState!.validate()) return;
+//                   setState(() => _saving = true);
+//                   bool ok;
+//                   if (_isEdit) {
+//                     ok = await widget.controller.updateRecord(widget.appointmentId, widget.editingRecord!.recordId);
+//                   } else {
+//                     ok = await widget.controller.createRecord(widget.appointmentId);
+//                   }
+//                   if (mounted) setState(() => _saving = false);
+//                   if (ok && context.mounted) { widget.onSaved?.call(); Navigator.pop(context); }
+//                 },
+//                 style: ElevatedButton.styleFrom(
+//                   backgroundColor: AppColors.primaryColor, foregroundColor: Colors.white,
+//                   disabledBackgroundColor: AppColors.primaryColor.withOpacity(0.4),
+//                   padding: EdgeInsets.symmetric(vertical: size.customHeight(context) * 0.02),
+//                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 2,
+//                 ),
+//                 child: _saving
+//                     ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+//                     : Text(_isEdit ? 'Update Record' : 'Save Record',
+//                         style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: size.customWidth(context) * 0.038)),
+//               ),
+//             ),
+//           ]),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _field(BuildContext context, CustomSize size, String label, String hint, IconData icon,
+//       TextEditingController ctrl, {int maxLines = 1, bool required = true}) {
+//     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+//       Text(label, style: GoogleFonts.poppins(fontSize: size.customWidth(context) * 0.033, fontWeight: FontWeight.w600, color: AppColors.textPrimaryColor)),
+//       const SizedBox(height: 6),
+//       TextFormField(
+//         controller: ctrl, maxLines: maxLines,
+//         validator: required ? (v) => (v == null || v.trim().isEmpty) ? '$label is required' : null : null,
+//         style: GoogleFonts.poppins(fontSize: 13, color: AppColors.textPrimaryColor),
+//         decoration: InputDecoration(
+//           hintText: hint,
+//           hintStyle: GoogleFonts.poppins(fontSize: 13, color: AppColors.textSecondaryColor.withOpacity(0.6)),
+//           prefixIcon: maxLines == 1 ? Icon(icon, color: AppColors.primaryColor, size: 19) : null,
+//           filled: true, fillColor: AppColors.lightGreyColor,
+//           contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: maxLines > 1 ? 14 : 0),
+//           border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+//           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.greyColor.withOpacity(0.2))),
+//           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primaryColor, width: 1.5)),
+//           errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.errorColor, width: 1)),
+//           focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.errorColor, width: 1.5)),
+//         ),
+//       ),
+//     ]);
+//   }
+// }
+
 // lib/view/expert/appointments/appointment_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17697,7 +19201,6 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
       buttons.addAll([
         _ActionBtn(
           label: 'Complete', icon: Icons.task_alt_rounded, color: AppColors.successColor,
-          // Complete: if unpaid show warning dialog first, if paid go straight to complete
           onTap: () => _showCompleteDialog(context, size, appt),
         ),
         _ActionBtn(
@@ -18014,7 +19517,6 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
     );
   }
 
-  // ── Complete: unpaid → warning dialog first; paid → direct ─
   void _showCompleteDialog(BuildContext context, CustomSize size, MyAppointmentItem appt) {
     if (appt.isPaymentPending) {
       showDialog(
@@ -18139,7 +19641,7 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
       case 'completed': return _StatusMeta(AppColors.successColor, 'Completed', Icons.task_alt_rounded);
       case 'cancelled': return _StatusMeta(AppColors.errorColor, 'Cancelled', Icons.cancel_outlined);
       case 'no_show':   return _StatusMeta(AppColors.greyColor, 'No Show', Icons.person_off_outlined);
-      default:          return _StatusMeta(AppColors.warningColor, 'Scheduled', Icons.schedule_rounded);
+      default:          return _StatusMeta(AppColors.warningColor, 'Requested', Icons.schedule_rounded); // ← label only
     }
   }
 
@@ -18169,7 +19671,7 @@ class _ActionBtn {
 }
 
 // ══════════════════════════════════════════════════════════════
-// Unpaid warning before completing (NEW)
+// Unpaid warning before completing
 // ══════════════════════════════════════════════════════════════
 class _UnpaidCompleteDialog extends StatelessWidget {
   final MyAppointmentItem appt;

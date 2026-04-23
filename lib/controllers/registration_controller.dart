@@ -524,6 +524,344 @@
 // }
 
 
+// // lib/app/controllers/registration_controller.dart
+// import 'dart:io';
+// import 'package:get/get.dart';
+// import 'package:flutter/material.dart';
+// import '../routes/app_routes.dart';
+// import '../services/signup_service.dart';
+// import '../services/expert_signup_service.dart';
+// import '../services/storage_service.dart';
+// import '../services/shared_preferences_service.dart';
+// import '../models/signup_response.dart';
+// import '../models/expert_signup_response.dart';
+
+// class RegistrationController extends GetxController {
+//   final SignupService _signupService = SignupService();
+//   final ExpertSignupService _expertSignupService = ExpertSignupService();
+//   final StorageService _storageService = StorageService();
+  
+//   // Common user data
+//   RxString role = ''.obs;
+//   RxString firstName = ''.obs;
+//   RxString lastName = ''.obs;
+//   RxString fullName = ''.obs;
+//   RxString phoneNumber = ''.obs;
+//   RxString email = ''.obs;
+//   RxString password = ''.obs;
+  
+//   // Expert-specific data
+//   RxString specialization = ''.obs;
+//   RxString organization = ''.obs;
+//   RxString contactEmail = ''.obs;
+//   RxString pmdcNumber = ''.obs;
+//   RxString profileImagePublicId = ''.obs;
+//   RxString degreeDocPublicId = ''.obs;
+//   RxString certificateDocPublicId = ''.obs;
+  
+//   // Loading state
+//   RxBool isLoading = false.obs;
+
+//   void setRole(String userRole) {
+//     role.value = userRole;
+//   }
+
+//   void setNames(String first, String last) {
+//     firstName.value = first;
+//     lastName.value = last;
+//     fullName.value = '$first $last';
+//   }
+
+//   void setPhoneNumber(String phone) {
+//     phoneNumber.value = phone;
+//   }
+
+//   void setEmailAndPassword(String userEmail, String userPassword) {
+//     email.value = userEmail;
+//     password.value = userPassword;
+//   }
+
+//   void setExpertInfo({
+//     required String specialization,
+//     required String organization,
+//     required String contactEmail,
+//     required String pmdcNumber,
+//   }) {
+//     this.specialization.value = specialization;
+//     this.organization.value = organization;
+//     this.contactEmail.value = contactEmail;
+//     this.pmdcNumber.value = pmdcNumber;
+//   }
+
+//   Future<bool> uploadExpertDocuments({
+//     required File profileImage,
+//     required File degreeDoc,
+//     required File certificateDoc,
+//   }) async {
+//     try {
+//       isLoading.value = true;
+
+//       // Upload profile image
+//       Get.snackbar(
+//         'Uploading',
+//         'Uploading profile image...',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: Colors.blue,
+//         colorText: Colors.white,
+//         duration: const Duration(seconds: 2),
+//       );
+
+//       final profileImageId = await _storageService.uploadImage(profileImage);
+//       if (profileImageId == null) {
+//         isLoading.value = false;
+//         Get.snackbar(
+//           'Upload Failed',
+//           'Failed to upload profile image',
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.red,
+//           colorText: Colors.white,
+//         );
+//         return false;
+//       }
+//       profileImagePublicId.value = profileImageId;
+
+//       // Upload degree document
+//       Get.snackbar(
+//         'Uploading',
+//         'Uploading degree document...',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: Colors.blue,
+//         colorText: Colors.white,
+//         duration: const Duration(seconds: 2),
+//       );
+
+//       final degreeDocId = await _storageService.uploadDocument(degreeDoc);
+//       if (degreeDocId == null) {
+//         isLoading.value = false;
+//         Get.snackbar(
+//           'Upload Failed',
+//           'Failed to upload degree document. Only PDF files are allowed.',
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.red,
+//           colorText: Colors.white,
+//         );
+//         return false;
+//       }
+//       degreeDocPublicId.value = degreeDocId;
+
+//       // Upload certificate document
+//       Get.snackbar(
+//         'Uploading',
+//         'Uploading certificate document...',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: Colors.blue,
+//         colorText: Colors.white,
+//         duration: const Duration(seconds: 2),
+//       );
+
+//       final certificateDocId = await _storageService.uploadDocument(certificateDoc);
+//       if (certificateDocId == null) {
+//         isLoading.value = false;
+//         Get.snackbar(
+//           'Upload Failed',
+//           'Failed to upload certificate document. Only PDF files are allowed.',
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.red,
+//           colorText: Colors.white,
+//         );
+//         return false;
+//       }
+//       certificateDocPublicId.value = certificateDocId;
+
+//       isLoading.value = false;
+
+//       Get.snackbar(
+//         'Success',
+//         'All documents uploaded successfully',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: Colors.green,
+//         colorText: Colors.white,
+//       );
+
+//       return true;
+//     } catch (e) {
+//       isLoading.value = false;
+//       Get.snackbar(
+//         'Error',
+//         'An error occurred while uploading documents: ${e.toString()}',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: Colors.red,
+//         colorText: Colors.white,
+//       );
+//       return false;
+//     }
+//   }
+
+//   Future<void> registerUser() async {
+//     // Check role and call appropriate signup method
+//     if (role.value == 'expert') {
+//       await _registerExpert();
+//     } else {
+//       await _registerParent();
+//     }
+//   }
+
+//   Future<void> _registerParent() async {
+//     // Validate data
+//     if (email.value.isEmpty || 
+//         password.value.isEmpty || 
+//         fullName.value.isEmpty || 
+//         phoneNumber.value.isEmpty || 
+//         role.value.isEmpty) {
+//       Get.snackbar(
+//         'Error',
+//         'Please fill all required fields',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: Colors.red,
+//         colorText: Colors.white,
+//       );
+//       return;
+//     }
+
+//     try {
+//       isLoading.value = true;
+
+//       // Call parent signup API
+//       final SignupResponse response = await _signupService.signup(
+//         email: email.value,
+//         password: password.value,
+//         fullName: fullName.value,
+//         phone: phoneNumber.value,
+//         role: role.value,
+//       );
+
+//       isLoading.value = false;
+
+//       if (response.status && response.data != null) {
+//         // Data is already saved in the service
+        
+//         // Show success message
+//         Get.snackbar(
+//           'Success',
+//           response.message,
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.green,
+//           colorText: Colors.white,
+//           duration: const Duration(seconds: 3),
+//         );
+
+//         // Navigate to parent home
+//         debugPrint('✅ Navigating to Parent Home');
+//         Get.offAllNamed(AppRoutes.home);
+//       } else {
+        
+//         Get.snackbar(
+//           'Signup Failed',
+//           response.message,
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.red,
+//           colorText: Colors.white,
+//           duration: const Duration(seconds: 4),
+//         );
+//       }
+//     } catch (e) {
+//       isLoading.value = false;
+//       debugPrint('❌ Parent Registration Error: $e');
+//       Get.snackbar(
+//         'Error',
+//         'An unexpected error occurred: ${e.toString()}',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: Colors.red,
+//         colorText: Colors.white,
+//       );
+//     }
+//   }
+
+//   Future<void> _registerExpert() async {
+//     // Validate expert data
+//     if (email.value.isEmpty || 
+//         password.value.isEmpty || 
+//         fullName.value.isEmpty || 
+//         phoneNumber.value.isEmpty ||
+//         specialization.value.isEmpty ||
+//         organization.value.isEmpty ||
+//         contactEmail.value.isEmpty ||
+//         pmdcNumber.value.isEmpty ||
+//         profileImagePublicId.value.isEmpty ||
+//         degreeDocPublicId.value.isEmpty ||
+//         certificateDocPublicId.value.isEmpty) {
+//       Get.snackbar(
+//         'Error',
+//         'Please fill all required fields and upload all documents',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: Colors.red,
+//         colorText: Colors.white,
+//       );
+//       return;
+//     }
+
+//     try {
+//       isLoading.value = true;
+
+//       // Call expert signup API
+//       final ExpertSignupResponse response = await _expertSignupService.signup(
+//         email: email.value,
+//         password: password.value,
+//         fullName: fullName.value,
+//         phone: phoneNumber.value,
+//         specialization: specialization.value,
+//         organization: organization.value,
+//         contactEmail: contactEmail.value,
+//         pmdcNumber: pmdcNumber.value,
+//         profileImagePublicId: profileImagePublicId.value,
+//         degreeDocPublicId: degreeDocPublicId.value,
+//         certificateDocPublicId: certificateDocPublicId.value,
+//       );
+
+//       isLoading.value = false;
+
+//       if (response.status && response.data != null) {
+//         // Data is already saved in the service
+        
+//         // Show success message with approval info
+//         Get.snackbar(
+//           'Registration Successful',
+//           '${response.message}\nYou will be notified once your account is approved.',
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.green,
+//           colorText: Colors.white,
+//           duration: const Duration(seconds: 5),
+//         );
+
+//         // Navigate to login screen (experts need approval before accessing the app)
+//         debugPrint('✅ Expert registered, navigating to Login (pending approval)');
+//         Get.offAllNamed(AppRoutes.login);
+//       } else {
+//         // Show error message
+//         Get.snackbar(
+//           'Signup Failed',
+//           response.message,
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.red,
+//           colorText: Colors.white,
+//           duration: const Duration(seconds: 4),
+//         );
+//       }
+//     } catch (e) {
+//       isLoading.value = false;
+//       debugPrint('❌ Expert Registration Error: $e');
+//       Get.snackbar(
+//         'Error',
+//         'An unexpected error occurred: ${e.toString()}',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: Colors.red,
+//         colorText: Colors.white,
+//       );
+//     }
+//   }
+// }
+
+
 // lib/app/controllers/registration_controller.dart
 import 'dart:io';
 import 'package:get/get.dart';
@@ -535,12 +873,13 @@ import '../services/storage_service.dart';
 import '../services/shared_preferences_service.dart';
 import '../models/signup_response.dart';
 import '../models/expert_signup_response.dart';
+import 'package:speechspectrum/controllers/pre_signup_child_controller.dart';
 
 class RegistrationController extends GetxController {
   final SignupService _signupService = SignupService();
   final ExpertSignupService _expertSignupService = ExpertSignupService();
   final StorageService _storageService = StorageService();
-  
+
   // Common user data
   RxString role = ''.obs;
   RxString firstName = ''.obs;
@@ -549,7 +888,7 @@ class RegistrationController extends GetxController {
   RxString phoneNumber = ''.obs;
   RxString email = ''.obs;
   RxString password = ''.obs;
-  
+
   // Expert-specific data
   RxString specialization = ''.obs;
   RxString organization = ''.obs;
@@ -558,7 +897,7 @@ class RegistrationController extends GetxController {
   RxString profileImagePublicId = ''.obs;
   RxString degreeDocPublicId = ''.obs;
   RxString certificateDocPublicId = ''.obs;
-  
+
   // Loading state
   RxBool isLoading = false.obs;
 
@@ -601,7 +940,6 @@ class RegistrationController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Upload profile image
       Get.snackbar(
         'Uploading',
         'Uploading profile image...',
@@ -625,7 +963,6 @@ class RegistrationController extends GetxController {
       }
       profileImagePublicId.value = profileImageId;
 
-      // Upload degree document
       Get.snackbar(
         'Uploading',
         'Uploading degree document...',
@@ -649,7 +986,6 @@ class RegistrationController extends GetxController {
       }
       degreeDocPublicId.value = degreeDocId;
 
-      // Upload certificate document
       Get.snackbar(
         'Uploading',
         'Uploading certificate document...',
@@ -659,7 +995,8 @@ class RegistrationController extends GetxController {
         duration: const Duration(seconds: 2),
       );
 
-      final certificateDocId = await _storageService.uploadDocument(certificateDoc);
+      final certificateDocId =
+          await _storageService.uploadDocument(certificateDoc);
       if (certificateDocId == null) {
         isLoading.value = false;
         Get.snackbar(
@@ -698,7 +1035,6 @@ class RegistrationController extends GetxController {
   }
 
   Future<void> registerUser() async {
-    // Check role and call appropriate signup method
     if (role.value == 'expert') {
       await _registerExpert();
     } else {
@@ -706,12 +1042,17 @@ class RegistrationController extends GetxController {
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // PARENT REGISTRATION
+  // Step 1: Call signup API → get token
+  // Step 2: Immediately call create-child API for each pre-filled child
+  // Step 3: Navigate to home
+  // ─────────────────────────────────────────────────────────────────────────
   Future<void> _registerParent() async {
-    // Validate data
-    if (email.value.isEmpty || 
-        password.value.isEmpty || 
-        fullName.value.isEmpty || 
-        phoneNumber.value.isEmpty || 
+    if (email.value.isEmpty ||
+        password.value.isEmpty ||
+        fullName.value.isEmpty ||
+        phoneNumber.value.isEmpty ||
         role.value.isEmpty) {
       Get.snackbar(
         'Error',
@@ -726,7 +1067,8 @@ class RegistrationController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Call parent signup API
+      // ── STEP 1: Signup ──────────────────────────────────────────────────
+      debugPrint('📝 Step 1: Signing up parent...');
       final SignupResponse response = await _signupService.signup(
         email: email.value,
         password: password.value,
@@ -735,26 +1077,8 @@ class RegistrationController extends GetxController {
         role: role.value,
       );
 
-      isLoading.value = false;
-
-      if (response.status && response.data != null) {
-        // Data is already saved in the service
-        
-        // Show success message
-        Get.snackbar(
-          'Success',
-          response.message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
-
-        // Navigate to parent home
-        debugPrint('✅ Navigating to Parent Home');
-        Get.offAllNamed(AppRoutes.home);
-      } else {
-        
+      if (!response.status || response.data == null) {
+        isLoading.value = false;
         Get.snackbar(
           'Signup Failed',
           response.message,
@@ -763,7 +1087,59 @@ class RegistrationController extends GetxController {
           colorText: Colors.white,
           duration: const Duration(seconds: 4),
         );
+        return;
       }
+
+      // Extract the fresh access token from signup response
+      final String freshToken = response.data!.session.accessToken;
+      debugPrint('✅ Step 1 done — token obtained');
+
+      // ── STEP 2: Create children with fresh token ────────────────────────
+      // Check if PreSignupChildController is registered
+      if (Get.isRegistered<PreSignupChildController>()) {
+        final childCtrl = Get.find<PreSignupChildController>();
+        if (childCtrl.childCount.value > 0) {
+          debugPrint(
+              '👶 Step 2: Creating ${childCtrl.childCount.value} child(ren)...');
+
+          // Show progress snackbar
+          Get.snackbar(
+            'Creating profiles...',
+            'Setting up your children\'s profiles',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.blue,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3),
+          );
+
+          final childrenCreated =
+              await childCtrl.createAllChildren(freshToken);
+
+          if (childrenCreated) {
+            debugPrint('✅ Step 2 done — all children created');
+          } else {
+            // Children creation failed partially — still navigate to home
+            // User can add children manually later
+            debugPrint(
+                '⚠️ Step 2 partial failure — navigating to home anyway');
+          }
+        }
+      }
+
+      isLoading.value = false;
+
+      // ── STEP 3: Navigate to home ────────────────────────────────────────
+      Get.snackbar(
+        'Welcome!',
+        response.message,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+
+      debugPrint('✅ Step 3: Navigating to Parent Home');
+      Get.offAllNamed(AppRoutes.home);
     } catch (e) {
       isLoading.value = false;
       debugPrint('❌ Parent Registration Error: $e');
@@ -777,11 +1153,13 @@ class RegistrationController extends GetxController {
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // EXPERT REGISTRATION — unchanged
+  // ─────────────────────────────────────────────────────────────────────────
   Future<void> _registerExpert() async {
-    // Validate expert data
-    if (email.value.isEmpty || 
-        password.value.isEmpty || 
-        fullName.value.isEmpty || 
+    if (email.value.isEmpty ||
+        password.value.isEmpty ||
+        fullName.value.isEmpty ||
         phoneNumber.value.isEmpty ||
         specialization.value.isEmpty ||
         organization.value.isEmpty ||
@@ -803,7 +1181,6 @@ class RegistrationController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Call expert signup API
       final ExpertSignupResponse response = await _expertSignupService.signup(
         email: email.value,
         password: password.value,
@@ -821,9 +1198,6 @@ class RegistrationController extends GetxController {
       isLoading.value = false;
 
       if (response.status && response.data != null) {
-        // Data is already saved in the service
-        
-        // Show success message with approval info
         Get.snackbar(
           'Registration Successful',
           '${response.message}\nYou will be notified once your account is approved.',
@@ -833,11 +1207,10 @@ class RegistrationController extends GetxController {
           duration: const Duration(seconds: 5),
         );
 
-        // Navigate to login screen (experts need approval before accessing the app)
-        debugPrint('✅ Expert registered, navigating to Login (pending approval)');
+        debugPrint(
+            '✅ Expert registered, navigating to Login (pending approval)');
         Get.offAllNamed(AppRoutes.login);
       } else {
-        // Show error message
         Get.snackbar(
           'Signup Failed',
           response.message,

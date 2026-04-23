@@ -1,3 +1,527 @@
+// // // lib/view/experts/expert_detail_screen.dart
+// // import 'package:flutter/material.dart';
+// // import 'package:get/get.dart';
+// // import 'package:google_fonts/google_fonts.dart';
+// // import 'package:speechspectrum/constants/app_colors.dart';
+// // import 'package:speechspectrum/constants/custom_size.dart';
+// // import 'package:speechspectrum/controllers/expert_controller.dart';
+// // import 'package:url_launcher/url_launcher.dart';
+
+// // class ExpertDetailScreen extends StatefulWidget {
+// //   const ExpertDetailScreen({super.key});
+
+// //   @override
+// //   State<ExpertDetailScreen> createState() => _ExpertDetailScreenState();
+// // }
+
+// // class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
+// //   late final ExpertController controller;
+// //   late final expert;
+// //   String? childId;
+// //   String? childName;
+
+// //   @override
+// //   void initState() {
+// //     super.initState();
+
+// //     final args = Get.arguments as Map<String, dynamic>;
+// //     expert = args['expert'];
+// //     childId = args['childId'];
+// //     childName = args['childName'];
+
+// //     // Get or create controller
+// //     if (Get.isRegistered<ExpertController>()) {
+// //       controller = Get.find<ExpertController>();
+// //     } else {
+// //       controller = Get.put(ExpertController());
+// //     }
+// //   }
+
+// //   @override
+// //   Widget build(BuildContext context) {
+// //     final size = CustomSize();
+
+// //     return Scaffold(
+// //       backgroundColor: AppColors.lightGreyColor,
+// //       body: CustomScrollView(
+// //         slivers: [
+// //           // App Bar with Expert Header
+// //           SliverAppBar(
+// //             expandedHeight: MediaQuery.of(context).size.height * 0.35,
+// //             pinned: true,
+// //             elevation: 0,
+// //             backgroundColor: AppColors.primaryColor,
+// //             flexibleSpace: FlexibleSpaceBar(
+// //               background: _buildHeader(context),
+// //             ),
+// //             leading: IconButton(
+// //               icon: const Icon(Icons.arrow_back, color: AppColors.whiteColor),
+// //               onPressed: () => Get.back(),
+// //             ),
+// //           ),
+
+// //           // Expert Details
+// //           SliverToBoxAdapter(
+// //             child: Padding(
+// //               padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+// //               child: Column(
+// //                 children: [
+// //                   _buildInfoCard(context),
+// //                   SizedBox(height: size.customHeight(context) * 0.02),
+// //                   _buildContactCard(context),
+// //                   if (childId != null) ...[
+// //                     SizedBox(height: size.customHeight(context) * 0.02),
+// //                     _buildConsultButton(context),
+// //                   ],
+// //                   SizedBox(height: size.customHeight(context) * 0.03),
+// //                 ],
+// //               ),
+// //             ),
+// //           ),
+// //         ],
+// //       ),
+// //     );
+// //   }
+
+// //   Widget _buildHeader(BuildContext context) {
+// //     final size = CustomSize();
+
+// //     return Container(
+// //       decoration: const BoxDecoration(
+// //         gradient: LinearGradient(
+// //           colors: [AppColors.primaryColor, AppColors.secondaryColor],
+// //           begin: Alignment.topLeft,
+// //           end: Alignment.bottomRight,
+// //         ),
+// //       ),
+// //       child: SafeArea(
+// //         child: Padding(
+// //           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+// //           child: Column(
+// //             mainAxisAlignment: MainAxisAlignment.center,
+// //             children: [
+// //               Container(
+// //                 width: 100,
+// //                 height: 100,
+// //                 decoration: BoxDecoration(
+// //                   color: AppColors.whiteColor,
+// //                   shape: BoxShape.circle,
+// //                   boxShadow: [
+// //                     BoxShadow(
+// //                       color: Colors.black.withOpacity(0.2),
+// //                       blurRadius: 20,
+// //                       offset: const Offset(0, 10),
+// //                     ),
+// //                   ],
+// //                 ),
+// //                 child: Center(
+// //                   child: Text(
+// //                     expert.getInitials(),
+// //                     style: GoogleFonts.poppins(
+// //                       color: AppColors.primaryColor,
+// //                       fontSize: 40,
+// //                       fontWeight: FontWeight.bold,
+// //                     ),
+// //                   ),
+// //                 ),
+// //               ),
+// //               SizedBox(height: size.customHeight(context) * 0.02),
+// //               Text(
+// //                 expert.fullName,
+// //                 style: GoogleFonts.poppins(
+// //                   color: AppColors.whiteColor,
+// //                   fontSize: size.customWidth(context) * 0.06,
+// //                   fontWeight: FontWeight.bold,
+// //                   letterSpacing: 0.5,
+// //                 ),
+// //                 textAlign: TextAlign.center,
+// //               ),
+// //               SizedBox(height: size.customHeight(context) * 0.008),
+// //               Container(
+// //                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+// //                 decoration: BoxDecoration(
+// //                   color: AppColors.whiteColor.withOpacity(0.2),
+// //                   borderRadius: BorderRadius.circular(20),
+// //                 ),
+// //                 child: Text(
+// //                   expert.specialization,
+// //                   style: GoogleFonts.poppins(
+// //                     color: AppColors.whiteColor,
+// //                     fontSize: size.customWidth(context) * 0.038,
+// //                     fontWeight: FontWeight.w500,
+// //                   ),
+// //                 ),
+// //               ),
+// //             ],
+// //           ),
+// //         ),
+// //       ),
+// //     );
+// //   }
+
+// //   Widget _buildInfoCard(BuildContext context) {
+// //     final size = CustomSize();
+
+// //     return Container(
+// //       padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+// //       decoration: BoxDecoration(
+// //         color: AppColors.whiteColor,
+// //         borderRadius: BorderRadius.circular(20),
+// //         boxShadow: [
+// //           BoxShadow(
+// //             color: Colors.black.withOpacity(0.06),
+// //             blurRadius: 15,
+// //             offset: const Offset(0, 4),
+// //           ),
+// //         ],
+// //       ),
+// //       child: Column(
+// //         crossAxisAlignment: CrossAxisAlignment.start,
+// //         children: [
+// //           Row(
+// //             children: [
+// //               Container(
+// //                 padding: const EdgeInsets.all(8),
+// //                 decoration: BoxDecoration(
+// //                   color: AppColors.primaryColor.withOpacity(0.1),
+// //                   borderRadius: BorderRadius.circular(10),
+// //                 ),
+// //                 child: const Icon(Icons.info_outline, color: AppColors.primaryColor, size: 20),
+// //               ),
+// //               const SizedBox(width: 12),
+// //               Text(
+// //                 'Professional Information',
+// //                 style: GoogleFonts.poppins(
+// //                   fontSize: 16,
+// //                   fontWeight: FontWeight.bold,
+// //                   color: AppColors.textPrimaryColor,
+// //                 ),
+// //               ),
+// //             ],
+// //           ),
+// //           const SizedBox(height: 20),
+// //           _buildInfoRow(context, 'Organization', expert.organization, Icons.business_outlined),
+// //           _buildInfoRow(context, 'PMDC Number', expert.pmdcNumber, Icons.badge_outlined),
+// //           _buildInfoRow(context, 'Status', expert.approvalStatus.toUpperCase(), Icons.verified_outlined),
+// //           _buildInfoRow(context, 'Member Since', expert.getFormattedDate(), Icons.calendar_today_outlined, isLast: true),
+// //         ],
+// //       ),
+// //     );
+// //   }
+
+// //   Widget _buildContactCard(BuildContext context) {
+// //     final size = CustomSize();
+
+// //     return Container(
+// //       padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+// //       decoration: BoxDecoration(
+// //         color: AppColors.whiteColor,
+// //         borderRadius: BorderRadius.circular(20),
+// //         boxShadow: [
+// //           BoxShadow(
+// //             color: Colors.black.withOpacity(0.06),
+// //             blurRadius: 15,
+// //             offset: const Offset(0, 4),
+// //           ),
+// //         ],
+// //       ),
+// //       child: Column(
+// //         crossAxisAlignment: CrossAxisAlignment.start,
+// //         children: [
+// //           Row(
+// //             children: [
+// //               Container(
+// //                 padding: const EdgeInsets.all(8),
+// //                 decoration: BoxDecoration(
+// //                   color: AppColors.accentColor.withOpacity(0.1),
+// //                   borderRadius: BorderRadius.circular(10),
+// //                 ),
+// //                 child: const Icon(Icons.contact_phone_outlined, color: AppColors.accentColor, size: 20),
+// //               ),
+// //               const SizedBox(width: 12),
+// //               Text(
+// //                 'Contact Information',
+// //                 style: GoogleFonts.poppins(
+// //                   fontSize: 16,
+// //                   fontWeight: FontWeight.bold,
+// //                   color: AppColors.textPrimaryColor,
+// //                 ),
+// //               ),
+// //             ],
+// //           ),
+// //           const SizedBox(height: 20),
+// //           _buildContactRow(context, 'Email', expert.contactEmail, Icons.email_outlined, () {
+// //             _launchEmail(expert.contactEmail);
+// //           }),
+// //           _buildContactRow(context, 'Phone', expert.phone, Icons.phone_outlined, () {
+// //             _launchPhone(expert.phone);
+// //           }, isLast: true),
+// //         ],
+// //       ),
+// //     );
+// //   }
+
+// //   Widget _buildInfoRow(BuildContext context, String label, String value, IconData icon, {bool isLast = false}) {
+// //     final size = CustomSize();
+
+// //     return Column(
+// //       children: [
+// //         Padding(
+// //           padding: EdgeInsets.symmetric(vertical: size.customHeight(context) * 0.01),
+// //           child: Row(
+// //             children: [
+// //               Container(
+// //                 padding: const EdgeInsets.all(8),
+// //                 decoration: BoxDecoration(
+// //                   color: AppColors.primaryColor.withOpacity(0.1),
+// //                   borderRadius: BorderRadius.circular(8),
+// //                 ),
+// //                 child: Icon(icon, size: 20, color: AppColors.primaryColor),
+// //               ),
+// //               const SizedBox(width: 12),
+// //               Expanded(
+// //                 child: Column(
+// //                   crossAxisAlignment: CrossAxisAlignment.start,
+// //                   children: [
+// //                     Text(
+// //                       label,
+// //                       style: GoogleFonts.poppins(
+// //                         fontSize: size.customWidth(context) * 0.032,
+// //                         color: AppColors.textSecondaryColor,
+// //                       ),
+// //                     ),
+// //                     Text(
+// //                       value,
+// //                       style: GoogleFonts.poppins(
+// //                         fontSize: size.customWidth(context) * 0.038,
+// //                         fontWeight: FontWeight.w600,
+// //                         color: AppColors.textPrimaryColor,
+// //                       ),
+// //                     ),
+// //                   ],
+// //                 ),
+// //               ),
+// //             ],
+// //           ),
+// //         ),
+// //         if (!isLast) Divider(color: AppColors.greyColor.withOpacity(0.2)),
+// //       ],
+// //     );
+// //   }
+
+// //   Widget _buildContactRow(BuildContext context, String label, String value, IconData icon, VoidCallback onTap, {bool isLast = false}) {
+// //     final size = CustomSize();
+
+// //     return Column(
+// //       children: [
+// //         InkWell(
+// //           onTap: onTap,
+// //           borderRadius: BorderRadius.circular(12),
+// //           child: Padding(
+// //             padding: EdgeInsets.symmetric(vertical: size.customHeight(context) * 0.01),
+// //             child: Row(
+// //               children: [
+// //                 Container(
+// //                   padding: const EdgeInsets.all(8),
+// //                   decoration: BoxDecoration(
+// //                     color: AppColors.accentColor.withOpacity(0.1),
+// //                     borderRadius: BorderRadius.circular(8),
+// //                   ),
+// //                   child: Icon(icon, size: 20, color: AppColors.accentColor),
+// //                 ),
+// //                 const SizedBox(width: 12),
+// //                 Expanded(
+// //                   child: Column(
+// //                     crossAxisAlignment: CrossAxisAlignment.start,
+// //                     children: [
+// //                       Text(
+// //                         label,
+// //                         style: GoogleFonts.poppins(
+// //                           fontSize: size.customWidth(context) * 0.032,
+// //                           color: AppColors.textSecondaryColor,
+// //                         ),
+// //                       ),
+// //                       Text(
+// //                         value,
+// //                         style: GoogleFonts.poppins(
+// //                           fontSize: size.customWidth(context) * 0.038,
+// //                           fontWeight: FontWeight.w600,
+// //                           color: AppColors.accentColor,
+// //                         ),
+// //                       ),
+// //                     ],
+// //                   ),
+// //                 ),
+// //                 Icon(
+// //                   Icons.launch,
+// //                   size: 18,
+// //                   color: AppColors.accentColor,
+// //                 ),
+// //               ],
+// //             ),
+// //           ),
+// //         ),
+// //         if (!isLast) Divider(color: AppColors.greyColor.withOpacity(0.2)),
+// //       ],
+// //     );
+// //   }
+
+// //   Widget _buildConsultButton(BuildContext context) {
+// //     final size = CustomSize();
+
+// //     return Obx(() => SizedBox(
+// //           width: double.infinity,
+// //           height: size.customHeight(context) * 0.06,
+// //           child: ElevatedButton(
+// //             onPressed: controller.isRequesting.value
+// //                 ? null
+// //                 : () => _showConsultDialog(context),
+// //             style: ElevatedButton.styleFrom(
+// //               backgroundColor: AppColors.primaryColor,
+// //               shape: RoundedRectangleBorder(
+// //                 borderRadius: BorderRadius.circular(15),
+// //               ),
+// //               elevation: 0,
+// //             ),
+// //             child: controller.isRequesting.value
+// //                 ? const SizedBox(
+// //                     width: 24,
+// //                     height: 24,
+// //                     child: CircularProgressIndicator(
+// //                       color: AppColors.whiteColor,
+// //                       strokeWidth: 2,
+// //                     ),
+// //                   )
+// //                 : Row(
+// //                     mainAxisAlignment: MainAxisAlignment.center,
+// //                     children: [
+// //                       const Icon(Icons.medical_services_outlined, color: AppColors.whiteColor),
+// //                       const SizedBox(width: 12),
+// //                       Text(
+// //                         'Request Consultation',
+// //                         style: GoogleFonts.poppins(
+// //                           color: AppColors.whiteColor,
+// //                           fontSize: size.customWidth(context) * 0.042,
+// //                           fontWeight: FontWeight.w600,
+// //                         ),
+// //                       ),
+// //                     ],
+// //                   ),
+// //           ),
+// //         ));
+// //   }
+
+// //   void _showConsultDialog(BuildContext context) {
+// //     final size = CustomSize();
+
+// //     Get.dialog(
+// //       Dialog(
+// //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+// //         child: Container(
+// //           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+// //           child: Column(
+// //             mainAxisSize: MainAxisSize.min,
+// //             children: [
+// //               Container(
+// //                 width: 80,
+// //                 height: 80,
+// //                 decoration: BoxDecoration(
+// //                   color: AppColors.primaryColor.withOpacity(0.1),
+// //                   shape: BoxShape.circle,
+// //                 ),
+// //                 child: const Icon(Icons.medical_services_outlined, color: AppColors.primaryColor, size: 45),
+// //               ),
+// //               SizedBox(height: size.customHeight(context) * 0.025),
+// //               Text(
+// //                 'Request Consultation',
+// //                 style: GoogleFonts.poppins(
+// //                   fontWeight: FontWeight.bold,
+// //                   fontSize: size.customWidth(context) * 0.05,
+// //                   color: AppColors.textPrimaryColor,
+// //                 ),
+// //               ),
+// //               SizedBox(height: size.customHeight(context) * 0.015),
+// //               Text(
+// //                 'Do you want to request a consultation with ${expert.fullName} for $childName?',
+// //                 textAlign: TextAlign.center,
+// //                 style: GoogleFonts.poppins(
+// //                   fontSize: size.customWidth(context) * 0.038,
+// //                   color: AppColors.textSecondaryColor,
+// //                   height: 1.4,
+// //                 ),
+// //               ),
+// //               SizedBox(height: size.customHeight(context) * 0.03),
+// //               Row(
+// //                 children: [
+// //                   Expanded(
+// //                     child: OutlinedButton(
+// //                       onPressed: () => Get.back(),
+// //                       style: OutlinedButton.styleFrom(
+// //                         padding: EdgeInsets.symmetric(vertical: size.customHeight(context) * 0.015),
+// //                         side: BorderSide(color: AppColors.greyColor.withOpacity(0.5)),
+// //                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+// //                       ),
+// //                       child: Text('Cancel', style: GoogleFonts.poppins(color: AppColors.textSecondaryColor, fontWeight: FontWeight.w600)),
+// //                     ),
+// //                   ),
+// //                   SizedBox(width: size.customWidth(context) * 0.03),
+// //                   Expanded(
+// //                     child: Obx(() => ElevatedButton(
+// //                           onPressed: controller.isRequesting.value
+// //                               ? null
+// //                               : () async {
+// //                                   final success = await controller.requestConsultation(
+// //                                     expertId: expert.expertId,
+// //                                     childId: childId!,
+// //                                   );
+// //                                   if (success) {
+// //                                     Get.back(); // Close detail screen
+// //                                   }
+// //                                 },
+// //                           style: ElevatedButton.styleFrom(
+// //                             backgroundColor: AppColors.primaryColor,
+// //                             padding: EdgeInsets.symmetric(vertical: size.customHeight(context) * 0.015),
+// //                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+// //                           ),
+// //                           child: controller.isRequesting.value
+// //                               ? const SizedBox(
+// //                                   width: 20,
+// //                                   height: 20,
+// //                                   child: CircularProgressIndicator(color: AppColors.whiteColor, strokeWidth: 2),
+// //                                 )
+// //                               : Text('Request', style: GoogleFonts.poppins(color: AppColors.whiteColor, fontWeight: FontWeight.w600)),
+// //                         )),
+// //                   ),
+// //                 ],
+// //               ),
+// //             ],
+// //           ),
+// //         ),
+// //       ),
+// //     );
+// //   }
+
+// //   void _launchEmail(String email) async {
+// //     final Uri emailUri = Uri(
+// //       scheme: 'mailto',
+// //       path: email,
+// //     );
+// //     if (await canLaunchUrl(emailUri)) {
+// //       await launchUrl(emailUri);
+// //     }
+// //   }
+
+// //   void _launchPhone(String phone) async {
+// //     final Uri phoneUri = Uri(
+// //       scheme: 'tel',
+// //       path: phone,
+// //     );
+// //     if (await canLaunchUrl(phoneUri)) {
+// //       await launchUrl(phoneUri);
+// //     }
+// //   }
+// // }
+
 // // lib/view/experts/expert_detail_screen.dart
 // import 'package:flutter/material.dart';
 // import 'package:get/get.dart';
@@ -5,6 +529,7 @@
 // import 'package:speechspectrum/constants/app_colors.dart';
 // import 'package:speechspectrum/constants/custom_size.dart';
 // import 'package:speechspectrum/controllers/expert_controller.dart';
+// import 'package:speechspectrum/routes/app_routes.dart';
 // import 'package:url_launcher/url_launcher.dart';
 
 // class ExpertDetailScreen extends StatefulWidget {
@@ -29,7 +554,6 @@
 //     childId = args['childId'];
 //     childName = args['childName'];
 
-//     // Get or create controller
 //     if (Get.isRegistered<ExpertController>()) {
 //       controller = Get.find<ExpertController>();
 //     } else {
@@ -45,7 +569,6 @@
 //       backgroundColor: AppColors.lightGreyColor,
 //       body: CustomScrollView(
 //         slivers: [
-//           // App Bar with Expert Header
 //           SliverAppBar(
 //             expandedHeight: MediaQuery.of(context).size.height * 0.35,
 //             pinned: true,
@@ -60,7 +583,6 @@
 //             ),
 //           ),
 
-//           // Expert Details
 //           SliverToBoxAdapter(
 //             child: Padding(
 //               padding: EdgeInsets.all(size.customWidth(context) * 0.05),
@@ -69,9 +591,10 @@
 //                   _buildInfoCard(context),
 //                   SizedBox(height: size.customHeight(context) * 0.02),
 //                   _buildContactCard(context),
-//                   if (childId != null) ...[
+//                   // Show booking button only when childId is available
+//                   if (childId != null && childId!.isNotEmpty) ...[
 //                     SizedBox(height: size.customHeight(context) * 0.02),
-//                     _buildConsultButton(context),
+//                     _buildBookingButton(context),
 //                   ],
 //                   SizedBox(height: size.customHeight(context) * 0.03),
 //                 ],
@@ -138,7 +661,8 @@
 //               ),
 //               SizedBox(height: size.customHeight(context) * 0.008),
 //               Container(
-//                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+//                 padding:
+//                     const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
 //                 decoration: BoxDecoration(
 //                   color: AppColors.whiteColor.withOpacity(0.2),
 //                   borderRadius: BorderRadius.circular(20),
@@ -186,7 +710,8 @@
 //                   color: AppColors.primaryColor.withOpacity(0.1),
 //                   borderRadius: BorderRadius.circular(10),
 //                 ),
-//                 child: const Icon(Icons.info_outline, color: AppColors.primaryColor, size: 20),
+//                 child: const Icon(Icons.info_outline,
+//                     color: AppColors.primaryColor, size: 20),
 //               ),
 //               const SizedBox(width: 12),
 //               Text(
@@ -200,10 +725,21 @@
 //             ],
 //           ),
 //           const SizedBox(height: 20),
-//           _buildInfoRow(context, 'Organization', expert.organization, Icons.business_outlined),
-//           _buildInfoRow(context, 'PMDC Number', expert.pmdcNumber, Icons.badge_outlined),
-//           _buildInfoRow(context, 'Status', expert.approvalStatus.toUpperCase(), Icons.verified_outlined),
-//           _buildInfoRow(context, 'Member Since', expert.getFormattedDate(), Icons.calendar_today_outlined, isLast: true),
+//           _buildInfoRow(context, 'Organization', expert.organization,
+//               Icons.business_outlined),
+//           _buildInfoRow(context, 'PMDC Number', expert.pmdcNumber,
+//               Icons.badge_outlined),
+//           _buildInfoRow(
+//               context,
+//               'Status',
+//               expert.approvalStatus.toUpperCase(),
+//               Icons.verified_outlined),
+//           _buildInfoRow(
+//               context,
+//               'Member Since',
+//               expert.getFormattedDate(),
+//               Icons.calendar_today_outlined,
+//               isLast: true),
 //         ],
 //       ),
 //     );
@@ -236,7 +772,8 @@
 //                   color: AppColors.accentColor.withOpacity(0.1),
 //                   borderRadius: BorderRadius.circular(10),
 //                 ),
-//                 child: const Icon(Icons.contact_phone_outlined, color: AppColors.accentColor, size: 20),
+//                 child: const Icon(Icons.contact_phone_outlined,
+//                     color: AppColors.accentColor, size: 20),
 //               ),
 //               const SizedBox(width: 12),
 //               Text(
@@ -250,10 +787,12 @@
 //             ],
 //           ),
 //           const SizedBox(height: 20),
-//           _buildContactRow(context, 'Email', expert.contactEmail, Icons.email_outlined, () {
+//           _buildContactRow(
+//               context, 'Email', expert.contactEmail, Icons.email_outlined, () {
 //             _launchEmail(expert.contactEmail);
 //           }),
-//           _buildContactRow(context, 'Phone', expert.phone, Icons.phone_outlined, () {
+//           _buildContactRow(
+//               context, 'Phone', expert.phone, Icons.phone_outlined, () {
 //             _launchPhone(expert.phone);
 //           }, isLast: true),
 //         ],
@@ -261,13 +800,60 @@
 //     );
 //   }
 
-//   Widget _buildInfoRow(BuildContext context, String label, String value, IconData icon, {bool isLast = false}) {
+//   /// ── NEW: Book Slots button ────────────────────────────────────
+//   /// Navigates to ExpertSlotsBookingScreen passing:
+//   ///   - expertId  → from expert.expertId (fetched via ExpertController)
+//   ///   - expertName → expert.fullName
+//   ///   - childId   → passed in from ExpertsListScreen arguments
+//   ///   - childName → passed in from ExpertsListScreen arguments
+//   Widget _buildBookingButton(BuildContext context) {
+//     final size = CustomSize();
+
+//     return SizedBox(
+//       width: double.infinity,
+//       height: size.customHeight(context) * 0.065,
+//       child: ElevatedButton.icon(
+//         onPressed: () => Get.toNamed(
+//           AppRoutes.expertSlotsBooking,
+//           arguments: {
+//             'expertId': expert.expertId,
+//             'expertName': expert.fullName,
+//             'childId': childId ?? '',
+//             'childName': childName ?? '',
+//           },
+//         ),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.primaryColor,
+//           foregroundColor: AppColors.whiteColor,
+//           shape: RoundedRectangleBorder(
+//             borderRadius: BorderRadius.circular(15),
+//           ),
+//           elevation: 0,
+//         ),
+//         icon: const Icon(Icons.calendar_month_rounded,
+//             color: AppColors.whiteColor, size: 22),
+//         label: Text(
+//           'View & Book Slots',
+//           style: GoogleFonts.poppins(
+//             color: AppColors.whiteColor,
+//             fontSize: size.customWidth(context) * 0.042,
+//             fontWeight: FontWeight.w600,
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildInfoRow(
+//       BuildContext context, String label, String value, IconData icon,
+//       {bool isLast = false}) {
 //     final size = CustomSize();
 
 //     return Column(
 //       children: [
 //         Padding(
-//           padding: EdgeInsets.symmetric(vertical: size.customHeight(context) * 0.01),
+//           padding:
+//               EdgeInsets.symmetric(vertical: size.customHeight(context) * 0.01),
 //           child: Row(
 //             children: [
 //               Container(
@@ -309,7 +895,9 @@
 //     );
 //   }
 
-//   Widget _buildContactRow(BuildContext context, String label, String value, IconData icon, VoidCallback onTap, {bool isLast = false}) {
+//   Widget _buildContactRow(BuildContext context, String label, String value,
+//       IconData icon, VoidCallback onTap,
+//       {bool isLast = false}) {
 //     final size = CustomSize();
 
 //     return Column(
@@ -318,7 +906,8 @@
 //           onTap: onTap,
 //           borderRadius: BorderRadius.circular(12),
 //           child: Padding(
-//             padding: EdgeInsets.symmetric(vertical: size.customHeight(context) * 0.01),
+//             padding: EdgeInsets.symmetric(
+//                 vertical: size.customHeight(context) * 0.01),
 //             child: Row(
 //               children: [
 //                 Container(
@@ -366,163 +955,24 @@
 //     );
 //   }
 
-//   Widget _buildConsultButton(BuildContext context) {
-//     final size = CustomSize();
-
-//     return Obx(() => SizedBox(
-//           width: double.infinity,
-//           height: size.customHeight(context) * 0.06,
-//           child: ElevatedButton(
-//             onPressed: controller.isRequesting.value
-//                 ? null
-//                 : () => _showConsultDialog(context),
-//             style: ElevatedButton.styleFrom(
-//               backgroundColor: AppColors.primaryColor,
-//               shape: RoundedRectangleBorder(
-//                 borderRadius: BorderRadius.circular(15),
-//               ),
-//               elevation: 0,
-//             ),
-//             child: controller.isRequesting.value
-//                 ? const SizedBox(
-//                     width: 24,
-//                     height: 24,
-//                     child: CircularProgressIndicator(
-//                       color: AppColors.whiteColor,
-//                       strokeWidth: 2,
-//                     ),
-//                   )
-//                 : Row(
-//                     mainAxisAlignment: MainAxisAlignment.center,
-//                     children: [
-//                       const Icon(Icons.medical_services_outlined, color: AppColors.whiteColor),
-//                       const SizedBox(width: 12),
-//                       Text(
-//                         'Request Consultation',
-//                         style: GoogleFonts.poppins(
-//                           color: AppColors.whiteColor,
-//                           fontSize: size.customWidth(context) * 0.042,
-//                           fontWeight: FontWeight.w600,
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//           ),
-//         ));
-//   }
-
-//   void _showConsultDialog(BuildContext context) {
-//     final size = CustomSize();
-
-//     Get.dialog(
-//       Dialog(
-//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-//         child: Container(
-//           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
-//           child: Column(
-//             mainAxisSize: MainAxisSize.min,
-//             children: [
-//               Container(
-//                 width: 80,
-//                 height: 80,
-//                 decoration: BoxDecoration(
-//                   color: AppColors.primaryColor.withOpacity(0.1),
-//                   shape: BoxShape.circle,
-//                 ),
-//                 child: const Icon(Icons.medical_services_outlined, color: AppColors.primaryColor, size: 45),
-//               ),
-//               SizedBox(height: size.customHeight(context) * 0.025),
-//               Text(
-//                 'Request Consultation',
-//                 style: GoogleFonts.poppins(
-//                   fontWeight: FontWeight.bold,
-//                   fontSize: size.customWidth(context) * 0.05,
-//                   color: AppColors.textPrimaryColor,
-//                 ),
-//               ),
-//               SizedBox(height: size.customHeight(context) * 0.015),
-//               Text(
-//                 'Do you want to request a consultation with ${expert.fullName} for $childName?',
-//                 textAlign: TextAlign.center,
-//                 style: GoogleFonts.poppins(
-//                   fontSize: size.customWidth(context) * 0.038,
-//                   color: AppColors.textSecondaryColor,
-//                   height: 1.4,
-//                 ),
-//               ),
-//               SizedBox(height: size.customHeight(context) * 0.03),
-//               Row(
-//                 children: [
-//                   Expanded(
-//                     child: OutlinedButton(
-//                       onPressed: () => Get.back(),
-//                       style: OutlinedButton.styleFrom(
-//                         padding: EdgeInsets.symmetric(vertical: size.customHeight(context) * 0.015),
-//                         side: BorderSide(color: AppColors.greyColor.withOpacity(0.5)),
-//                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-//                       ),
-//                       child: Text('Cancel', style: GoogleFonts.poppins(color: AppColors.textSecondaryColor, fontWeight: FontWeight.w600)),
-//                     ),
-//                   ),
-//                   SizedBox(width: size.customWidth(context) * 0.03),
-//                   Expanded(
-//                     child: Obx(() => ElevatedButton(
-//                           onPressed: controller.isRequesting.value
-//                               ? null
-//                               : () async {
-//                                   final success = await controller.requestConsultation(
-//                                     expertId: expert.expertId,
-//                                     childId: childId!,
-//                                   );
-//                                   if (success) {
-//                                     Get.back(); // Close detail screen
-//                                   }
-//                                 },
-//                           style: ElevatedButton.styleFrom(
-//                             backgroundColor: AppColors.primaryColor,
-//                             padding: EdgeInsets.symmetric(vertical: size.customHeight(context) * 0.015),
-//                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-//                           ),
-//                           child: controller.isRequesting.value
-//                               ? const SizedBox(
-//                                   width: 20,
-//                                   height: 20,
-//                                   child: CircularProgressIndicator(color: AppColors.whiteColor, strokeWidth: 2),
-//                                 )
-//                               : Text('Request', style: GoogleFonts.poppins(color: AppColors.whiteColor, fontWeight: FontWeight.w600)),
-//                         )),
-//                   ),
-//                 ],
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
 //   void _launchEmail(String email) async {
-//     final Uri emailUri = Uri(
-//       scheme: 'mailto',
-//       path: email,
-//     );
+//     final Uri emailUri = Uri(scheme: 'mailto', path: email);
 //     if (await canLaunchUrl(emailUri)) {
 //       await launchUrl(emailUri);
 //     }
 //   }
 
 //   void _launchPhone(String phone) async {
-//     final Uri phoneUri = Uri(
-//       scheme: 'tel',
-//       path: phone,
-//     );
+//     final Uri phoneUri = Uri(scheme: 'tel', path: phone);
 //     if (await canLaunchUrl(phoneUri)) {
 //       await launchUrl(phoneUri);
 //     }
 //   }
 // }
 
+
 // lib/view/experts/expert_detail_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -542,6 +992,8 @@ class ExpertDetailScreen extends StatefulWidget {
 class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
   late final ExpertController controller;
   late final expert;
+
+  // childId / childName from list screen (may be null when coming directly)
   String? childId;
   String? childName;
 
@@ -550,14 +1002,22 @@ class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
     super.initState();
 
     final args = Get.arguments as Map<String, dynamic>;
-    expert = args['expert'];
-    childId = args['childId'];
+    expert    = args['expert'];
+    childId   = args['childId'];
     childName = args['childName'];
 
     if (Get.isRegistered<ExpertController>()) {
       controller = Get.find<ExpertController>();
     } else {
       controller = Get.put(ExpertController());
+    }
+
+    // ── If no child was passed in, fetch the parent's children list
+    //    so the user can pick one from the dropdown inside this screen.
+    if (childId == null || childId!.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.fetchChildren();
+      });
     }
   }
 
@@ -569,6 +1029,7 @@ class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
       backgroundColor: AppColors.lightGreyColor,
       body: CustomScrollView(
         slivers: [
+          // ── App Bar ──────────────────────────────────────────────────────
           SliverAppBar(
             expandedHeight: MediaQuery.of(context).size.height * 0.35,
             pinned: true,
@@ -583,19 +1044,30 @@ class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
             ),
           ),
 
+          // ── Body ─────────────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.all(size.customWidth(context) * 0.05),
               child: Column(
                 children: [
+                  // Professional info card — unchanged
                   _buildInfoCard(context),
                   SizedBox(height: size.customHeight(context) * 0.02),
+
+                  // Contact card — unchanged
                   _buildContactCard(context),
-                  // Show booking button only when childId is available
-                  if (childId != null && childId!.isNotEmpty) ...[
-                    SizedBox(height: size.customHeight(context) * 0.02),
-                    _buildBookingButton(context),
-                  ],
+                  SizedBox(height: size.customHeight(context) * 0.02),
+
+                  // ── Child section ────────────────────────────────────────
+                  // Case A: childId was passed from ExpertsListScreen
+                  //         → show the child chip + booking button directly
+                  // Case B: no childId passed
+                  //         → show dropdown to pick a child, then button
+                  if (childId != null && childId!.isNotEmpty)
+                    _buildDirectBookingSection(context)
+                  else
+                    _buildChildDropdownSection(context),
+
                   SizedBox(height: size.customHeight(context) * 0.03),
                 ],
               ),
@@ -606,9 +1078,11 @@ class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  HEADER  (100% same as original)
+  // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildHeader(BuildContext context) {
     final size = CustomSize();
-
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -683,9 +1157,328 @@ class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  CASE A — child already known (passed from ExpertsListScreen)
+  //  Show a nice child info chip + the booking button immediately
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildDirectBookingSection(BuildContext context) {
+    final size = CustomSize();
+    return Column(
+      children: [
+        // Child info chip
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            horizontal: size.customWidth(context) * 0.04,
+            vertical: size.customHeight(context) * 0.018,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.primaryColor.withOpacity(0.07),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: AppColors.primaryColor.withOpacity(0.2),
+              width: 1.2,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.child_care_rounded,
+                    color: AppColors.primaryColor, size: 20),
+              ),
+              SizedBox(width: size.customWidth(context) * 0.03),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Booking for',
+                    style: GoogleFonts.poppins(
+                      fontSize: size.customWidth(context) * 0.03,
+                      color: AppColors.textSecondaryColor,
+                    ),
+                  ),
+                  Text(
+                    childName ?? 'Child',
+                    style: GoogleFonts.poppins(
+                      fontSize: size.customWidth(context) * 0.04,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'Selected',
+                  style: GoogleFonts.poppins(
+                    fontSize: size.customWidth(context) * 0.028,
+                    color: AppColors.primaryColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: size.customHeight(context) * 0.018),
+        _buildBookingButton(context, childId: childId!, childName: childName!),
+      ],
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  CASE B — no child passed → show dropdown, then button after selection
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildChildDropdownSection(BuildContext context) {
+    final size = CustomSize();
+    return Obx(() {
+      // Loading spinner
+      if (controller.isLoadingChildren.value) {
+        return Container(
+          padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+          decoration: BoxDecoration(
+            color: AppColors.whiteColor,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 15,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(color: AppColors.primaryColor),
+          ),
+        );
+      }
+
+      // No children found
+      if (controller.children.isEmpty) {
+        return Container(
+          padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+          decoration: BoxDecoration(
+            color: AppColors.primaryColor.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.primaryColor.withOpacity(0.2),
+              width: 1.2,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.info_outline_rounded,
+                  color: AppColors.primaryColor,
+                  size: size.customWidth(context) * 0.05),
+              SizedBox(width: size.customWidth(context) * 0.03),
+              Expanded(
+                child: Text(
+                  'No children found. Please add a child from your profile before booking a slot.',
+                  style: GoogleFonts.poppins(
+                    fontSize: size.customWidth(context) * 0.034,
+                    color: AppColors.textSecondaryColor,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      // Dropdown card
+      return Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(size.customWidth(context) * 0.045),
+            decoration: BoxDecoration(
+              color: AppColors.whiteColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 15,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header row
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.child_care_rounded,
+                          color: AppColors.primaryColor, size: 20),
+                    ),
+                    SizedBox(width: size.customWidth(context) * 0.03),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Select Child',
+                          style: GoogleFonts.poppins(
+                            fontSize: size.customWidth(context) * 0.04,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimaryColor,
+                          ),
+                        ),
+                        Text(
+                          'Choose who this appointment is for',
+                          style: GoogleFonts.poppins(
+                            fontSize: size.customWidth(context) * 0.03,
+                            color: AppColors.textSecondaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: size.customHeight(context) * 0.02),
+
+                // Dropdown
+                DropdownButtonFormField<String>(
+                  value: controller.selectedChild.value?.childId,
+                  hint: Text(
+                    'Choose a child...',
+                    style: GoogleFonts.poppins(
+                      color: AppColors.greyColor,
+                      fontSize: size.customWidth(context) * 0.038,
+                    ),
+                  ),
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: size.customWidth(context) * 0.04,
+                      vertical: size.customHeight(context) * 0.015,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                          color: AppColors.greyColor.withOpacity(0.3)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                          color: AppColors.greyColor.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                          color: AppColors.primaryColor, width: 1.5),
+                    ),
+                  ),
+                  items: controller.children.map((child) {
+                    return DropdownMenuItem<String>(
+                      value: child.childId,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.child_care,
+                              color: AppColors.primaryColor, size: 20),
+                          SizedBox(width: size.customWidth(context) * 0.025),
+                          Text(
+                            child.childName,
+                            style: GoogleFonts.poppins(
+                              fontSize: size.customWidth(context) * 0.038,
+                              color: AppColors.textPrimaryColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    final selected = controller.children
+                        .firstWhere((c) => c.childId == value);
+                    controller.selectChild(selected);
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          // Show booking button only after child is selected
+          if (controller.selectedChild.value != null) ...[
+            SizedBox(height: size.customHeight(context) * 0.018),
+            _buildBookingButton(
+              context,
+              childId: controller.selectedChild.value!.childId,
+              childName: controller.selectedChild.value!.childName,
+            ),
+          ],
+        ],
+      );
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  BOOKING BUTTON — reused by both cases
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildBookingButton(
+    BuildContext context, {
+    required String childId,
+    required String childName,
+  }) {
+    final size = CustomSize();
+    return SizedBox(
+      width: double.infinity,
+      height: size.customHeight(context) * 0.065,
+      child: ElevatedButton.icon(
+        onPressed: () => Get.toNamed(
+          AppRoutes.expertSlotsBooking,
+          arguments: {
+            'expertId': expert.expertId,
+            'expertName': expert.fullName,
+            'childId': childId,
+            'childName': childName,
+          },
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryColor,
+          foregroundColor: AppColors.whiteColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          elevation: 0,
+        ),
+        icon: const Icon(Icons.calendar_month_rounded,
+            color: AppColors.whiteColor, size: 22),
+        label: Text(
+          'View & Book Slots',
+          style: GoogleFonts.poppins(
+            color: AppColors.whiteColor,
+            fontSize: size.customWidth(context) * 0.042,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  INFO CARD  (100% same as original)
+  // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildInfoCard(BuildContext context) {
     final size = CustomSize();
-
     return Container(
       padding: EdgeInsets.all(size.customWidth(context) * 0.05),
       decoration: BoxDecoration(
@@ -729,15 +1522,9 @@ class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
               Icons.business_outlined),
           _buildInfoRow(context, 'PMDC Number', expert.pmdcNumber,
               Icons.badge_outlined),
-          _buildInfoRow(
-              context,
-              'Status',
-              expert.approvalStatus.toUpperCase(),
-              Icons.verified_outlined),
-          _buildInfoRow(
-              context,
-              'Member Since',
-              expert.getFormattedDate(),
+          _buildInfoRow(context, 'Status',
+              expert.approvalStatus.toUpperCase(), Icons.verified_outlined),
+          _buildInfoRow(context, 'Member Since', expert.getFormattedDate(),
               Icons.calendar_today_outlined,
               isLast: true),
         ],
@@ -745,9 +1532,11 @@ class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  CONTACT CARD  (100% same as original)
+  // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildContactCard(BuildContext context) {
     final size = CustomSize();
-
     return Container(
       padding: EdgeInsets.all(size.customWidth(context) * 0.05),
       decoration: BoxDecoration(
@@ -800,60 +1589,16 @@ class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
     );
   }
 
-  /// ── NEW: Book Slots button ────────────────────────────────────
-  /// Navigates to ExpertSlotsBookingScreen passing:
-  ///   - expertId  → from expert.expertId (fetched via ExpertController)
-  ///   - expertName → expert.fullName
-  ///   - childId   → passed in from ExpertsListScreen arguments
-  ///   - childName → passed in from ExpertsListScreen arguments
-  Widget _buildBookingButton(BuildContext context) {
-    final size = CustomSize();
-
-    return SizedBox(
-      width: double.infinity,
-      height: size.customHeight(context) * 0.065,
-      child: ElevatedButton.icon(
-        onPressed: () => Get.toNamed(
-          AppRoutes.expertSlotsBooking,
-          arguments: {
-            'expertId': expert.expertId,
-            'expertName': expert.fullName,
-            'childId': childId ?? '',
-            'childName': childName ?? '',
-          },
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryColor,
-          foregroundColor: AppColors.whiteColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          elevation: 0,
-        ),
-        icon: const Icon(Icons.calendar_month_rounded,
-            color: AppColors.whiteColor, size: 22),
-        label: Text(
-          'View & Book Slots',
-          style: GoogleFonts.poppins(
-            color: AppColors.whiteColor,
-            fontSize: size.customWidth(context) * 0.042,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-
+  // ─── Info row helper (100% same) ──────────────────────────────────────────
   Widget _buildInfoRow(
       BuildContext context, String label, String value, IconData icon,
       {bool isLast = false}) {
     final size = CustomSize();
-
     return Column(
       children: [
         Padding(
-          padding:
-              EdgeInsets.symmetric(vertical: size.customHeight(context) * 0.01),
+          padding: EdgeInsets.symmetric(
+              vertical: size.customHeight(context) * 0.01),
           child: Row(
             children: [
               Container(
@@ -869,21 +1614,17 @@ class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      label,
-                      style: GoogleFonts.poppins(
-                        fontSize: size.customWidth(context) * 0.032,
-                        color: AppColors.textSecondaryColor,
-                      ),
-                    ),
-                    Text(
-                      value,
-                      style: GoogleFonts.poppins(
-                        fontSize: size.customWidth(context) * 0.038,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimaryColor,
-                      ),
-                    ),
+                    Text(label,
+                        style: GoogleFonts.poppins(
+                          fontSize: size.customWidth(context) * 0.032,
+                          color: AppColors.textSecondaryColor,
+                        )),
+                    Text(value,
+                        style: GoogleFonts.poppins(
+                          fontSize: size.customWidth(context) * 0.038,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimaryColor,
+                        )),
                   ],
                 ),
               ),
@@ -895,11 +1636,11 @@ class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
     );
   }
 
+  // ─── Contact row helper (100% same) ──────────────────────────────────────
   Widget _buildContactRow(BuildContext context, String label, String value,
       IconData icon, VoidCallback onTap,
       {bool isLast = false}) {
     final size = CustomSize();
-
     return Column(
       children: [
         InkWell(
@@ -916,36 +1657,29 @@ class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
                     color: AppColors.accentColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon, size: 20, color: AppColors.accentColor),
+                  child:
+                      Icon(icon, size: 20, color: AppColors.accentColor),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        label,
-                        style: GoogleFonts.poppins(
-                          fontSize: size.customWidth(context) * 0.032,
-                          color: AppColors.textSecondaryColor,
-                        ),
-                      ),
-                      Text(
-                        value,
-                        style: GoogleFonts.poppins(
-                          fontSize: size.customWidth(context) * 0.038,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.accentColor,
-                        ),
-                      ),
+                      Text(label,
+                          style: GoogleFonts.poppins(
+                            fontSize: size.customWidth(context) * 0.032,
+                            color: AppColors.textSecondaryColor,
+                          )),
+                      Text(value,
+                          style: GoogleFonts.poppins(
+                            fontSize: size.customWidth(context) * 0.038,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.accentColor,
+                          )),
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.launch,
-                  size: 18,
-                  color: AppColors.accentColor,
-                ),
+                Icon(Icons.launch, size: 18, color: AppColors.accentColor),
               ],
             ),
           ),
@@ -957,15 +1691,11 @@ class _ExpertDetailScreenState extends State<ExpertDetailScreen> {
 
   void _launchEmail(String email) async {
     final Uri emailUri = Uri(scheme: 'mailto', path: email);
-    if (await canLaunchUrl(emailUri)) {
-      await launchUrl(emailUri);
-    }
+    if (await canLaunchUrl(emailUri)) await launchUrl(emailUri);
   }
 
   void _launchPhone(String phone) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: phone);
-    if (await canLaunchUrl(phoneUri)) {
-      await launchUrl(phoneUri);
-    }
+    if (await canLaunchUrl(phoneUri)) await launchUrl(phoneUri);
   }
 }

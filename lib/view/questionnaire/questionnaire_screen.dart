@@ -749,6 +749,376 @@
 // }
 
 
+// // lib/view/questionnaire/questionnaire_screen.dart
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/controllers/questionnaire_controller.dart';
+
+// class QuestionnaireScreen extends StatelessWidget {
+//   const QuestionnaireScreen({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+//     final controller = Get.find<QuestionnaireController>();
+
+//     return Scaffold(
+//       backgroundColor: AppColors.lightGreyColor,
+//       appBar: AppBar(
+//         backgroundColor: AppColors.whiteColor,
+//         elevation: 0,
+//         leading: IconButton(
+//           icon: Icon(Icons.arrow_back, color: AppColors.textPrimaryColor),
+//           onPressed: () {
+//             Get.dialog(
+//               AlertDialog(
+//                 shape: RoundedRectangleBorder(
+//                   borderRadius: BorderRadius.circular(20),
+//                 ),
+//                 title: Text(
+//                   'Exit Questionnaire?',
+//                   style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+//                 ),
+//                 content: Text(
+//                   'Your progress will be lost if you exit now.',
+//                   style: GoogleFonts.poppins(),
+//                 ),
+//                 actions: [
+//                   TextButton(
+//                     onPressed: () => Get.back(),
+//                     child: Text(
+//                       'Cancel',
+//                       style: GoogleFonts.poppins(
+//                         color: AppColors.textSecondaryColor,
+//                       ),
+//                     ),
+//                   ),
+//                   ElevatedButton(
+//                     onPressed: () {
+//                       Get.back();
+//                       Get.back();
+//                     },
+//                     style: ElevatedButton.styleFrom(
+//                       backgroundColor: AppColors.errorColor,
+//                       shape: RoundedRectangleBorder(
+//                         borderRadius: BorderRadius.circular(8),
+//                       ),
+//                     ),
+//                     child: Text(
+//                       'Exit',
+//                       style: GoogleFonts.poppins(
+//                         color: AppColors.whiteColor,
+//                       ),
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             );
+//           },
+//         ),
+//         title: Row(
+//           children: [
+//             Icon(Icons.psychology, color: AppColors.primaryColor, size: 28),
+//             SizedBox(width: 8),
+//             Expanded(
+//               child: Text(
+//                 'ASD Screening',
+//                 style: GoogleFonts.poppins(
+//                   color: AppColors.textPrimaryColor,
+//                   fontSize: 18,
+//                   fontWeight: FontWeight.w600,
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//       body: SafeArea(
+//         child: Column(
+//           children: [
+//             // Progress Bar
+//             Container(
+//               color: AppColors.whiteColor,
+//               padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Obx(() => Row(
+//                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                         children: [
+//                           Text(
+//                             'Question ${controller.currentQuestion.value + 1} of ${controller.questions.length}',
+//                             style: GoogleFonts.poppins(
+//                               fontSize: 14,
+//                               color: AppColors.textSecondaryColor,
+//                             ),
+//                           ),
+//                           Text(
+//                             '${(controller.progress * 100).toInt()}%',
+//                             style: GoogleFonts.poppins(
+//                               fontSize: 14,
+//                               fontWeight: FontWeight.w600,
+//                               color: AppColors.primaryColor,
+//                             ),
+//                           ),
+//                         ],
+//                       )),
+//                   SizedBox(height: 8),
+//                   Obx(() => ClipRRect(
+//                         borderRadius: BorderRadius.circular(4),
+//                         child: LinearProgressIndicator(
+//                           value: controller.progress,
+//                           backgroundColor: AppColors.lightGreyColor,
+//                           valueColor: AlwaysStoppedAnimation<Color>(
+//                             AppColors.primaryColor,
+//                           ),
+//                           minHeight: 8,
+//                         ),
+//                       )),
+//                 ],
+//               ),
+//             ),
+
+//             // Question Content
+//             Expanded(
+//               child: SingleChildScrollView(
+//                 padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//                 child: Obx(() {
+//                   final question = controller.questions[controller.currentQuestion.value];
+//                   return Container(
+//                     padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//                     decoration: BoxDecoration(
+//                       color: AppColors.whiteColor,
+//                       borderRadius: BorderRadius.circular(20),
+//                     ),
+//                     child: Column(
+//                       crossAxisAlignment: CrossAxisAlignment.start,
+//                       children: [
+//                         Text(
+//                           question['question'],
+//                           style: GoogleFonts.poppins(
+//                             fontSize: size.customWidth(context) * 0.048,
+//                             fontWeight: FontWeight.w600,
+//                             color: AppColors.textPrimaryColor,
+//                             height: 1.5,
+//                           ),
+//                         ),
+//                         SizedBox(height: size.customHeight(context) * 0.03),
+//                         ...List.generate(
+//                           question['options'].length,
+//                           (index) {
+//                             final option = question['options'][index];
+//                             // Check if this option index is selected
+//                             final isSelected = controller.answers[
+//                                 controller.currentQuestion.value] == index;
+
+//                             return _buildOptionButton(
+//                               context: context,
+//                               option: option,
+//                               isSelected: isSelected,
+//                               onTap: () {
+//                                 controller.selectAnswer(index);
+//                               },
+//                             );
+//                           },
+//                         ),
+//                       ],
+//                     ),
+//                   );
+//                 }),
+//               ),
+//             ),
+
+//             // Navigation Buttons
+//             Container(
+//               color: AppColors.whiteColor,
+//               padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//               child: Obx(() => Row(
+//                     children: [
+//                       if (controller.currentQuestion.value > 0)
+//                         Expanded(
+//                           child: OutlinedButton(
+//                             onPressed: () => controller.previousQuestion(),
+//                             style: OutlinedButton.styleFrom(
+//                               padding: EdgeInsets.symmetric(vertical: 15),
+//                               side: BorderSide(color: AppColors.primaryColor),
+//                               shape: RoundedRectangleBorder(
+//                                 borderRadius: BorderRadius.circular(12),
+//                               ),
+//                             ),
+//                             child: Row(
+//                               mainAxisAlignment: MainAxisAlignment.center,
+//                               children: [
+//                                 Icon(Icons.arrow_back, color: AppColors.primaryColor),
+//                                 SizedBox(width: 8),
+//                                 Text(
+//                                   'Back',
+//                                   style: GoogleFonts.poppins(
+//                                     color: AppColors.primaryColor,
+//                                     fontWeight: FontWeight.w600,
+//                                   ),
+//                                 ),
+//                               ],
+//                             ),
+//                           ),
+//                         ),
+//                       if (controller.currentQuestion.value > 0) SizedBox(width: 16),
+//                       Expanded(
+//                         flex: controller.currentQuestion.value == 0 ? 1 : 1,
+//                         child: ElevatedButton(
+//                           onPressed: controller.canProceed
+//                               ? () {
+//                                   if (controller.isLastQuestion) {
+//                                     _showReviewDialog(context, controller);
+//                                   } else {
+//                                     controller.nextQuestion();
+//                                   }
+//                                 }
+//                               : null,
+//                           style: ElevatedButton.styleFrom(
+//                             backgroundColor: AppColors.primaryColor,
+//                             padding: EdgeInsets.symmetric(vertical: 15),
+//                             shape: RoundedRectangleBorder(
+//                               borderRadius: BorderRadius.circular(12),
+//                             ),
+//                             disabledBackgroundColor: AppColors.greyColor,
+//                           ),
+//                           child: Row(
+//                             mainAxisAlignment: MainAxisAlignment.center,
+//                             children: [
+//                               Text(
+//                                 controller.isLastQuestion ? 'Review' : 'Next',
+//                                 style: GoogleFonts.poppins(
+//                                   color: AppColors.whiteColor,
+//                                   fontWeight: FontWeight.w600,
+//                                 ),
+//                               ),
+//                               SizedBox(width: 8),
+//                               Icon(Icons.arrow_forward, color: AppColors.whiteColor),
+//                             ],
+//                           ),
+//                         ),
+//                       ),
+//                     ],
+//                   )),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildOptionButton({
+//     required BuildContext context,
+//     required String option,
+//     required bool isSelected,
+//     required VoidCallback onTap,
+//   }) {
+//     final size = CustomSize();
+
+//     return Container(
+//       margin: EdgeInsets.only(bottom: size.customHeight(context) * 0.015),
+//       child: InkWell(
+//         onTap: onTap,
+//         borderRadius: BorderRadius.circular(12),
+//         child: Container(
+//           padding: EdgeInsets.symmetric(
+//             horizontal: size.customWidth(context) * 0.04,
+//             vertical: size.customHeight(context) * 0.02,
+//           ),
+//           decoration: BoxDecoration(
+//             color: isSelected ? AppColors.primaryColor : AppColors.lightGreyColor,
+//             borderRadius: BorderRadius.circular(12),
+//             border: Border.all(
+//               color: isSelected ? AppColors.primaryColor : Colors.transparent,
+//               width: 2,
+//             ),
+//           ),
+//           child: Row(
+//             children: [
+//               Icon(
+//                 isSelected ? Icons.check_circle : Icons.circle_outlined,
+//                 color: isSelected ? AppColors.whiteColor : AppColors.greyColor,
+//               ),
+//               SizedBox(width: 12),
+//               Expanded(
+//                 child: Text(
+//                   option,
+//                   style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.04,
+//                     color: isSelected
+//                         ? AppColors.whiteColor
+//                         : AppColors.textPrimaryColor,
+//                     fontWeight:
+//                         isSelected ? FontWeight.w600 : FontWeight.normal,
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   void _showReviewDialog(BuildContext context, QuestionnaireController controller) {
+//     Get.dialog(
+//       AlertDialog(
+//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+//         title: Text(
+//           'Submit Questionnaire',
+//           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+//         ),
+//         content: Text(
+//           'You have answered all questions. Would you like to submit your responses now?',
+//           style: GoogleFonts.poppins(),
+//         ),
+//         actions: [
+//           TextButton(
+//             onPressed: () => Get.back(),
+//             child: Text(
+//               'Review',
+//               style: GoogleFonts.poppins(color: AppColors.textSecondaryColor),
+//             ),
+//           ),
+//           Obx(() => ElevatedButton(
+//                 onPressed: controller.isSubmitting.value
+//                     ? null
+//                     : () {
+//                         Get.back();
+//                         controller.submitQuestionnaire();
+//                       },
+//                 style: ElevatedButton.styleFrom(
+//                   backgroundColor: AppColors.primaryColor,
+//                   shape: RoundedRectangleBorder(
+//                     borderRadius: BorderRadius.circular(8),
+//                   ),
+//                 ),
+//                 child: controller.isSubmitting.value
+//                     ? SizedBox(
+//                         width: 20,
+//                         height: 20,
+//                         child: CircularProgressIndicator(
+//                           color: AppColors.whiteColor,
+//                           strokeWidth: 2,
+//                         ),
+//                       )
+//                     : Text(
+//                         'Submit',
+//                         style: GoogleFonts.poppins(
+//                           color: AppColors.whiteColor,
+//                         ),
+//                       ),
+//               )),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
 // lib/view/questionnaire/questionnaire_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -765,250 +1135,316 @@ class QuestionnaireScreen extends StatelessWidget {
     final size = CustomSize();
     final controller = Get.find<QuestionnaireController>();
 
-    return Scaffold(
-      backgroundColor: AppColors.lightGreyColor,
-      appBar: AppBar(
-        backgroundColor: AppColors.whiteColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimaryColor),
-          onPressed: () {
-            Get.dialog(
-              AlertDialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                title: Text(
-                  'Exit Questionnaire?',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-                ),
-                content: Text(
-                  'Your progress will be lost if you exit now.',
-                  style: GoogleFonts.poppins(),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Get.back(),
-                    child: Text(
-                      'Cancel',
-                      style: GoogleFonts.poppins(
-                        color: AppColors.textSecondaryColor,
+    return Obx(() {
+      // Full-screen loading overlay while submitting
+      if (controller.isSubmitting.value) {
+        return Scaffold(
+          backgroundColor: AppColors.lightGreyColor,
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: AppColors.whiteColor,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primaryColor.withOpacity(0.2),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
                       ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryColor,
+                      strokeWidth: 3,
                     ),
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Get.back();
-                      Get.back();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.errorColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      'Exit',
-                      style: GoogleFonts.poppins(
-                        color: AppColors.whiteColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-        title: Row(
-          children: [
-            Icon(Icons.psychology, color: AppColors.primaryColor, size: 28),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'ASD Screening',
-                style: GoogleFonts.poppins(
-                  color: AppColors.textPrimaryColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
                 ),
-              ),
+                const SizedBox(height: 28),
+                Text(
+                  'Analyzing Responses...',
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimaryColor,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Please wait while we process\nyour questionnaire',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: AppColors.textSecondaryColor,
+                    height: 1.5,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
+        );
+      }
+
+      return Scaffold(
+        backgroundColor: AppColors.lightGreyColor,
+        appBar: AppBar(
+          backgroundColor: AppColors.whiteColor,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: AppColors.textPrimaryColor),
+            onPressed: () {
+              Get.dialog(
+                AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  title: Text(
+                    'Exit Questionnaire?',
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                  ),
+                  content: Text(
+                    'Your progress will be lost if you exit now.',
+                    style: GoogleFonts.poppins(),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Get.back(),
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.poppins(
+                          color: AppColors.textSecondaryColor,
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+                        Get.back();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.errorColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Exit',
+                        style: GoogleFonts.poppins(
+                          color: AppColors.whiteColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.psychology, color: AppColors.primaryColor, size: 28),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'ASD Screening',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.textPrimaryColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Progress Bar
-            Container(
-              color: AppColors.whiteColor,
-              padding: EdgeInsets.all(size.customWidth(context) * 0.05),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Obx(() => Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Progress Bar
+              Container(
+                color: AppColors.whiteColor,
+                padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Obx(() => Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Question ${controller.currentQuestion.value + 1} of ${controller.questions.length}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: AppColors.textSecondaryColor,
+                              ),
+                            ),
+                            Text(
+                              '${(controller.progress * 100).toInt()}%',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryColor,
+                              ),
+                            ),
+                          ],
+                        )),
+                    const SizedBox(height: 8),
+                    Obx(() => ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: controller.progress,
+                            backgroundColor: AppColors.lightGreyColor,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.primaryColor,
+                            ),
+                            minHeight: 8,
+                          ),
+                        )),
+                  ],
+                ),
+              ),
+
+              // Question Content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+                  child: Obx(() {
+                    final question =
+                        controller.questions[controller.currentQuestion.value];
+                    return Container(
+                      padding:
+                          EdgeInsets.all(size.customWidth(context) * 0.05),
+                      decoration: BoxDecoration(
+                        color: AppColors.whiteColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Question ${controller.currentQuestion.value + 1} of ${controller.questions.length}',
+                            question['question'],
                             style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: AppColors.textSecondaryColor,
+                              fontSize: size.customWidth(context) * 0.048,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimaryColor,
+                              height: 1.5,
                             ),
                           ),
-                          Text(
-                            '${(controller.progress * 100).toInt()}%',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primaryColor,
-                            ),
+                          SizedBox(
+                              height: size.customHeight(context) * 0.03),
+                          ...List.generate(
+                            question['options'].length,
+                            (index) {
+                              final option = question['options'][index];
+                              final isSelected =
+                                  controller.answers[
+                                          controller.currentQuestion.value] ==
+                                      index;
+
+                              return _buildOptionButton(
+                                context: context,
+                                option: option,
+                                isSelected: isSelected,
+                                onTap: () {
+                                  controller.selectAnswer(index);
+                                },
+                              );
+                            },
                           ),
                         ],
-                      )),
-                  SizedBox(height: 8),
-                  Obx(() => ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: controller.progress,
-                          backgroundColor: AppColors.lightGreyColor,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.primaryColor,
-                          ),
-                          minHeight: 8,
-                        ),
-                      )),
-                ],
+                      ),
+                    );
+                  }),
+                ),
               ),
-            ),
 
-            // Question Content
-            Expanded(
-              child: SingleChildScrollView(
+              // Navigation Buttons
+              Container(
+                color: AppColors.whiteColor,
                 padding: EdgeInsets.all(size.customWidth(context) * 0.05),
-                child: Obx(() {
-                  final question = controller.questions[controller.currentQuestion.value];
-                  return Container(
-                    padding: EdgeInsets.all(size.customWidth(context) * 0.05),
-                    decoration: BoxDecoration(
-                      color: AppColors.whiteColor,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                child: Obx(() => Row(
                       children: [
-                        Text(
-                          question['question'],
-                          style: GoogleFonts.poppins(
-                            fontSize: size.customWidth(context) * 0.048,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimaryColor,
-                            height: 1.5,
+                        if (controller.currentQuestion.value > 0)
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => controller.previousQuestion(),
+                              style: OutlinedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 15),
+                                side: BorderSide(
+                                    color: AppColors.primaryColor),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.arrow_back,
+                                      color: AppColors.primaryColor),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Back',
+                                    style: GoogleFonts.poppins(
+                                      color: AppColors.primaryColor,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                        SizedBox(height: size.customHeight(context) * 0.03),
-                        ...List.generate(
-                          question['options'].length,
-                          (index) {
-                            final option = question['options'][index];
-                            // Check if this option index is selected
-                            final isSelected = controller.answers[
-                                controller.currentQuestion.value] == index;
-
-                            return _buildOptionButton(
-                              context: context,
-                              option: option,
-                              isSelected: isSelected,
-                              onTap: () {
-                                controller.selectAnswer(index);
-                              },
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-              ),
-            ),
-
-            // Navigation Buttons
-            Container(
-              color: AppColors.whiteColor,
-              padding: EdgeInsets.all(size.customWidth(context) * 0.05),
-              child: Obx(() => Row(
-                    children: [
-                      if (controller.currentQuestion.value > 0)
+                        if (controller.currentQuestion.value > 0)
+                          const SizedBox(width: 16),
                         Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => controller.previousQuestion(),
-                            style: OutlinedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(vertical: 15),
-                              side: BorderSide(color: AppColors.primaryColor),
+                          flex: controller.currentQuestion.value == 0 ? 1 : 1,
+                          child: ElevatedButton(
+                            onPressed: controller.canProceed
+                                ? () {
+                                    if (controller.isLastQuestion) {
+                                      _showReviewDialog(context, controller);
+                                    } else {
+                                      controller.nextQuestion();
+                                    }
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryColor,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 15),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
+                              disabledBackgroundColor: AppColors.greyColor,
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.arrow_back, color: AppColors.primaryColor),
-                                SizedBox(width: 8),
                                 Text(
-                                  'Back',
+                                  controller.isLastQuestion ? 'Review' : 'Next',
                                   style: GoogleFonts.poppins(
-                                    color: AppColors.primaryColor,
+                                    color: AppColors.whiteColor,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
+                                const SizedBox(width: 8),
+                                Icon(Icons.arrow_forward,
+                                    color: AppColors.whiteColor),
                               ],
                             ),
                           ),
                         ),
-                      if (controller.currentQuestion.value > 0) SizedBox(width: 16),
-                      Expanded(
-                        flex: controller.currentQuestion.value == 0 ? 1 : 1,
-                        child: ElevatedButton(
-                          onPressed: controller.canProceed
-                              ? () {
-                                  if (controller.isLastQuestion) {
-                                    _showReviewDialog(context, controller);
-                                  } else {
-                                    controller.nextQuestion();
-                                  }
-                                }
-                              : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryColor,
-                            padding: EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            disabledBackgroundColor: AppColors.greyColor,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                controller.isLastQuestion ? 'Review' : 'Next',
-                                style: GoogleFonts.poppins(
-                                  color: AppColors.whiteColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                              Icon(Icons.arrow_forward, color: AppColors.whiteColor),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  )),
-            ),
-          ],
+                      ],
+                    )),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildOptionButton({
@@ -1030,10 +1466,12 @@ class QuestionnaireScreen extends StatelessWidget {
             vertical: size.customHeight(context) * 0.02,
           ),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primaryColor : AppColors.lightGreyColor,
+            color:
+                isSelected ? AppColors.primaryColor : AppColors.lightGreyColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? AppColors.primaryColor : Colors.transparent,
+              color:
+                  isSelected ? AppColors.primaryColor : Colors.transparent,
               width: 2,
             ),
           ),
@@ -1041,9 +1479,10 @@ class QuestionnaireScreen extends StatelessWidget {
             children: [
               Icon(
                 isSelected ? Icons.check_circle : Icons.circle_outlined,
-                color: isSelected ? AppColors.whiteColor : AppColors.greyColor,
+                color:
+                    isSelected ? AppColors.whiteColor : AppColors.greyColor,
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   option,
@@ -1052,8 +1491,9 @@ class QuestionnaireScreen extends StatelessWidget {
                     color: isSelected
                         ? AppColors.whiteColor
                         : AppColors.textPrimaryColor,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                   ),
                 ),
               ),
@@ -1064,10 +1504,12 @@ class QuestionnaireScreen extends StatelessWidget {
     );
   }
 
-  void _showReviewDialog(BuildContext context, QuestionnaireController controller) {
+  void _showReviewDialog(
+      BuildContext context, QuestionnaireController controller) {
     Get.dialog(
       AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Submit Questionnaire',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
@@ -1081,38 +1523,28 @@ class QuestionnaireScreen extends StatelessWidget {
             onPressed: () => Get.back(),
             child: Text(
               'Review',
-              style: GoogleFonts.poppins(color: AppColors.textSecondaryColor),
+              style: GoogleFonts.poppins(
+                  color: AppColors.textSecondaryColor),
             ),
           ),
-          Obx(() => ElevatedButton(
-                onPressed: controller.isSubmitting.value
-                    ? null
-                    : () {
-                        Get.back();
-                        controller.submitQuestionnaire();
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: controller.isSubmitting.value
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: AppColors.whiteColor,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        'Submit',
-                        style: GoogleFonts.poppins(
-                          color: AppColors.whiteColor,
-                        ),
-                      ),
-              )),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              controller.submitQuestionnaire();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Submit',
+              style: GoogleFonts.poppins(
+                color: AppColors.whiteColor,
+              ),
+            ),
+          ),
         ],
       ),
     );

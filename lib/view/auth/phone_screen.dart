@@ -418,7 +418,7 @@ class PhoneScreen extends StatelessWidget {
                           Get.toNamed(AppRoutes.expertInfo);
                         } else {
                           // Parent role - go directly to signup
-                          Get.toNamed(AppRoutes.signup);
+                          Get.toNamed(AppRoutes.addChildren);
                         }
                       }
                     },

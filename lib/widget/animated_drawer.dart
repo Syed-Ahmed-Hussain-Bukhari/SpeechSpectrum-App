@@ -805,19 +805,19 @@ class AnimatedDrawer extends StatelessWidget {
                   //   screenWidth: screenWidth,
                   //   screenHeight: screenHeight,
                   // ),
-                  _buildMenuItem(
-  context: context,
-  icon: Icons.mic_outlined,
-  selectedIcon: Icons.mic,
-  title: 'Speech Assessment',
-  index: 2,
-  onTap: () {
-    Navigator.pop(context);
-    Get.toNamed(AppRoutes.speechSubmissions);
-  },
-  screenWidth: screenWidth,
-  screenHeight: screenHeight,
-),
+//                   _buildMenuItem(
+//   context: context,
+//   icon: Icons.mic_outlined,
+//   selectedIcon: Icons.mic,
+//   title: 'Speech Assessment',
+//   index: 2,
+//   onTap: () {
+//     Navigator.pop(context);
+//     Get.toNamed(AppRoutes.speechSubmissions);
+//   },
+//   screenWidth: screenWidth,
+//   screenHeight: screenHeight,
+// ),
 
 _buildMenuItem(
   context: context,
@@ -841,20 +841,20 @@ _buildMenuItem(
   index: 4,
   onTap: () {
     Navigator.pop(context);
-    Get.toNamed(AppRoutes.history);
+    Get.toNamed(AppRoutes.progressHub);
   },
   screenWidth: screenWidth,
   screenHeight: screenHeight,
 ),
 
                   SizedBox(height: screenHeight * 0.01),
-                  _buildSectionLabel(context, 'EXPERT SERVICES', screenWidth),
+                  _buildSectionLabel(context, 'THERAPISTS SERVICES', screenWidth),
                   
                   _buildMenuItem(
                     context: context,
                     icon: Icons.person_search_outlined,
                     selectedIcon: Icons.person_search,
-                    title: 'Find Experts',
+                    title: 'Find Therapists',
                     index: 16,
                     onTap: () {
                       Navigator.pop(context);
@@ -906,7 +906,7 @@ _buildMenuItem(
                   ),
 
                     // _buildMenuItem(
-                    //   context: context,
+                    //   context: context,c
                     //   icon: Icons.chat_bubble_outline,
                     //   selectedIcon: Icons.chat_bubble,
                     //   title: 'Messages',
