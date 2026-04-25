@@ -450,8 +450,8 @@ class EmailPasswordScreen extends StatelessWidget {
                Obx(() {
               // Calculate progress based on role
               final isExpert = regController.role.value == 'expert';
-              final currentStep = isExpert ? 6 : 4;
-              final totalSteps = isExpert ? 6 : 4;
+              final currentStep = isExpert ? 6 : 5;
+              final totalSteps = isExpert ? 6 : 5;
               final progress = currentStep / totalSteps;
 
               return LinearProgressIndicator(
@@ -465,7 +465,7 @@ class EmailPasswordScreen extends StatelessWidget {
             SizedBox(height: size.customHeight(context) * 0.008),
              Obx(() {
               final isExpert = regController.role.value == 'expert';
-              final stepText = isExpert ? 'STEP 6/6' : 'STEP 4/4';
+              final stepText = isExpert ? 'STEP 6/6' : 'STEP 5/5';
               
               return Text(
                 stepText,

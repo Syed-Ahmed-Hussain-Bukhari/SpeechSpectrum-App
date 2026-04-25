@@ -51,7 +51,7 @@ class NameScreen extends StatelessWidget {
               // Calculate progress based on role
               final isExpert = regController.role.value == 'expert';
               final currentStep = isExpert ? 2 : 2;
-              final totalSteps = isExpert ? 6 : 4;
+              final totalSteps = isExpert ? 6 : 5;
               final progress = currentStep / totalSteps;
 
               return LinearProgressIndicator(
@@ -65,7 +65,7 @@ class NameScreen extends StatelessWidget {
             SizedBox(height: size.customHeight(context) * 0.008),
              Obx(() {
               final isExpert = regController.role.value == 'expert';
-              final stepText = isExpert ? 'STEP 2/6' : 'STEP 2/4';
+              final stepText = isExpert ? 'STEP 2/6' : 'STEP 2/5';
               
               return Text(
                 stepText,

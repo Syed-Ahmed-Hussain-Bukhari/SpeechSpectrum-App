@@ -272,7 +272,7 @@ class PhoneScreen extends StatelessWidget {
               // Calculate progress based on role
               final isExpert = regController.role.value == 'expert';
               final currentStep = isExpert ? 3 : 3;
-              final totalSteps = isExpert ? 6 : 4;
+              final totalSteps = isExpert ? 6 : 5;
               final progress = currentStep / totalSteps;
 
               return LinearProgressIndicator(
@@ -286,7 +286,7 @@ class PhoneScreen extends StatelessWidget {
             SizedBox(height: size.customHeight(context) * 0.008),
              Obx(() {
               final isExpert = regController.role.value == 'expert';
-              final stepText = isExpert ? 'STEP 3/6' : 'STEP 3/4';
+              final stepText = isExpert ? 'STEP 3/6' : 'STEP 3/5';
               
               return Text(
                 stepText,
