@@ -91,6 +91,28 @@ class APIEndPoints {
   static const String paymentsVerify = '$baseUrl/api/payments/verify';
   static const String paymentsStatus = '$baseUrl/api/payments/status';
 
+   // ── Child Health ──────────────────────────────────────────────────────────
+  /// GET / POST (create) / PUT (update) → /api/children/health/:childId
+  static String childHealth(String childId) => '$baseUrl/api/children/health/$childId';
+ 
+  /// POST upload medical record → /api/children/health/:childId/records
+  static String childHealthRecords(String childId) => '${childHealth(childId)}/records';
+ 
+  /// PUT update single record → /api/children/health/:childId/records/:documentId
+  static String childHealthRecord(String childId, String documentId) =>
+      '${childHealthRecords(childId)}/$documentId';
+ 
+  /// DELETE medical record → /api/children/health/:documentId/records
+  static String deleteHealthRecord(String documentId) =>
+      '$baseUrl/api/children/health/$documentId/records';
+
+       // ── Children ──────────────────────────────────────────────────────────────
+  /// GET all / POST create → /api/children
+  // static const String children = '$baseUrl/api/children';
+ 
+  /// GET / PUT / DELETE single → /api/children/:childId
+  static String child(String childId) => '$children/$childId';
+ 
 
   // Note: For specific appointment operations, append the appointment_id:
 // - Save notes: '$baseUrl/api/appointments/{appointment_id}/notes'
