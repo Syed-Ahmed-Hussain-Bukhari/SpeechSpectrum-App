@@ -16,7 +16,7 @@ class ExpertBottomNav extends StatelessWidget {
 
   static const _items = [
     (Icons.home_outlined, Icons.home, 'Home'),
-    (Icons.chat_bubble_outline, Icons.chat_bubble, 'Messages'),
+    (Icons.event_available, Icons.event, 'Appointment'),
     (Icons.person_outline, Icons.person, 'Profile'),
   ];
 

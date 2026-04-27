@@ -1284,6 +1284,7 @@ import 'package:speechspectrum/controllers/expert_profile_controller.dart';
 import 'package:speechspectrum/controllers/logout_controller.dart';
 import 'package:speechspectrum/routes/app_routes.dart';
 import 'package:speechspectrum/view/chat/expert/expert_chats_list_screen.dart';
+import 'package:speechspectrum/view/expert/appointments/my_appointments_screen.dart';
 import 'package:speechspectrum/view/expert/home/expert_home_content_screen.dart';
 import 'package:speechspectrum/view/expert/profile/expert_profile_screen.dart';
 import 'package:speechspectrum/widget/expert_animated_drawer.dart';
@@ -1320,7 +1321,7 @@ class _ExpertMainScreenState extends State<ExpertMainScreen> {
     // Late-init screens after controllers are registered
     _screens = const [
       ExpertHomeContentScreen(),
-      ExpertChatsListScreen(),
+      MyAppointmentsScreen(),
       ExpertProfileScreen(),
     ];
   }

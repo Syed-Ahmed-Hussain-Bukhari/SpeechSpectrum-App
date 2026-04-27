@@ -21,6 +21,9 @@ import 'package:speechspectrum/view/children/children_list_screen.dart';
 import 'package:speechspectrum/view/children/create_edit_child_screen.dart';
 import 'package:speechspectrum/view/expert/appointment_details_screen.dart';
 import 'package:speechspectrum/view/expert/appointments/appointment_detail_screen.dart';
+import 'package:speechspectrum/view/expert/appointments/child_profile_screen.dart';
+import 'package:speechspectrum/view/expert/appointments/expert_screening_detail_screen.dart';
+import 'package:speechspectrum/view/expert/appointments/expert_speech_detail_screen.dart';
 import 'package:speechspectrum/view/expert/appointments/my_appointments_screen.dart';
 import 'package:speechspectrum/view/expert/expert_appointments_screen.dart';
 import 'package:speechspectrum/view/expert/expert_consultations_screen.dart';
@@ -195,6 +198,9 @@ class AppRoutes {
   /// View health detail screen with medical records management
   static const String childHealthDetail = '/children/health/detail';
 
+  static const String expertChildProfile = '/expert-Child-Profile';
+  static const String expertSpeechDetail = '/expert-Speech-Detail';
+  static const String expertScreeningDetail = '/expert-Screening-Detail';
 
   static final List<GetPage> routes = [
     GetPage<Route<dynamic>>(
@@ -518,5 +524,18 @@ GetPage(
  // ── Child Health ─────────────────────────────────────────────────────────
     GetPage(name: AppRoutes.childHealthProfile, page: () => const ChildHealthProfileScreen()),
     GetPage(name: AppRoutes.childHealthDetail, page: () => const ChildHealthDetailScreen()),
+
+    GetPage(name: AppRoutes.expertChildProfile, page: () => const ExpertChildProfileScreen()),
+
+
+   GetPage<Route<dynamic>>(
+      name: expertSpeechDetail,
+      page: () => ExpertSpeechDetailScreen(),
+    ),
+
+     GetPage<Route<dynamic>>(
+      name: expertScreeningDetail,
+      page: () => ExpertScreeningDetailScreen(),
+    ),
   ];
 }
