@@ -47,7 +47,11 @@ import 'package:speechspectrum/view/notification/notification.dart';
 import 'package:speechspectrum/view/parent/parent_appointment_details_screen.dart';
 import 'package:speechspectrum/view/parent/parent_appointments_screen.dart';
 import 'package:speechspectrum/view/parents/booking/expert_slots_booking_screen.dart';
+import 'package:speechspectrum/view/parents/booking/parent_child_profile_screen.dart';
 import 'package:speechspectrum/view/parents/booking/parent_my_appointments_screen.dart';
+import 'package:speechspectrum/view/parents/booking/parent_screening_detail_screen.dart';
+import 'package:speechspectrum/view/parents/booking/parent_screening_detail_screen.dart';
+import 'package:speechspectrum/view/parents/booking/parent_speech_detail_screen.dart';
 import 'package:speechspectrum/view/parents/experts/consultations_screen.dart';
 import 'package:speechspectrum/view/parents/experts/expert_detail_screen.dart';
 import 'package:speechspectrum/view/parents/experts/experts_list_screen.dart';
@@ -201,6 +205,11 @@ class AppRoutes {
   static const String expertChildProfile = '/expert-Child-Profile';
   static const String expertSpeechDetail = '/expert-Speech-Detail';
   static const String expertScreeningDetail = '/expert-Screening-Detail';
+  // parentChildProfile
+  static const String parentChildProfile = '/parent-Child-Profile';
+
+  static const String parentSpeechDetail = '/parent-Speech-Detail';
+  static const String parentScreeningDetail = '/parent-Screening-Detail';
 
   static final List<GetPage> routes = [
     GetPage<Route<dynamic>>(
@@ -526,6 +535,10 @@ GetPage(
     GetPage(name: AppRoutes.childHealthDetail, page: () => const ChildHealthDetailScreen()),
 
     GetPage(name: AppRoutes.expertChildProfile, page: () => const ExpertChildProfileScreen()),
+    GetPage(name: AppRoutes.parentChildProfile, page: () => const ParentChildProfileScreen()),
+
+    GetPage(name: AppRoutes.parentSpeechDetail, page: () => const ParentSpeechDetailScreen()),
+    GetPage(name: AppRoutes.parentScreeningDetail, page: () => const ParentScreeningDetailScreen()),
 
 
    GetPage<Route<dynamic>>(
@@ -539,3 +552,532 @@ GetPage(
     ),
   ];
 }
+
+
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:speechspectrum/view/AWARENESS/AWARENESS_screen.dart';
+// import 'package:speechspectrum/view/auth/add_children_screen.dart';
+// import 'package:speechspectrum/view/auth/expert_documents_screen.dart';
+// import 'package:speechspectrum/view/auth/expert_info_screen.dart';
+// import 'package:speechspectrum/view/auth/name_screen.dart';
+// import 'package:speechspectrum/view/auth/phone_screen.dart';
+// import 'package:speechspectrum/view/auth/role_selection_screen.dart';
+// import 'package:speechspectrum/view/chat/expert/expert_chat_conversation_screen.dart';
+// import 'package:speechspectrum/view/chat/expert/expert_chats_list_screen.dart';
+// import 'package:speechspectrum/view/chat/parent/parent_chat_conversation_screen.dart';
+// import 'package:speechspectrum/view/chat/parent/parent_chats_list_screen.dart';
+// import 'package:speechspectrum/view/children/child_details_screen.dart';
+// import 'package:speechspectrum/view/children/child_health_detail_screen.dart';
+// import 'package:speechspectrum/view/children/child_health_profile_screen.dart';
+// import 'package:speechspectrum/view/children/child_screening_history_screen.dart';
+// import 'package:speechspectrum/view/children/child_speech_detail_screen.dart';
+// import 'package:speechspectrum/view/children/child_speech_history_screen.dart';
+// import 'package:speechspectrum/view/children/children_list_screen.dart';
+// import 'package:speechspectrum/view/children/create_edit_child_screen.dart';
+// import 'package:speechspectrum/view/expert/appointment_details_screen.dart';
+// import 'package:speechspectrum/view/expert/appointments/appointment_detail_screen.dart';
+// import 'package:speechspectrum/view/expert/appointments/child_profile_screen.dart';
+// import 'package:speechspectrum/view/expert/appointments/expert_screening_detail_screen.dart';
+// import 'package:speechspectrum/view/expert/appointments/expert_speech_detail_screen.dart';
+// import 'package:speechspectrum/view/expert/appointments/my_appointments_screen.dart';
+// import 'package:speechspectrum/view/expert/expert_appointments_screen.dart';
+// import 'package:speechspectrum/view/expert/expert_consultations_screen.dart';
+// import 'package:speechspectrum/view/expert/expert_linked_parents_screen.dart';
+// import 'package:speechspectrum/view/expert/home/expert_home_screen.dart';
+// import 'package:speechspectrum/view/expert/home/expert_main_screen.dart';
+// import 'package:speechspectrum/view/expert/location/expert_locations_screen.dart';
+// import 'package:speechspectrum/view/expert/location/location_picker_screen.dart';
+// import 'package:speechspectrum/view/expert/profile/expert_edit_profile_screen.dart';
+// import 'package:speechspectrum/view/expert/save_feedback_screen.dart';
+// import 'package:speechspectrum/view/expert/save_notes_screen.dart';
+// import 'package:speechspectrum/view/expert/slots/expert_slots_screen.dart';
+// import 'package:speechspectrum/view/history/child_history_screen.dart';
+// import 'package:speechspectrum/view/history/history_screen.dart';
+// import 'package:speechspectrum/view/history/submission_details_screen.dart';
+// import 'package:speechspectrum/view/home/QUESTIONNAIRE_screen.dart';
+// import 'package:speechspectrum/view/home/home_screen.dart';
+// import 'package:speechspectrum/view/home/voice_upload_screen.dart';
+// import 'package:speechspectrum/view/learnScreen/learnScreen.dart';
+// import 'package:speechspectrum/view/notification/notification.dart';
+// import 'package:speechspectrum/view/parent/parent_appointment_details_screen.dart';
+// import 'package:speechspectrum/view/parent/parent_appointments_screen.dart';
+// import 'package:speechspectrum/view/parents/booking/expert_slots_booking_screen.dart';
+// import 'package:speechspectrum/view/parents/booking/parent_child_profile_screen.dart';
+// import 'package:speechspectrum/view/parents/booking/parent_my_appointments_screen.dart';
+// import 'package:speechspectrum/view/parents/booking/parent_screening_detail_screen.dart';
+// import 'package:speechspectrum/view/parents/booking/parent_speech_detail_screen.dart'; // ← ADD THIS IMPORT
+// import 'package:speechspectrum/view/parents/experts/consultations_screen.dart';
+// import 'package:speechspectrum/view/parents/experts/expert_detail_screen.dart';
+// import 'package:speechspectrum/view/parents/experts/experts_list_screen.dart';
+// import 'package:speechspectrum/view/parents/experts/linked_experts_screen.dart';
+// import 'package:speechspectrum/view/payment/payment_cancel_screen.dart';
+// import 'package:speechspectrum/view/payment/payment_success_screen.dart';
+// import 'package:speechspectrum/view/payment/payment_webview_screen.dart';
+// import 'package:speechspectrum/view/profile_screen.dart/edit_profile.dart';
+// import 'package:speechspectrum/view/profile_screen.dart/profile.dart';
+// import 'package:speechspectrum/view/progress/progress_hub_screen.dart';
+// import 'package:speechspectrum/view/questionnaire/patient_info_screen.dart';
+// import 'package:speechspectrum/view/questionnaire/questionnaire_history_screen.dart';
+// import 'package:speechspectrum/view/questionnaire/questionnaire_result_screen.dart';
+// import 'package:speechspectrum/view/questionnaire/questionnaire_screen.dart';
+// import 'package:speechspectrum/view/result/result_screen.dart';
+// import 'package:speechspectrum/view/setting/about_screen.dart';
+// import 'package:speechspectrum/view/setting/help_and_support.dart';
+// import 'package:speechspectrum/view/setting/privacy_and_policy_screen.dart';
+// import 'package:speechspectrum/view/setting/settings.dart';
+// import 'package:speechspectrum/view/setting/terms_and_conditions_screen.dart';
+// import 'package:speechspectrum/view/speech/speech_detail_screen.dart';
+// import 'package:speechspectrum/view/speech/speech_recording_screen.dart';
+// import 'package:speechspectrum/view/speech/speech_submissions_screen.dart';
+// import '../view/splash_screen.dart';
+// import '../view/onboarding_screen.dart';
+// import '../view/auth/login_screen.dart';
+// import '../view/auth/signup_screen.dart';
+// import '../view/auth/reset_password_screen.dart';
+// import '../view/auth/set_password_screen.dart';
+
+// class AppRoutes {
+//   static String splashScreen = '/';
+//   static const String onboarding = '/onboarding';
+//   static const String login = '/login';
+//   static const String signup = '/signup';
+//   static const String resetPassword = '/reset-password';
+//   static const String setPassword = '/set-password';
+//   static const String home = '/home';
+//   static const String questionnaire = '/questionnaire';
+//   static const String voiceUpload = '/voice-upload';
+//   static const String results = '/results';
+//   static const String profile = '/profile';
+//   static const String editProfile = '/edit-profile';
+//   static const String settings = '/settings';
+//   static const String termsAndConditions = '/terms';
+//   static const String privacyPolicy = '/privacy';
+//   static const String about = '/about';
+//   static const String awareness = '/awareness';
+//   static const String notification = '/notification';
+//   static const String help = '/help';
+//   static const String learn = '/learn';
+
+//   static const String roleSelection = '/role-selection';
+//   static const String nameScreen = '/name-screen';
+//   static const String phoneScreen = '/phone-screen';
+//   static const String childrenList = '/children-list';
+//   static const String createChild = '/create-child';
+//   static const String editChild = '/edit-child';
+//   static const String childDetails = '/child-details';
+  
+//   static const String questionnaireResults = '/questionnaireResults';
+//   static const String patientInfo = '/patientInfo';
+
+//   // History routes
+//   static const String history = '/history';
+//   static const String childHistory = '/child-history';
+//   static const String submissionDetails = '/submission-details';
+
+//   // Expert-specific routes
+//   static const String expertInfo = '/expert-info';
+//   static const String expertDocuments = '/expert-documents';
+  
+//   // Expert routes
+//   static const String expertsList = '/experts-list';
+//   static const String expertDetail = '/expert-detail';
+//   static const String consultations = '/consultations';
+//   static const String linkedExperts = '/linked-experts';
+
+//   // Expert user routes
+//   static const String expertConsultations = '/expert-consultations';
+//   static const String expertLinkedParents = '/expert-linked-parents';
+
+//   static const String expertAppointments = '/expert-appointments';
+//   static const String saveNotes = '/save-notes';
+//   static const String saveFeedback = '/save-feedback';
+//   static const String appointmentDetails = '/appointment-details';
+
+//   static const String parentAppointmentDetails = '/parent-appointment-details';
+//   static const String parentAppointments = '/parent-appointments'; 
+
+//   // Expert Chat routes
+//   static const String expertChats = '/expert-chats';
+//   static const String expertChatConversation = '/expert-chat-conversation';
+  
+//   // Parent Chat routes
+//   static const String parentChats = '/parent-chats';
+//   static const String parentChatConversation = '/parent-chat-conversation';
+
+//   // Speech Assessment routes
+//   static const String speechRecording = '/speech-recording';
+//   static const String speechSubmissions = '/speech-submissions';
+//   static const String speechDetail = '/speech-detail';
+
+//   // location
+//   static const String expertLocations = '/expert-locations';
+//   static const String locationPicker = '/location-picker';
+
+//   // slot
+//   static const String expertSlots = '/expert-slots';
+
+//   // appointments
+//   static const String myAppointments = '/my-appointments';
+//   static const String myAppointmentDetail = '/my-appointment-detail';
+
+//   // booking
+//   static const String expertSlotsBooking = '/expert-slots-booking';
+//   static const String parentMyAppointments = '/parent-my-appointments';
+//   static const String parentAppointmentDetail = '/parent-appointment-detail';
+
+//   // expert profile
+//   static const String expertMain       = '/expert-main';
+//   static const String expertEditProfile = '/expert-edit-profile';
+
+//   // payments
+//   static const String paymentWebView = '/payment/webview';
+//   static const String paymentSuccess  = '/payment/success';
+//   static const String paymentCancel   = '/payment/cancel';
+
+//   static const String progressHub      = '/progress-hub'; 
+
+//   static const String addChildren = '/add-children';
+   
+//   static const String childScreeningHistory = '/child-screening-history';
+//   static const String childSpeechHistory    = '/child-speech-history';
+//   static const String childSpeechDetail     = '/child-speech-detail';
+
+//   // Child Health
+//   static const String childHealthProfile = '/children/health/profile';
+//   static const String childHealthDetail = '/children/health/detail';
+
+//   static const String expertChildProfile = '/expert-Child-Profile';
+//   static const String expertSpeechDetail = '/expert-Speech-Detail';
+//   static const String expertScreeningDetail = '/expert-Screening-Detail';
+
+//   static const String parentChildProfile = '/parent-Child-Profile';
+//   static const String parentSpeechDetail = '/parent-Speech-Detail';       // ← speech
+//   static const String parentScreeningDetail = '/parent-Screening-Detail'; // ← screening
+
+//   static final List<GetPage> routes = [
+//     GetPage<Route<dynamic>>(
+//       name: splashScreen,
+//       page: () => SplashScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: home,
+//       page: () => HomeScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name:questionnaire,
+//       page: () => QuestionnaireScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: onboarding,
+//       page: () => OnboardingScreen(),
+//     ),
+//     GetPage<Route<dynamic>>(
+//       name: login,
+//       page: () => LoginScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: roleSelection,
+//       page: () => RoleSelectionScreen(),
+//     ),
+//     GetPage<Route<dynamic>>(
+//       name: nameScreen,
+//       page: () => NameScreen(),
+//     ),
+//     GetPage<Route<dynamic>>(
+//       name: phoneScreen,
+//       page: () => PhoneScreen(),
+//     ),
+//     GetPage<Route<dynamic>>(
+//       name: signup,
+//       page: () => EmailPasswordScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: resetPassword,
+//       page: () => ResetPasswordScreen(),
+//     ),
+//     GetPage<Route<dynamic>>(
+//       name: setPassword,
+//       page: () => SetPasswordScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: voiceUpload,
+//       page: () => VoiceUploadScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: results,
+//       page: () => ResultsScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: profile,
+//       page: () => ProfileScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: editProfile,
+//       page: () => EditProfileScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: settings,
+//       page: () => SettingsScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: termsAndConditions,
+//       page: () => TermsAndConditionsScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: privacyPolicy,
+//       page: () => PrivacyPolicyScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: about,
+//       page: () => AboutScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: awareness,
+//       page: () => AwarenessScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: notification,
+//       page: () => NotificationsScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: help,
+//       page: () => HelpScreen(),
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: learn,
+//       page: () => LearnScreen(),
+//     ),
+
+//     GetPage(
+//       name: AppRoutes.childrenList,
+//       page: () => const ChildrenListScreen(),
+//       transition: Transition.rightToLeft,
+//       transitionDuration: const Duration(milliseconds: 300),
+//     ),
+//     GetPage(
+//       name: AppRoutes.createChild,
+//       page: () => const CreateEditChildScreen(),
+//       transition: Transition.rightToLeft,
+//       transitionDuration: const Duration(milliseconds: 300),
+//     ),
+//     GetPage(
+//       name: AppRoutes.editChild,
+//       page: () => const CreateEditChildScreen(),
+//       transition: Transition.rightToLeft,
+//       transitionDuration: const Duration(milliseconds: 300),
+//     ),
+//     GetPage(
+//       name: AppRoutes.childDetails,
+//       page: () => const ChildDetailsScreen(),
+//       transition: Transition.rightToLeft,
+//       transitionDuration: const Duration(milliseconds: 300),
+//     ),
+//     GetPage(
+//       name: AppRoutes.patientInfo,
+//       page: () => const PatientInfoScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.questionnaire,
+//       page: () => const QuestionnaireScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.questionnaireResults,
+//       page: () => const QuestionnaireResultsScreen(),
+//     ),
+
+//     GetPage(name: AppRoutes.history, page: () => const HistoryScreen()),
+//     GetPage(name: AppRoutes.childHistory, page: () => const ChildHistoryScreen()),
+//     GetPage(name: AppRoutes.submissionDetails, page: () => const SubmissionDetailsScreen()),
+
+//     GetPage(name: AppRoutes.expertInfo, page: () => ExpertInfoScreen()),
+//     GetPage(name: AppRoutes.expertDocuments, page: () => ExpertDocumentsScreen()),
+
+//     GetPage(name: AppRoutes.expertsList, page: () => ExpertsListScreen()),
+//     GetPage(name: AppRoutes.expertDetail, page: () => ExpertDetailScreen()),
+//     GetPage(name: AppRoutes.consultations, page: () => ConsultationsScreen()),
+//     GetPage(name: AppRoutes.linkedExperts, page: () => LinkedExpertsScreen()),
+
+//     GetPage(name: AppRoutes.expertConsultations, page: () => ExpertConsultationsScreen()),
+//     GetPage(name: AppRoutes.expertLinkedParents, page: () => ExpertLinkedParentsScreen()),
+
+//     GetPage(
+//       name: AppRoutes.expertAppointments,
+//       page: () => const ExpertAppointmentsScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.saveNotes,
+//       page: () => const SaveNotesScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.saveFeedback,
+//       page: () => const SaveFeedbackScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.appointmentDetails,
+//       page: () => const AppointmentDetailsScreen(),
+//     ),
+
+//     GetPage(
+//       name: AppRoutes.parentAppointments,
+//       page: () => const ParentAppointmentsScreen(),
+//     ),
+
+//     GetPage(
+//       name: AppRoutes.parentAppointmentDetails,
+//       page: () => const ParentAppointmentDetailsScreen(),
+//     ),
+
+//     // Expert Chat Routes
+//     GetPage(
+//       name: AppRoutes.expertChats,
+//       page: () => const ExpertChatsListScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.expertChatConversation,
+//       page: () => const ExpertChatConversationScreen(),
+//     ),
+
+//     // Parent Chat Routes
+//     GetPage(
+//       name: AppRoutes.parentChats,
+//       page: () => const ParentChatsListScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.parentChatConversation,
+//       page: () => const ParentChatConversationScreen(),
+//     ),
+
+//     GetPage(
+//       name: AppRoutes.speechRecording,
+//       page: () => const SpeechRecordingScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.speechSubmissions,
+//       page: () => const SpeechSubmissionsScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.speechDetail,
+//       page: () => const SpeechDetailScreen(),
+//     ),
+
+//     // location
+//     GetPage(
+//       name: AppRoutes.expertLocations,
+//       page: () => const ExpertLocationsScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.locationPicker,
+//       page: () => const LocationPickerScreen(),
+//       transition: Transition.rightToLeft,
+//       transitionDuration: const Duration(milliseconds: 300),
+//     ),
+
+//     GetPage(
+//       name: AppRoutes.expertSlots,
+//       page: () => const ExpertSlotsScreen(),
+//       transition: Transition.rightToLeft,
+//       transitionDuration: const Duration(milliseconds: 300),
+//     ),
+
+//     GetPage(
+//       name: AppRoutes.myAppointments,
+//       page: () => const MyAppointmentsScreen(),
+//       transition: Transition.rightToLeft,
+//       transitionDuration: const Duration(milliseconds: 300),
+//     ),
+//     GetPage(
+//       name: AppRoutes.myAppointmentDetail,
+//       page: () => const AppointmentDetailScreen(),
+//       transition: Transition.rightToLeft,
+//       transitionDuration: const Duration(milliseconds: 300),
+//     ),
+
+//     GetPage(name: AppRoutes.expertSlotsBooking, page: () => const ExpertSlotsBookingScreen()),
+//     GetPage(name: AppRoutes.parentMyAppointments, page: () => const ParentMyAppointmentsScreen()),
+//     GetPage(name: AppRoutes.parentAppointmentDetail, page: () => const ParentAppointmentDetailScreen()),
+
+//     GetPage(name: AppRoutes.expertMain, page: () => const ExpertMainScreen()),
+//     GetPage(name: AppRoutes.expertEditProfile, page: () => const ExpertEditProfileScreen()),
+
+//     // Payment pages
+//     GetPage(
+//       name: AppRoutes.paymentWebView,
+//       page: () => const WebViewPaymentScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.paymentSuccess,
+//       page: () => const PaymentSuccessScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.paymentCancel,
+//       page: () => const PaymentCancelScreen(),
+//     ),
+
+//     GetPage(
+//       name: AppRoutes.progressHub,
+//       page: () => const ProgressHubScreen(),
+//     ),
+
+//     GetPage(
+//       name: AppRoutes.addChildren,
+//       page: () => const AddChildrenScreen(),
+//     ),
+
+//     GetPage(
+//       name: AppRoutes.childScreeningHistory,
+//       page: () => const ChildScreeningHistoryScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.childSpeechHistory,
+//       page: () => const ChildSpeechHistoryScreen(),
+//     ),
+//     GetPage(
+//       name: AppRoutes.childSpeechDetail,
+//       page: () => const ChildSpeechDetailScreen(),
+//     ),
+
+//     // Child Health
+//     GetPage(name: AppRoutes.childHealthProfile, page: () => const ChildHealthProfileScreen()),
+//     GetPage(name: AppRoutes.childHealthDetail, page: () => const ChildHealthDetailScreen()),
+
+//     GetPage(name: AppRoutes.expertChildProfile, page: () => const ExpertChildProfileScreen()),
+//     GetPage(name: AppRoutes.parentChildProfile, page: () => const ParentChildProfileScreen()),
+
+//     // ── THE FIX: parentSpeechDetail now points to ParentSpeechDetailScreen ──
+//     GetPage(
+//       name: AppRoutes.parentSpeechDetail,
+//       page: () => const ParentSpeechDetailScreen(),   // ← FIXED (was ParentScreeningDetailScreen)
+//     ),
+//     GetPage(
+//       name: AppRoutes.parentScreeningDetail,
+//       page: () => const ParentScreeningDetailScreen(), // ← unchanged
+//     ),
+
+//     GetPage<Route<dynamic>>(
+//       name: expertSpeechDetail,
+//       page: () => ExpertSpeechDetailScreen(),
+//     ),
+//     GetPage<Route<dynamic>>(
+//       name: expertScreeningDetail,
+//       page: () => ExpertScreeningDetailScreen(),
+//     ),
+//   ];
+// }

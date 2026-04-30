@@ -22,7 +22,7 @@ class OnboardingController extends GetxController {
   }
 
   void skip() {
-    Get.offNamed(AppRoutes.signup);
+    Get.offNamed(AppRoutes.login);
   }
 
   @override
