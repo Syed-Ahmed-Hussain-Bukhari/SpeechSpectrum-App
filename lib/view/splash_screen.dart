@@ -483,47 +483,84 @@ class _SplashScreenState extends State<SplashScreen>
   //   }
   // }
 
-  Future<void> _checkAuthenticationStatus() async {
+//   Future<void> _checkAuthenticationStatus() async {
+//   try {
+//     final isLoggedIn = await SharedPreferencesService.isLoggedIn();
+
+//     if (isLoggedIn) {
+//       final isExpired = await SharedPreferencesService.isTokenExpired();
+
+//       if (!isExpired) {
+//           final userRole = await SharedPreferencesService.getRole();
+
+//         // Navigate based on role
+//         if (userRole?.toLowerCase() == 'expert') {
+//           // Navigate to Expert Home
+//           debugPrint('✅ Navigating to Expert Home');
+//           // Get.offAllNamed(AppRoutes.expertHome);
+//           Get.offAllNamed(AppRoutes.expertMain);
+//         } else if (userRole?.toLowerCase() == 'parent') {
+//           // Navigate to Parent Home
+//           debugPrint('✅ Navigating to Parent Home');
+//           Get.offAllNamed(AppRoutes.home);
+//         } else {
+//           // Fallback - use shared preferences role
+//           final savedRole = await SharedPreferencesService.getRole();
+//           debugPrint('⚠️ Unknown role from response: $userRole, checking saved role: $savedRole');
+          
+//           if (savedRole?.toLowerCase() == 'expert') {
+//             // Get.offAllNamed(AppRoutes.expertHome);
+//             Get.offAllNamed(AppRoutes.expertMain);
+//           } else {
+//             Get.offAllNamed(AppRoutes.home);
+//           }
+//         }
+        
+//       } else {
+//         Get.offAllNamed(AppRoutes.login);
+//       }
+//     } else {
+//       Get.offAllNamed(AppRoutes.onboarding);
+//     }
+//   } catch (e) {
+//     Get.offAllNamed(AppRoutes.onboarding);
+//   }
+// }
+
+Future<void> _checkAuthenticationStatus() async {
   try {
+    // Check if onboarding has ever been seen
+    final onboardingSeen = await SharedPreferencesService.isOnboardingSeen();
+
+    if (!onboardingSeen) {
+      // First time ever — show onboarding
+      Get.offAllNamed(AppRoutes.onboarding);
+      return;
+    }
+
+    // Onboarding already seen — check login state
     final isLoggedIn = await SharedPreferencesService.isLoggedIn();
 
     if (isLoggedIn) {
       final isExpired = await SharedPreferencesService.isTokenExpired();
 
       if (!isExpired) {
-          final userRole = await SharedPreferencesService.getRole();
+        final userRole = await SharedPreferencesService.getRole();
 
-        // Navigate based on role
         if (userRole?.toLowerCase() == 'expert') {
-          // Navigate to Expert Home
-          debugPrint('✅ Navigating to Expert Home');
-          // Get.offAllNamed(AppRoutes.expertHome);
           Get.offAllNamed(AppRoutes.expertMain);
-        } else if (userRole?.toLowerCase() == 'parent') {
-          // Navigate to Parent Home
-          debugPrint('✅ Navigating to Parent Home');
-          Get.offAllNamed(AppRoutes.home);
         } else {
-          // Fallback - use shared preferences role
-          final savedRole = await SharedPreferencesService.getRole();
-          debugPrint('⚠️ Unknown role from response: $userRole, checking saved role: $savedRole');
-          
-          if (savedRole?.toLowerCase() == 'expert') {
-            // Get.offAllNamed(AppRoutes.expertHome);
-            Get.offAllNamed(AppRoutes.expertMain);
-          } else {
-            Get.offAllNamed(AppRoutes.home);
-          }
+          Get.offAllNamed(AppRoutes.home);
         }
-        
       } else {
         Get.offAllNamed(AppRoutes.login);
       }
     } else {
-      Get.offAllNamed(AppRoutes.onboarding);
+      // Logged out — go straight to login (onboarding already seen)
+      Get.offAllNamed(AppRoutes.login);
     }
   } catch (e) {
-    Get.offAllNamed(AppRoutes.onboarding);
+    Get.offAllNamed(AppRoutes.login);
   }
 }
 

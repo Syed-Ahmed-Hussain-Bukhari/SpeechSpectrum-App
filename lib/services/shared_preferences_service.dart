@@ -569,6 +569,19 @@ class SharedPreferencesService {
     return currentTimestamp >= expiresAt;
   }
 
+
+  static const String _onboardingSeenKey = 'onboarding_seen';
+
+static Future<void> setOnboardingSeen() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(_onboardingSeenKey, true);
+}
+
+static Future<bool> isOnboardingSeen() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(_onboardingSeenKey) ?? false;
+}
+
   /* ----------------------------------------------------
    CLEAR DATA (LOGOUT)
   ---------------------------------------------------- */
