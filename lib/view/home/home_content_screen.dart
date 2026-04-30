@@ -738,7 +738,7 @@ class HomeContentScreen extends StatelessWidget {
             ),
             SizedBox(height: size.customHeight(context) * 0.008),
             Text(
-              'Complete one or both assessments — each provides valuable insights independently.',
+              'You may choose to complete either the Screening or Speech assessment. Each provides valuable insights independently.',
               style: GoogleFonts.poppins(
                 fontSize: size.customWidth(context) * 0.033,
                 color: AppColors.textSecondaryColor,
@@ -1066,7 +1066,7 @@ class HomeContentScreen extends StatelessWidget {
           ),
           SizedBox(height: size.customHeight(context) * 0.015),
           Text(
-            '• You may complete either or both assessments based on your preference\n'
+            '• You may choose to complete either the Screening or Speech assessments based on your preference\n'
             '• Each screening method provides independent, meaningful results\n'
             '• Results are intended for screening purposes only, not clinical diagnosis\n'
             '• Please consult a qualified healthcare professional for a formal evaluation\n'
