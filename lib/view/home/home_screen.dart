@@ -479,11 +479,302 @@
 //   }
 // }
 
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/routes/app_routes.dart';
+// import 'package:speechspectrum/services/profile_service.dart';
+// import 'package:speechspectrum/services/shared_preferences_service.dart';
+// import 'package:speechspectrum/view/AWARENESS/AWARENESS_screen.dart';
+// import 'package:speechspectrum/view/chat/parent/parent_chats_list_screen.dart';
+// import 'package:speechspectrum/view/home/home_content_screen.dart';
+// import 'package:speechspectrum/view/parents/experts/experts_list_screen.dart';
+// import 'package:speechspectrum/view/profile_screen.dart/profile.dart';
+// import 'package:speechspectrum/widget/animated_bottom_nav.dart';
+// import 'package:speechspectrum/widget/animated_drawer.dart';
+
+// class HomeScreen extends StatefulWidget {
+//   const HomeScreen({super.key});
+
+//   @override
+//   State<HomeScreen> createState() => _HomeScreenState();
+// }
+
+// class _HomeScreenState extends State<HomeScreen> {
+//   int _selectedIndex = 0;
+//   String _fullName = '';
+//   String _email = '';
+//   final ProfileService _profileService = ProfileService();
+//   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+//   final List<Widget> _screens = [
+//     const HomeContentScreen(),
+//     const ExpertsListScreen(),
+//     const ProfileScreen(),
+//   ];
+
+//   Future<void> _loadUserData() async {
+//     // final name = await SharedPreferencesService.getFullName();
+//     final name = await SharedPreferencesService.getFullName();
+//     final email = await SharedPreferencesService.getEmail();
+  
+//     setState(() {
+//       _fullName = name ?? 'User';
+//       _email = email ?? '';
+//     });
+//   }
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _loadUserData();
+//   }
+
+//   void _onBottomNavTap(int index) {
+//     setState(() {
+//       _selectedIndex = index;
+//     });
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+//     final screenWidth = size.customWidth(context);
+
+//     return Scaffold(
+//       key: _scaffoldKey,
+//       backgroundColor: AppColors.lightGreyColor,
+//       appBar: AppBar(
+//         backgroundColor: AppColors.whiteColor,
+//         elevation: 0,
+//         leading: IconButton(
+//           icon: Icon(
+//             Icons.menu,
+//             color: AppColors.primaryColor,
+//             size: screenWidth * 0.065,
+//           ),
+//           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+//         ),
+//         title: Row(
+//           mainAxisSize: MainAxisSize.min,
+//           children: [
+//             Flexible(
+//               child: Text(
+//                 'Speech',
+//                 style: GoogleFonts.poppins(
+//                   color: AppColors.primaryColor,
+//                   fontWeight: FontWeight.bold,
+//                   fontSize: screenWidth * 0.048,
+//                 ),
+//                 overflow: TextOverflow.ellipsis,
+//               ),
+//             ),
+//             Flexible(
+//               child: Text(
+//                 'Spectrum',
+//                 style: GoogleFonts.poppins(
+//                   color: AppColors.textPrimaryColor,
+//                   fontWeight: FontWeight.bold,
+//                   fontSize: screenWidth * 0.048,
+//                 ),
+//                 overflow: TextOverflow.ellipsis,
+//               ),
+//             ),
+//           ],
+//         ),
+//         centerTitle: false,
+//         actions: [
+//           IconButton(
+//             icon: Icon(
+//               Icons.notifications_outlined,
+//               color: AppColors.primaryColor,
+//               size: screenWidth * 0.065,
+//             ),
+//             onPressed: () {
+//               Get.toNamed(AppRoutes.notification);
+//             },
+//           ),
+//         ],
+//       ),
+//       drawer: AnimatedDrawer(
+//         fullName: _fullName,
+//         email: _email,
+//         onHomePressed: () => _onBottomNavTap(0),
+//         onAwarenessPressed: () => _onBottomNavTap(1),
+//       ),
+//       body: _screens[_selectedIndex],
+      
+//       // OPTION 1: Horizontal Expanding Bottom Navigation (Default - Best for most screens)
+//       // bottomNavigationBar: AnimatedBottomNavigation(
+//       //   onTap: _onBottomNavTap,
+//       // ),
+      
+//             bottomNavigationBar: SafeArea(
+       
+//           child: AnimatedBottomNavigation(
+//             onTap: _onBottomNavTap,
+//           ),
+//         ),
+  
+
+
+//       // OPTION 2: Floating Elevated Style (Uncomment to use)
+//       // bottomNavigationBar: AnimatedBottomNavigationStyle2(
+//       //   onTap: _onBottomNavTap,
+//       // ),
+      
+//       // OPTION 3: Dark Mode Minimal Style (Uncomment to use)
+//       // bottomNavigationBar: AnimatedBottomNavigationStyle3(
+//       //   onTap: _onBottomNavTap,
+//       // ),
+      
+//       // OPTION 4: Compact Modern Design - Best for small screens (Uncomment to use)
+//       // bottomNavigationBar: AnimatedBottomNavigationStyle4(
+//       //   onTap: _onBottomNavTap,
+//       // ),
+//     );
+//   }
+// }
+
+
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/controllers/drawer_controller.dart';
+// import 'package:speechspectrum/routes/app_routes.dart';
+// import 'package:speechspectrum/services/profile_service.dart';
+// import 'package:speechspectrum/services/shared_preferences_service.dart';
+// import 'package:speechspectrum/view/AWARENESS/AWARENESS_screen.dart';
+// import 'package:speechspectrum/view/chat/parent/parent_chats_list_screen.dart';
+// import 'package:speechspectrum/view/home/home_content_screen.dart';
+// import 'package:speechspectrum/view/parents/experts/experts_list_screen.dart';
+// import 'package:speechspectrum/view/profile_screen.dart/profile.dart';
+// import 'package:speechspectrum/widget/animated_bottom_nav.dart';
+// import 'package:speechspectrum/widget/animated_drawer.dart';
+
+// class HomeScreen extends StatefulWidget {
+//   const HomeScreen({super.key});
+
+//   @override
+//   State<HomeScreen> createState() => _HomeScreenState();
+// }
+
+// class _HomeScreenState extends State<HomeScreen> {
+//   int _selectedIndex = 0;
+//   String _fullName = '';
+//   String _email = '';
+//   final ProfileService _profileService = ProfileService();
+//   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+//   final List<Widget> _screens = [
+//     const HomeContentScreen(),
+//     const ExpertsListScreen(fromBottomNav: true),
+//     const ProfileScreen(),
+//   ];
+
+//   Future<void> _loadUserData() async {
+//     final name = await SharedPreferencesService.getFullName();
+//     final email = await SharedPreferencesService.getEmail();
+//     setState(() {
+//       _fullName = name ?? 'User';
+//       _email = email ?? '';
+//     });
+//   }
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _loadUserData();
+//   }
+
+//   void _onBottomNavTap(int index) {
+//     setState(() {
+//       _selectedIndex = index;
+//     });
+//     // When Home is tapped from bottom nav, sync drawer selection to Dashboard (0)
+//     if (index == 0) {
+//       try {
+//         final drawerCtrl = Get.find<DrawerMenuController>();
+//         drawerCtrl.selectItem(0);
+//       } catch (_) {}
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+//     final screenWidth = size.customWidth(context);
+//     final screenHeight = size.customHeight(context);
+
+//     return Scaffold(
+//       key: _scaffoldKey,
+//       backgroundColor: AppColors.lightGreyColor,
+
+//       // AppBar only visible on Home tab (index 0)
+//       appBar: _selectedIndex == 0
+//           ? AppBar(
+//               backgroundColor: AppColors.whiteColor,
+//               elevation: 0,
+//               leading: IconButton(
+//                 icon: Icon(
+//                   Icons.menu,
+//                   color: AppColors.primaryColor,
+//                   size: screenWidth * 0.065,
+//                 ),
+//                 onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+//               ),
+//               title: Row(
+//                 mainAxisSize: MainAxisSize.min,
+//                 children: [
+//                   // Logo image
+//                   Image.asset(
+//                     'assets/images/logo.jpeg',
+//                     width: screenWidth * 0.09,
+//                     height: screenWidth * 0.09,
+//                     fit: BoxFit.contain,
+//                   ),
+//                   SizedBox(width: screenWidth * 0.02),
+//                   // SpeechSpectrum text image
+//                   Image.asset(
+//                     'assets/images/speechSpectrum_text.jpeg',
+//                     width: screenWidth * 0.38,
+//                     fit: BoxFit.contain,
+//                   ),
+//                 ],
+//               ),
+//               centerTitle: false,
+//               // Notification icon removed
+//             )
+//           : null,
+
+//       drawer: AnimatedDrawer(
+//         fullName: _fullName,
+//         email: _email,
+//         onHomePressed: () => _onBottomNavTap(0),
+//         onAwarenessPressed: () => _onBottomNavTap(1),
+//       ),
+//       body: _screens[_selectedIndex],
+
+//       bottomNavigationBar: SafeArea(
+//         child: AnimatedBottomNavigation(
+//           onTap: _onBottomNavTap,
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:speechspectrum/constants/app_colors.dart';
 import 'package:speechspectrum/constants/custom_size.dart';
+import 'package:speechspectrum/controllers/drawer_controller.dart';
 import 'package:speechspectrum/routes/app_routes.dart';
 import 'package:speechspectrum/services/profile_service.dart';
 import 'package:speechspectrum/services/shared_preferences_service.dart';
@@ -511,15 +802,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
     const HomeContentScreen(),
-    const ExpertsListScreen(),
+    const ExpertsListScreen(fromBottomNav: true),
     const ProfileScreen(),
   ];
 
   Future<void> _loadUserData() async {
-    // final name = await SharedPreferencesService.getFullName();
     final name = await SharedPreferencesService.getFullName();
     final email = await SharedPreferencesService.getEmail();
-  
     setState(() {
       _fullName = name ?? 'User';
       _email = email ?? '';
@@ -536,68 +825,62 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _selectedIndex = index;
     });
+    // When Home is tapped from bottom nav, sync drawer selection to Dashboard (0)
+    if (index == 0) {
+      try {
+        final drawerCtrl = Get.find<DrawerMenuController>();
+        drawerCtrl.selectItem(0);
+      } catch (_) {}
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final size = CustomSize();
     final screenWidth = size.customWidth(context);
+    final screenHeight = size.customHeight(context);
 
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.lightGreyColor,
-      appBar: AppBar(
-        backgroundColor: AppColors.whiteColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.menu,
-            color: AppColors.primaryColor,
-            size: screenWidth * 0.065,
-          ),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Text(
-                'Speech',
-                style: GoogleFonts.poppins(
+
+      // AppBar only visible on Home tab (index 0)
+      appBar: _selectedIndex == 0
+          ? AppBar(
+              backgroundColor: AppColors.whiteColor,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(
+                  Icons.menu,
                   color: AppColors.primaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: screenWidth * 0.048,
+                  size: screenWidth * 0.065,
                 ),
-                overflow: TextOverflow.ellipsis,
+                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
               ),
-            ),
-            Flexible(
-              child: Text(
-                'Spectrum',
-                style: GoogleFonts.poppins(
-                  color: AppColors.textPrimaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: screenWidth * 0.048,
-                ),
-                overflow: TextOverflow.ellipsis,
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Logo image
+                  Image.asset(
+                    'assets/images/bg_logo.png',
+                    width: screenWidth * 0.13,
+                    height: screenWidth * 0.13,
+                    fit: BoxFit.contain,
+                  ),
+                  // no gap
+                  // SpeechSpectrum text image
+                  Image.asset(
+                    'assets/images/bR_speechSpectrum_text.png',
+                    width: screenWidth * 0.5,
+                    fit: BoxFit.contain,
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.notifications_outlined,
-              color: AppColors.primaryColor,
-              size: screenWidth * 0.065,
-            ),
-            onPressed: () {
-              Get.toNamed(AppRoutes.notification);
-            },
-          ),
-        ],
-      ),
+              centerTitle: false,
+              // Notification icon removed
+            )
+          : null,
+
       drawer: AnimatedDrawer(
         fullName: _fullName,
         email: _email,
@@ -605,35 +888,12 @@ class _HomeScreenState extends State<HomeScreen> {
         onAwarenessPressed: () => _onBottomNavTap(1),
       ),
       body: _screens[_selectedIndex],
-      
-      // OPTION 1: Horizontal Expanding Bottom Navigation (Default - Best for most screens)
-      // bottomNavigationBar: AnimatedBottomNavigation(
-      //   onTap: _onBottomNavTap,
-      // ),
-      
-            bottomNavigationBar: SafeArea(
-       
-          child: AnimatedBottomNavigation(
-            onTap: _onBottomNavTap,
-          ),
+
+      bottomNavigationBar: SafeArea(
+        child: AnimatedBottomNavigation(
+          onTap: _onBottomNavTap,
         ),
-  
-
-
-      // OPTION 2: Floating Elevated Style (Uncomment to use)
-      // bottomNavigationBar: AnimatedBottomNavigationStyle2(
-      //   onTap: _onBottomNavTap,
-      // ),
-      
-      // OPTION 3: Dark Mode Minimal Style (Uncomment to use)
-      // bottomNavigationBar: AnimatedBottomNavigationStyle3(
-      //   onTap: _onBottomNavTap,
-      // ),
-      
-      // OPTION 4: Compact Modern Design - Best for small screens (Uncomment to use)
-      // bottomNavigationBar: AnimatedBottomNavigationStyle4(
-      //   onTap: _onBottomNavTap,
-      // ),
+      ),
     );
   }
 }

@@ -804,7 +804,33 @@ class LoginScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo icon
+                  // // Logo icon
+                  // Container(
+                  //   height: screenWidth * 0.18,
+                  //   width: screenWidth * 0.18,
+                  //   decoration: BoxDecoration(
+                  //     color: AppColors.whiteColor.withOpacity(0.25),
+                  //     borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                  //   ),
+                  //   child: Icon(
+                  //     Icons.waves_outlined,
+                  //     size: screenWidth * 0.1,
+                  //     color: AppColors.whiteColor,
+                  //   ),
+                  // ),
+                  // SizedBox(height: screenHeight * 0.02),
+                  // Text(
+                  //   'SpeechSpectrum',
+                  //   style: GoogleFonts.poppins(
+                  //     fontSize: screenWidth * 0.06,
+                  //     fontWeight: FontWeight.bold,
+                  //     color: AppColors.whiteColor,
+                  //     letterSpacing: 0.5,
+                  //   ),
+                  // ),
+                  // SizedBox(height: screenHeight * 0.005),
+
+                  // Logo inside container (same style as original waves container)
                   Container(
                     height: screenWidth * 0.18,
                     width: screenWidth * 0.18,
@@ -812,13 +838,16 @@ class LoginScreen extends StatelessWidget {
                       color: AppColors.whiteColor.withOpacity(0.25),
                       borderRadius: BorderRadius.circular(screenWidth * 0.05),
                     ),
-                    child: Icon(
-                      Icons.waves_outlined,
-                      size: screenWidth * 0.1,
-                      color: AppColors.whiteColor,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                      child: Image.asset(
+                        'assets/images/logo.jpeg',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.02),
+                  // SpeechSpectrum as text (same as original Text widget)
                   Text(
                     'SpeechSpectrum',
                     style: GoogleFonts.poppins(
@@ -908,24 +937,24 @@ class LoginScreen extends StatelessWidget {
                                 : null,
                           )),
 
-                      // Forgot password
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () =>
-                              Get.toNamed(AppRoutes.resetPassword),
-                          child: Text(
-                            'Forgot Password?',
-                            style: GoogleFonts.poppins(
-                              fontSize: screenWidth * 0.035,
-                              color: AppColors.primaryColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
+                      // // Forgot password
+                      // Align(
+                      //   alignment: Alignment.centerRight,
+                      //   child: TextButton(
+                      //     onPressed: () =>
+                      //         Get.toNamed(AppRoutes.resetPassword),
+                      //     child: Text(
+                      //       'Forgot Password?',
+                      //       style: GoogleFonts.poppins(
+                      //         fontSize: screenWidth * 0.035,
+                      //         color: AppColors.primaryColor,
+                      //         fontWeight: FontWeight.w600,
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
 
-                      SizedBox(height: screenHeight * 0.01),
+                      SizedBox(height: screenHeight * 0.05),
 
                       // Login button
                       Obx(() => CustomButton(

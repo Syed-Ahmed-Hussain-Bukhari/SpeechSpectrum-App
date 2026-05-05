@@ -1274,16 +1274,143 @@
 
 
 // lib/view/expert/home/expert_main_screen.dart
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/controllers/expert_drawer_controller.dart';
+// import 'package:speechspectrum/controllers/expert_profile_controller.dart';
+// import 'package:speechspectrum/controllers/logout_controller.dart';
+// import 'package:speechspectrum/routes/app_routes.dart';
+// import 'package:speechspectrum/view/chat/expert/expert_chats_list_screen.dart';
+// import 'package:speechspectrum/view/expert/appointments/my_appointments_screen.dart';
+// import 'package:speechspectrum/view/expert/home/expert_home_content_screen.dart';
+// import 'package:speechspectrum/view/expert/profile/expert_profile_screen.dart';
+// import 'package:speechspectrum/widget/expert_animated_drawer.dart';
+// import 'package:speechspectrum/widget/expert_bottom_nav.dart';
+
+// class ExpertMainScreen extends StatefulWidget {
+//   const ExpertMainScreen({super.key});
+
+//   @override
+//   State<ExpertMainScreen> createState() => _ExpertMainScreenState();
+// }
+
+// class _ExpertMainScreenState extends State<ExpertMainScreen> {
+//   int _selectedIndex = 0;
+//   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+//   late final List<Widget> _screens;
+
+//   @override
+//   void initState() {
+//     super.initState();
+
+//     // Register all controllers once here
+//     if (!Get.isRegistered<ExpertProfileController>()) {
+//       Get.put(ExpertProfileController());
+//     }
+//     if (!Get.isRegistered<ExpertDrawerController>()) {
+//       Get.put(ExpertDrawerController());
+//     }
+//     if (!Get.isRegistered<LogoutController>()) {
+//       Get.put(LogoutController());
+//     }
+
+//     // Late-init screens after controllers are registered
+//     _screens = const [
+//       ExpertHomeContentScreen(),
+//       MyAppointmentsScreen(),
+//       ExpertProfileScreen(),
+//     ];
+//   }
+
+//   void _onTap(int index) => setState(() => _selectedIndex = index);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+//     final screenWidth = size.customWidth(context);
+
+//     return Scaffold(
+//       key: _scaffoldKey,
+//       backgroundColor: AppColors.lightGreyColor,
+//       appBar: AppBar(
+//         backgroundColor: AppColors.whiteColor,
+//         elevation: 0,
+//         surfaceTintColor: Colors.transparent,
+//         leading: IconButton(
+//           icon: Icon(Icons.menu,
+//               color: AppColors.primaryColor, size: screenWidth * 0.065),
+//           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+//         ),
+//         title: Row(
+//           mainAxisSize: MainAxisSize.min,
+//           children: [
+//             Flexible(
+//               child: Text(
+//                 'Speech',
+//                 style: GoogleFonts.poppins(
+//                   color: AppColors.primaryColor,
+//                   fontWeight: FontWeight.bold,
+//                   fontSize: screenWidth * 0.048,
+//                 ),
+//                 overflow: TextOverflow.ellipsis,
+//               ),
+//             ),
+//             Flexible(
+//               child: Text(
+//                 'Spectrum',
+//                 style: GoogleFonts.poppins(
+//                   color: AppColors.textPrimaryColor,
+//                   fontWeight: FontWeight.bold,
+//                   fontSize: screenWidth * 0.048,
+//                 ),
+//                 overflow: TextOverflow.ellipsis,
+//               ),
+//             ),
+//           ],
+//         ),
+//         centerTitle: false,
+//         actions: [
+//           IconButton(
+//             icon: Icon(Icons.notifications_outlined,
+//                 color: AppColors.primaryColor, size: screenWidth * 0.065),
+//             onPressed: () => Get.toNamed(AppRoutes.notification),
+//           ),
+//         ],
+//       ),
+
+//       // ── Separated Drawer ──────────────────────────────────────
+//       drawer: ExpertAnimatedDrawer(
+//         onHomePressed: () => _onTap(0),
+//         onMessagesPressed: () => _onTap(1),
+//         onProfilePressed: () => _onTap(2),
+//       ),
+
+//       body: _screens[_selectedIndex],
+
+//       // ── Separated Bottom Nav ──────────────────────────────────
+//       bottomNavigationBar: SafeArea(
+//         child: ExpertBottomNav(
+//           selectedIndex: _selectedIndex,
+//           onTap: _onTap,
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+
+// lib/view/expert/home/expert_main_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:speechspectrum/constants/app_colors.dart';
 import 'package:speechspectrum/constants/custom_size.dart';
 import 'package:speechspectrum/controllers/expert_drawer_controller.dart';
 import 'package:speechspectrum/controllers/expert_profile_controller.dart';
 import 'package:speechspectrum/controllers/logout_controller.dart';
-import 'package:speechspectrum/routes/app_routes.dart';
-import 'package:speechspectrum/view/chat/expert/expert_chats_list_screen.dart';
 import 'package:speechspectrum/view/expert/appointments/my_appointments_screen.dart';
 import 'package:speechspectrum/view/expert/home/expert_home_content_screen.dart';
 import 'package:speechspectrum/view/expert/profile/expert_profile_screen.dart';
@@ -1321,12 +1448,20 @@ class _ExpertMainScreenState extends State<ExpertMainScreen> {
     // Late-init screens after controllers are registered
     _screens = const [
       ExpertHomeContentScreen(),
-      MyAppointmentsScreen(),
+      // Pass fromBottomNav: true so the screen hides its back arrow
+      MyAppointmentsScreen(fromBottomNav: true),
       ExpertProfileScreen(),
     ];
   }
 
-  void _onTap(int index) => setState(() => _selectedIndex = index);
+  void _onTap(int index) {
+    // Keep drawer Dashboard item active whenever Home tab is selected
+    if (index == 0) {
+      final drawerCtrl = Get.find<ExpertDrawerController>();
+      drawerCtrl.selectItem(0);
+    }
+    setState(() => _selectedIndex = index);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1336,53 +1471,42 @@ class _ExpertMainScreenState extends State<ExpertMainScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.lightGreyColor,
-      appBar: AppBar(
-        backgroundColor: AppColors.whiteColor,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: Icon(Icons.menu,
-              color: AppColors.primaryColor, size: screenWidth * 0.065),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Text(
-                'Speech',
-                style: GoogleFonts.poppins(
-                  color: AppColors.primaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: screenWidth * 0.048,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Flexible(
-              child: Text(
-                'Spectrum',
-                style: GoogleFonts.poppins(
-                  color: AppColors.textPrimaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: screenWidth * 0.048,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_outlined,
-                color: AppColors.primaryColor, size: screenWidth * 0.065),
-            onPressed: () => Get.toNamed(AppRoutes.notification),
-          ),
-        ],
-      ),
 
-      // ── Separated Drawer ──────────────────────────────────────
+      // ── AppBar: only shown on Home tab (index 0) ──────────────
+      appBar: _selectedIndex == 0
+          ? AppBar(
+              backgroundColor: AppColors.whiteColor,
+              elevation: 0,
+              surfaceTintColor: Colors.transparent,
+              leading: IconButton(
+                icon: Icon(Icons.menu,
+                    color: AppColors.primaryColor,
+                    size: screenWidth * 0.065),
+                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+              ),
+              // Logo image + text image — no notification icon
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'assets/images/bg_logo.png',
+                    width: screenWidth * 0.13,
+                    height: screenWidth * 0.13,
+                    fit: BoxFit.contain,
+                  ),
+                  Image.asset(
+                    'assets/images/bR_speechSpectrum_text.png',
+                    width: screenWidth * 0.5,
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
+              centerTitle: false,
+              // No actions — notification removed
+            )
+          : null, // No AppBar for Appointment / Profile tabs
+
+      // ── Drawer (only accessible from Home via hamburger) ──────
       drawer: ExpertAnimatedDrawer(
         onHomePressed: () => _onTap(0),
         onMessagesPressed: () => _onTap(1),
@@ -1391,7 +1515,7 @@ class _ExpertMainScreenState extends State<ExpertMainScreen> {
 
       body: _screens[_selectedIndex],
 
-      // ── Separated Bottom Nav ──────────────────────────────────
+      // ── Bottom Nav ────────────────────────────────────────────
       bottomNavigationBar: SafeArea(
         child: ExpertBottomNav(
           selectedIndex: _selectedIndex,
