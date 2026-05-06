@@ -21,7 +21,7 @@ import 'package:speechspectrum/view/children/children_list_screen.dart';
 import 'package:speechspectrum/view/children/create_edit_child_screen.dart';
 import 'package:speechspectrum/view/expert/appointment_details_screen.dart';
 import 'package:speechspectrum/view/expert/appointments/appointment_detail_screen.dart';
-import 'package:speechspectrum/view/expert/appointments/child_profile_screen.dart';
+import 'package:speechspectrum/view/expert/appointments/expert_child_profile_screen.dart';
 import 'package:speechspectrum/view/expert/appointments/expert_screening_detail_screen.dart';
 import 'package:speechspectrum/view/expert/appointments/expert_speech_detail_screen.dart';
 import 'package:speechspectrum/view/expert/appointments/my_appointments_screen.dart';

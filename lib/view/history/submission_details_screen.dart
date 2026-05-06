@@ -1795,6 +1795,2101 @@
 // }
 
 
+// // lib/view/history/submission_details_screen.dart
+// import 'dart:io';
+// import 'dart:typed_data';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:intl/intl.dart';
+// import 'package:path_provider/path_provider.dart';
+// import 'package:pdf/pdf.dart';
+// import 'package:pdf/widgets.dart' as pw;
+// import 'package:open_file/open_file.dart';
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/controllers/history_controller.dart';
+// import 'package:speechspectrum/models/questionnaire_model.dart';
+// import 'package:speechspectrum/routes/app_routes.dart';
+
+// class SubmissionDetailsScreen extends StatefulWidget {
+//   const SubmissionDetailsScreen({super.key});
+
+//   @override
+//   State<SubmissionDetailsScreen> createState() => _SubmissionDetailsScreenState();
+// }
+
+// class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
+//   late final HistoryController controller;
+//   final Rxn<SubmissionItem> submission = Rxn<SubmissionItem>();
+//   final RxBool isLoading = false.obs;
+
+//   late String submissionId;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     submissionId = Get.arguments as String;
+
+//     if (Get.isRegistered<HistoryController>()) {
+//       controller = Get.find<HistoryController>();
+//     } else {
+//       controller = Get.put(HistoryController());
+//     }
+
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       _fetchSubmission();
+//     });
+//   }
+
+//   Future<void> _fetchSubmission() async {
+//     isLoading.value = true;
+//     final data = await controller.fetchSubmission(submissionId);
+//     submission.value = data;
+//     isLoading.value = false;
+//   }
+
+//   bool _isHighProbability(String probability) {
+//     try {
+//       final value = double.parse(probability.replaceAll('%', ''));
+//       return value >= 70.0;
+//     } catch (e) {
+//       return false;
+//     }
+//   }
+
+//   // ── question label helper (same as questionnaire_results_screen) ────────────
+//   String _questionLabel(String key) {
+//     const map = {
+//       'A1': 'Does your child look at you when called?',
+//       'A2': 'How easy is eye contact with your child?',
+//       'A3': 'Does your child point to indicate wants?',
+//       'A4': 'Does your child point to share interest?',
+//       'A5': 'Does your child pretend play?',
+//       'A6': 'Does your child follow where you\'re looking?',
+//       'A7': 'Does your child show signs of comforting others?',
+//       'A8': 'How would you describe first words?',
+//       'A9': 'Does your child use simple gestures?',
+//       'A10': 'Does your child stare at nothing?',
+//     };
+//     return map[key] ?? key;
+//   }
+
+//   // ── PDF generation (same logic as questionnaire_results_screen) ─────────────
+//   Future<void> _downloadPdf(BuildContext context, SubmissionItem data) async {
+//     try {
+//       final result = data.questionnaireResults.isNotEmpty
+//           ? data.questionnaireResults.first
+//           : null;
+//       if (result == null) return;
+
+//       final childName = data.children.childName;
+//       final probability = result.result.probability;
+//       final prediction = result.result.prediction;
+//       final responses = data.responses;
+//       final submittedAt = data.submittedAt;
+
+//       final pdf = pw.Document();
+
+//       pdf.addPage(
+//         pw.MultiPage(
+//           pageFormat: PdfPageFormat.a4,
+//           margin: const pw.EdgeInsets.all(40),
+//           build: (pw.Context ctx) => [
+//             // Header
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(20),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('6C63FF'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(12)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text(
+//                     'ASD Screening Report',
+//                     style: pw.TextStyle(
+//                       fontSize: 24,
+//                       fontWeight: pw.FontWeight.bold,
+//                       color: PdfColors.white,
+//                     ),
+//                   ),
+//                   pw.SizedBox(height: 6),
+//                   pw.Text(
+//                     'SpeechSpectrum — Confidential Assessment',
+//                     style:
+//                         const pw.TextStyle(fontSize: 12, color: PdfColors.white),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // Result summary
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(16),
+//               decoration: pw.BoxDecoration(
+//                 border: pw.Border.all(color: PdfColor.fromHex('E0E0E0')),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text('Screening Result',
+//                       style: pw.TextStyle(
+//                           fontSize: 16, fontWeight: pw.FontWeight.bold)),
+//                   pw.SizedBox(height: 10),
+//                   pw.Row(children: [
+//                     pw.Text('Child Name: ',
+//                         style:
+//                             pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+//                     pw.Text(childName.isNotEmpty ? childName : 'N/A'),
+//                   ]),
+//                   pw.SizedBox(height: 4),
+//                   pw.Row(children: [
+//                     pw.Text('Prediction: ',
+//                         style:
+//                             pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+//                     pw.Text(prediction),
+//                   ]),
+//                   pw.SizedBox(height: 4),
+//                   pw.Row(children: [
+//                     pw.Text('Probability: ',
+//                         style:
+//                             pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+//                     pw.Text(probability),
+//                   ]),
+//                   pw.SizedBox(height: 4),
+//                   pw.Row(children: [
+//                     pw.Text('Assessment Date: ',
+//                         style:
+//                             pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+//                     pw.Text(() {
+//                       try {
+//                         return DateFormat('MMMM dd, yyyy')
+//                             .format(DateTime.parse(submittedAt));
+//                       } catch (_) {
+//                         return DateFormat('MMMM dd, yyyy')
+//                             .format(DateTime.now());
+//                       }
+//                     }()),
+//                   ]),
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // Submission info
+//             pw.Text('Submission Information',
+//                 style: pw.TextStyle(
+//                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
+//             pw.SizedBox(height: 8),
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('F8F9FA'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   _pdfInfoRow(
+//                       'Age (Months)', '${responses['Age_Mons'] ?? 'N/A'}'),
+//                   _pdfInfoRow(
+//                       'Gender', responses['Sex'] == 1 ? 'Male' : 'Female'),
+//                   _pdfInfoRow('Jaundice History',
+//                       responses['Jaundice'] == 1 ? 'Yes' : 'No'),
+//                   _pdfInfoRow('Family History of ASD',
+//                       responses['Family_mem_with_ASD'] == 1 ? 'Yes' : 'No'),
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // Questionnaire responses
+//             pw.Text('Questionnaire Responses',
+//                 style: pw.TextStyle(
+//                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
+//             pw.SizedBox(height: 8),
+//             ...[
+//               'A1',
+//               'A2',
+//               'A3',
+//               'A4',
+//               'A5',
+//               'A6',
+//               'A7',
+//               'A8',
+//               'A9',
+//               'A10'
+//             ].map((key) {
+//               final val = responses[key];
+//               final isPositive = val == 1;
+//               return pw.Container(
+//                 margin: const pw.EdgeInsets.only(bottom: 6),
+//                 padding: const pw.EdgeInsets.symmetric(
+//                     horizontal: 12, vertical: 8),
+//                 decoration: pw.BoxDecoration(
+//                   color: isPositive
+//                       ? PdfColor.fromHex('E8F5E9')
+//                       : PdfColor.fromHex('FFEBEE'),
+//                   borderRadius:
+//                       const pw.BorderRadius.all(pw.Radius.circular(6)),
+//                 ),
+//                 child: pw.Row(
+//                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+//                   children: [
+//                     pw.Expanded(
+//                       child: pw.Text(
+//                         _questionLabel(key),
+//                         style: const pw.TextStyle(fontSize: 11),
+//                       ),
+//                     ),
+//                     pw.SizedBox(width: 10),
+//                     pw.Text(
+//                       isPositive ? 'Positive' : 'Negative',
+//                       style: pw.TextStyle(
+//                         fontSize: 11,
+//                         fontWeight: pw.FontWeight.bold,
+//                         color: isPositive
+//                             ? PdfColor.fromHex('388E3C')
+//                             : PdfColor.fromHex('D32F2F'),
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               );
+//             }).toList(),
+
+//             pw.SizedBox(height: 20),
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('FFF8E1'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 'Disclaimer: This is a screening tool, not a diagnostic assessment. '
+//                 'Professional evaluation by a qualified healthcare provider is recommended.',
+//                 style: const pw.TextStyle(fontSize: 10),
+//               ),
+//             ),
+//           ],
+//         ),
+//       );
+
+//       final Uint8List bytes = await pdf.save();
+
+//       final dir = await getApplicationDocumentsDirectory();
+//       final childSafe = childName.isNotEmpty
+//           ? childName.replaceAll(RegExp(r'[^\w]'), '_')
+//           : 'report';
+//       final file = File('${dir.path}/ASD_Report_$childSafe.pdf');
+//       await file.writeAsBytes(bytes);
+
+//       await OpenFile.open(file.path);
+//     } catch (e) {
+//       Get.snackbar(
+//         'Error',
+//         'Could not generate PDF: $e',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: AppColors.errorColor,
+//         colorText: AppColors.whiteColor,
+//       );
+//     }
+//   }
+
+//   pw.Widget _pdfInfoRow(String label, String value) {
+//     return pw.Padding(
+//       padding: const pw.EdgeInsets.only(bottom: 4),
+//       child: pw.Row(children: [
+//         pw.Text('$label: ',
+//             style: pw.TextStyle(
+//                 fontWeight: pw.FontWeight.bold, fontSize: 11)),
+//         pw.Text(value, style: const pw.TextStyle(fontSize: 11)),
+//       ]),
+//     );
+//   }
+
+//   // ── build ────────────────────────────────────────────────────────────────────
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+
+//     return Scaffold(
+//       backgroundColor: AppColors.lightGreyColor,
+//       appBar: AppBar(
+//         backgroundColor: AppColors.whiteColor,
+//         elevation: 0,
+//         leading: IconButton(
+//           icon: const Icon(Icons.arrow_back,
+//               color: AppColors.textPrimaryColor),
+//           onPressed: () => Get.back(),
+//         ),
+//         title: Text(
+//           'Submission Details',
+//           style: GoogleFonts.poppins(
+//             color: AppColors.textPrimaryColor,
+//             fontSize: 18,
+//             fontWeight: FontWeight.w600,
+//           ),
+//         ),
+//         actions: [
+//           // ── Download PDF icon in AppBar (same as questionnaire results) ──
+//           Obx(() {
+//             final data = submission.value;
+//             if (data == null) return const SizedBox.shrink();
+//             return IconButton(
+//               icon: const Icon(Icons.download_outlined,
+//                   color: AppColors.textPrimaryColor),
+//               onPressed: () => _downloadPdf(context, data),
+//               tooltip: 'Download PDF Report',
+//             );
+//           }),
+//           IconButton(
+//             icon: const Icon(Icons.delete_outline,
+//                 color: AppColors.errorColor),
+//             onPressed: () => _showDeleteDialog(context),
+//           ),
+//         ],
+//       ),
+//       body: Obx(() {
+//         if (isLoading.value || submission.value == null) {
+//           return const Center(
+//             child: CircularProgressIndicator(
+//                 color: AppColors.primaryColor),
+//           );
+//         }
+
+//         final data = submission.value!;
+//         final result = data.questionnaireResults.isNotEmpty
+//             ? data.questionnaireResults.first
+//             : null;
+
+//         return SingleChildScrollView(
+//           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//           child: Column(
+//             children: [
+//               if (result != null) _buildResultCard(context, result),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // ── Expert card: only "View All Experts" button ───────────────
+//               if (result != null &&
+//                   _isHighProbability(result.result.probability))
+//                 _buildExpertRecommendationCard(context, data),
+//               if (result != null &&
+//                   _isHighProbability(result.result.probability))
+//                 SizedBox(height: size.customHeight(context) * 0.025),
+
+//               _buildInfoCard(context, data),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+//               _buildResponsesCard(context, data.responses),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // ── Download PDF Button (same as questionnaire results screen) ─
+//               SizedBox(
+//                 width: double.infinity,
+//                 height: size.customHeight(context) * 0.065,
+//                 child: ElevatedButton.icon(
+//                   onPressed: () => _downloadPdf(context, data),
+//                   icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+//                   label: Text(
+//                     'Download PDF Report',
+//                     style: GoogleFonts.poppins(
+//                       fontSize: 15,
+//                       fontWeight: FontWeight.w600,
+//                     ),
+//                   ),
+//                   style: ElevatedButton.styleFrom(
+//                     backgroundColor: AppColors.primaryColor,
+//                     foregroundColor: AppColors.whiteColor,
+//                     shape: RoundedRectangleBorder(
+//                       borderRadius: BorderRadius.circular(14),
+//                     ),
+//                     elevation: 0,
+//                   ),
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.03),
+//             ],
+//           ),
+//         );
+//       }),
+//     );
+//   }
+
+//   // ── Result Card (100% same as questionnaire_results_screen) ─────────────────
+//   Widget _buildResultCard(BuildContext context, QuestionnaireResult result) {
+//     final size = CustomSize();
+
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.06),
+//       decoration: BoxDecoration(
+//         gradient: LinearGradient(
+//           colors: [
+//             result.result.getRiskColor(),
+//             result.result.getRiskColor().withOpacity(0.7),
+//           ],
+//           begin: Alignment.topLeft,
+//           end: Alignment.bottomRight,
+//         ),
+//         borderRadius: BorderRadius.circular(25),
+//         boxShadow: [
+//           BoxShadow(
+//             color: result.result.getRiskColor().withOpacity(0.3),
+//             blurRadius: 20,
+//             offset: const Offset(0, 10),
+//           ),
+//         ],
+//       ),
+//       child: Column(
+//         children: [
+//           SizedBox(
+//             height: size.customHeight(context) * 0.15,
+//             width: size.customHeight(context) * 0.15,
+//             child: CircularProgressIndicator(
+//               value: double.parse(
+//                       result.result.probability.replaceAll('%', '')) /
+//                   100,
+//               strokeWidth: 12,
+//               backgroundColor: AppColors.whiteColor.withOpacity(0.3),
+//               valueColor: const AlwaysStoppedAnimation<Color>(
+//                   AppColors.whiteColor),
+//             ),
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           Text(
+//             result.result.probability,
+//             style: GoogleFonts.poppins(
+//               color: AppColors.whiteColor,
+//               fontSize: 40,
+//               fontWeight: FontWeight.bold,
+//               height: 1,
+//             ),
+//           ),
+//           const SizedBox(height: 6),
+//           Text(
+//             'probability',
+//             style: GoogleFonts.poppins(
+//               color: AppColors.whiteColor.withOpacity(0.9),
+//               fontSize: 14,
+//             ),
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.025),
+//           Container(
+//             padding:
+//                 const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+//             decoration: BoxDecoration(
+//               color: AppColors.whiteColor.withOpacity(0.2),
+//               borderRadius: BorderRadius.circular(20),
+//             ),
+//             child: Text(
+//               result.result.prediction,
+//               style: GoogleFonts.poppins(
+//                 color: AppColors.whiteColor,
+//                 fontSize: 16,
+//                 fontWeight: FontWeight.w600,
+//                 letterSpacing: 0.5,
+//               ),
+//               textAlign: TextAlign.center,
+//             ),
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           Text(
+//             'Based on questionnaire responses and analysis',
+//             style: GoogleFonts.poppins(
+//               color: AppColors.whiteColor.withOpacity(0.85),
+//               fontSize: 12,
+//               height: 1.4,
+//             ),
+//             textAlign: TextAlign.center,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // ── Expert Card: ONLY "View All Experts" button (Find Expert removed) ────────
+//   Widget _buildExpertRecommendationCard(
+//       BuildContext context, SubmissionItem data) {
+//     final size = CustomSize();
+
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//       decoration: BoxDecoration(
+//         gradient: LinearGradient(
+//           colors: [
+//             AppColors.accentColor.withOpacity(0.1),
+//             AppColors.primaryColor.withOpacity(0.05),
+//           ],
+//           begin: Alignment.topLeft,
+//           end: Alignment.bottomRight,
+//         ),
+//         borderRadius: BorderRadius.circular(20),
+//         border: Border.all(
+//           color: AppColors.accentColor.withOpacity(0.3),
+//           width: 1.5,
+//         ),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(
+//             children: [
+//               Container(
+//                 padding: const EdgeInsets.all(12),
+//                 decoration: BoxDecoration(
+//                   gradient: LinearGradient(
+//                     colors: [AppColors.accentColor, AppColors.primaryColor],
+//                   ),
+//                   borderRadius: BorderRadius.circular(12),
+//                   boxShadow: [
+//                     BoxShadow(
+//                       color: AppColors.accentColor.withOpacity(0.3),
+//                       blurRadius: 10,
+//                       offset: const Offset(0, 4),
+//                     ),
+//                   ],
+//                 ),
+//                 child: const Icon(
+//                   Icons.medical_services_rounded,
+//                   color: AppColors.whiteColor,
+//                   size: 24,
+//                 ),
+//               ),
+//               const SizedBox(width: 15),
+//               Expanded(
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Text(
+//                       'Expert Consultation Recommended',
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.042,
+//                         fontWeight: FontWeight.bold,
+//                         color: AppColors.textPrimaryColor,
+//                       ),
+//                     ),
+//                     SizedBox(height: size.customHeight(context) * 0.004),
+//                     Text(
+//                       'Consider consulting with a specialist',
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.032,
+//                         color: AppColors.textSecondaryColor,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ],
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           Container(
+//             padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//             decoration: BoxDecoration(
+//               color: AppColors.whiteColor,
+//               borderRadius: BorderRadius.circular(12),
+//             ),
+//             child: Text(
+//               'Based on the assessment results, we recommend consulting with a qualified expert for ${data.children.childName}. Early professional guidance can be beneficial.',
+//               style: GoogleFonts.poppins(
+//                 fontSize: size.customWidth(context) * 0.036,
+//                 color: AppColors.textPrimaryColor,
+//                 height: 1.6,
+//               ),
+//             ),
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+
+//           // ── Single full-width "View All Experts" button only ──────────────
+//           SizedBox(
+//             width: double.infinity,
+//             child: ElevatedButton.icon(
+//               onPressed: () {
+//                 Get.toNamed(
+//                   AppRoutes.expertsList,
+//                   arguments: {
+//                     'childId': data.childId,
+//                     'childName': data.children.childName,
+//                   },
+//                 );
+//               },
+//               icon: const Icon(Icons.person_search_rounded, size: 20),
+//               label: Text(
+//                 'View All Experts',
+//                 style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.04,
+//                   fontWeight: FontWeight.w600,
+//                 ),
+//               ),
+//               style: ElevatedButton.styleFrom(
+//                 backgroundColor: AppColors.accentColor,
+//                 foregroundColor: AppColors.whiteColor,
+//                 shape: RoundedRectangleBorder(
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 padding: EdgeInsets.symmetric(
+//                   vertical: size.customHeight(context) * 0.018,
+//                 ),
+//                 elevation: 0,
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // ── Info Card (unchanged) ────────────────────────────────────────────────────
+//   Widget _buildInfoCard(BuildContext context, SubmissionItem data) {
+//     final size = CustomSize();
+
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(
+//             children: [
+//               Container(
+//                 padding: const EdgeInsets.all(8),
+//                 decoration: BoxDecoration(
+//                   color: AppColors.primaryColor.withOpacity(0.1),
+//                   borderRadius: BorderRadius.circular(10),
+//                 ),
+//                 child: const Icon(Icons.info_outline,
+//                     color: AppColors.primaryColor, size: 20),
+//               ),
+//               const SizedBox(width: 12),
+//               Text(
+//                 'Submission Information',
+//                 style: GoogleFonts.poppins(
+//                   fontSize: 16,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.textPrimaryColor,
+//                 ),
+//               ),
+//             ],
+//           ),
+//           const SizedBox(height: 20),
+//           _buildInfoRow(context, 'Child Name',
+//               data.children.childName, Icons.person_outline),
+//           _buildInfoRow(
+//               context,
+//               'Submission Date',
+//               DateFormat('MMMM dd, yyyy')
+//                   .format(DateTime.parse(data.submittedAt)),
+//               Icons.calendar_today_outlined),
+//           _buildInfoRow(context, 'Submission Time',
+//               data.getFormattedTime(), Icons.access_time_outlined),
+//           _buildInfoRow(context, 'Age (Months)',
+//               '${data.responses['Age_Mons'] ?? 'N/A'}', Icons.cake_outlined),
+//           _buildInfoRow(
+//               context,
+//               'Gender',
+//               data.responses['Sex'] == 1 ? 'Male' : 'Female',
+//               Icons.wc_outlined),
+//           _buildInfoRow(
+//               context,
+//               'Jaundice History',
+//               data.responses['Jaundice'] == 1 ? 'Yes' : 'No',
+//               Icons.medical_information_outlined),
+//           _buildInfoRow(
+//               context,
+//               'Family History of ASD',
+//               data.responses['Family_mem_with_ASD'] == 1 ? 'Yes' : 'No',
+//               Icons.family_restroom_outlined,
+//               isLast: true),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // ── Responses Card (unchanged) ───────────────────────────────────────────────
+//   Widget _buildResponsesCard(
+//       BuildContext context, Map<String, dynamic> responses) {
+//     final size = CustomSize();
+
+//     const questionKeys = [
+//       'A1','A2','A3','A4','A5','A6','A7','A8','A9','A10'
+//     ];
+
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(
+//             children: [
+//               Container(
+//                 padding: const EdgeInsets.all(8),
+//                 decoration: BoxDecoration(
+//                   color: AppColors.accentColor.withOpacity(0.1),
+//                   borderRadius: BorderRadius.circular(10),
+//                 ),
+//                 child: const Icon(Icons.quiz_outlined,
+//                     color: AppColors.accentColor, size: 20),
+//               ),
+//               const SizedBox(width: 12),
+//               Text(
+//                 'Questionnaire Responses',
+//                 style: GoogleFonts.poppins(
+//                   fontSize: 16,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.textPrimaryColor,
+//                 ),
+//               ),
+//             ],
+//           ),
+//           const SizedBox(height: 16),
+//           ...questionKeys.map((key) {
+//             final value = responses[key];
+//             final isPositive = value == 1;
+//             return _buildResponseItem(
+//               context,
+//               _questionLabel(key),
+//               isPositive ? 'Positive' : 'Negative',
+//               isPositive,
+//             );
+//           }).toList(),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildInfoRow(
+//       BuildContext context, String label, String value, IconData icon,
+//       {bool isLast = false}) {
+//     final size = CustomSize();
+
+//     return Column(
+//       children: [
+//         Padding(
+//           padding: EdgeInsets.symmetric(
+//               vertical: size.customHeight(context) * 0.01),
+//           child: Row(
+//             children: [
+//               Container(
+//                 padding: const EdgeInsets.all(8),
+//                 decoration: BoxDecoration(
+//                   color: AppColors.primaryColor.withOpacity(0.1),
+//                   borderRadius: BorderRadius.circular(8),
+//                 ),
+//                 child: Icon(icon, size: 20, color: AppColors.primaryColor),
+//               ),
+//               const SizedBox(width: 12),
+//               Expanded(
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Text(label,
+//                         style: GoogleFonts.poppins(
+//                             fontSize: size.customWidth(context) * 0.032,
+//                             color: AppColors.textSecondaryColor)),
+//                     Text(value,
+//                         style: GoogleFonts.poppins(
+//                             fontSize: size.customWidth(context) * 0.038,
+//                             fontWeight: FontWeight.w600,
+//                             color: AppColors.textPrimaryColor)),
+//                   ],
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//         if (!isLast) Divider(color: AppColors.greyColor.withOpacity(0.2)),
+//       ],
+//     );
+//   }
+
+//   Widget _buildResponseItem(
+//       BuildContext context, String question, String answer, bool isPositive) {
+//     final size = CustomSize();
+
+//     return Container(
+//       margin: const EdgeInsets.only(bottom: 12),
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: isPositive
+//             ? AppColors.successColor.withOpacity(0.05)
+//             : AppColors.errorColor.withOpacity(0.05),
+//         borderRadius: BorderRadius.circular(12),
+//         border: Border.all(
+//           color: isPositive
+//               ? AppColors.successColor.withOpacity(0.2)
+//               : AppColors.errorColor.withOpacity(0.2),
+//         ),
+//       ),
+//       child: Row(
+//         children: [
+//           Icon(
+//             isPositive
+//                 ? Icons.check_circle_outline
+//                 : Icons.cancel_outlined,
+//             color:
+//                 isPositive ? AppColors.successColor : AppColors.errorColor,
+//             size: 24,
+//           ),
+//           const SizedBox(width: 12),
+//           Expanded(
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Text(question,
+//                     style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.035,
+//                         color: AppColors.textPrimaryColor)),
+//                 const SizedBox(height: 4),
+//                 Text(answer,
+//                     style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.032,
+//                         fontWeight: FontWeight.w600,
+//                         color: isPositive
+//                             ? AppColors.successColor
+//                             : AppColors.errorColor)),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // ── Delete Dialog (unchanged) ─────────────────────────────────────────────────
+//   void _showDeleteDialog(BuildContext context) {
+//     final size = CustomSize();
+
+//     Get.dialog(
+//       Dialog(
+//         shape:
+//             RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+//         child: Container(
+//           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//           child: Column(
+//             mainAxisSize: MainAxisSize.min,
+//             children: [
+//               Container(
+//                 width: 80,
+//                 height: 80,
+//                 decoration: BoxDecoration(
+//                   color: AppColors.errorColor.withOpacity(0.1),
+//                   shape: BoxShape.circle,
+//                 ),
+//                 child: const Icon(Icons.warning_amber_rounded,
+//                     color: AppColors.errorColor, size: 45),
+//               ),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+//               Text(
+//                 'Delete Submission',
+//                 style: GoogleFonts.poppins(
+//                   fontWeight: FontWeight.bold,
+//                   fontSize: size.customWidth(context) * 0.05,
+//                   color: AppColors.textPrimaryColor,
+//                 ),
+//               ),
+//               SizedBox(height: size.customHeight(context) * 0.015),
+//               Text(
+//                 'Are you sure you want to delete this submission?',
+//                 textAlign: TextAlign.center,
+//                 style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.038,
+//                   color: AppColors.textSecondaryColor,
+//                   height: 1.4,
+//                 ),
+//               ),
+//               SizedBox(height: size.customHeight(context) * 0.01),
+//               Text(
+//                 'This action cannot be undone.',
+//                 textAlign: TextAlign.center,
+//                 style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.034,
+//                   color: AppColors.errorColor,
+//                   fontWeight: FontWeight.w500,
+//                 ),
+//               ),
+//               SizedBox(height: size.customHeight(context) * 0.03),
+//               Row(
+//                 children: [
+//                   Expanded(
+//                     child: OutlinedButton(
+//                       onPressed: () => Get.back(),
+//                       style: OutlinedButton.styleFrom(
+//                         padding: EdgeInsets.symmetric(
+//                             vertical:
+//                                 size.customHeight(context) * 0.015),
+//                         side: BorderSide(
+//                             color: AppColors.greyColor.withOpacity(0.5)),
+//                         shape: RoundedRectangleBorder(
+//                             borderRadius: BorderRadius.circular(12)),
+//                       ),
+//                       child: Text('Cancel',
+//                           style: GoogleFonts.poppins(
+//                               color: AppColors.textSecondaryColor,
+//                               fontWeight: FontWeight.w600)),
+//                     ),
+//                   ),
+//                   SizedBox(width: size.customWidth(context) * 0.03),
+//                   Expanded(
+//                     child: Obx(() => ElevatedButton(
+//                           onPressed: controller.isDeleting.value
+//                               ? null
+//                               : () {
+//                                   controller
+//                                       .deleteSubmission(submissionId)
+//                                       .then((_) {
+//                                     if (!controller.isDeleting.value) {
+//                                       Get.back();
+//                                     }
+//                                   });
+//                                 },
+//                           style: ElevatedButton.styleFrom(
+//                             backgroundColor: AppColors.errorColor,
+//                             padding: EdgeInsets.symmetric(
+//                                 vertical:
+//                                     size.customHeight(context) * 0.015),
+//                             shape: RoundedRectangleBorder(
+//                                 borderRadius: BorderRadius.circular(12)),
+//                           ),
+//                           child: controller.isDeleting.value
+//                               ? const SizedBox(
+//                                   width: 20,
+//                                   height: 20,
+//                                   child: CircularProgressIndicator(
+//                                       color: AppColors.whiteColor,
+//                                       strokeWidth: 2),
+//                                 )
+//                               : Text('Delete',
+//                                   style: GoogleFonts.poppins(
+//                                       color: AppColors.whiteColor,
+//                                       fontWeight: FontWeight.w600)),
+//                         )),
+//                   ),
+//                 ],
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+
+
+// // lib/view/history/submission_details_screen.dart
+// import 'dart:io';
+// import 'dart:typed_data';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:intl/intl.dart';
+// import 'package:path_provider/path_provider.dart';
+// import 'package:pdf/pdf.dart';
+// import 'package:pdf/widgets.dart' as pw;
+// import 'package:open_file/open_file.dart';
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/controllers/history_controller.dart';
+// import 'package:speechspectrum/models/questionnaire_model.dart';
+// import 'package:speechspectrum/routes/app_routes.dart';
+
+// class SubmissionDetailsScreen extends StatefulWidget {
+//   const SubmissionDetailsScreen({super.key});
+
+//   @override
+//   State<SubmissionDetailsScreen> createState() => _SubmissionDetailsScreenState();
+// }
+
+// class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
+//   late final HistoryController controller;
+//   final Rxn<SubmissionItem> submission = Rxn<SubmissionItem>();
+//   final RxBool isLoading = false.obs;
+
+//   late String submissionId;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     submissionId = Get.arguments as String;
+
+//     if (Get.isRegistered<HistoryController>()) {
+//       controller = Get.find<HistoryController>();
+//     } else {
+//       controller = Get.put(HistoryController());
+//     }
+
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       _fetchSubmission();
+//     });
+//   }
+
+//   Future<void> _fetchSubmission() async {
+//     isLoading.value = true;
+//     final data = await controller.fetchSubmission(submissionId);
+//     submission.value = data;
+//     isLoading.value = false;
+//   }
+
+//   bool _isHighProbability(String probability) {
+//     try {
+//       final value = double.parse(probability.replaceAll('%', ''));
+//       return value >= 70.0;
+//     } catch (e) {
+//       return false;
+//     }
+//   }
+
+//   String _questionLabel(String key) {
+//     const map = {
+//       'A1': 'Does your child look at you when called?',
+//       'A2': 'How easy is eye contact with your child?',
+//       'A3': 'Does your child point to indicate wants?',
+//       'A4': 'Does your child point to share interest?',
+//       'A5': 'Does your child pretend play?',
+//       'A6': 'Does your child follow where you\'re looking?',
+//       'A7': 'Does your child show signs of comforting others?',
+//       'A8': 'How would you describe first words?',
+//       'A9': 'Does your child use simple gestures?',
+//       'A10': 'Does your child stare at nothing?',
+//     };
+//     return map[key] ?? key;
+//   }
+
+//   Future<void> _downloadPdf(BuildContext context, SubmissionItem data) async {
+//     try {
+//       final result = data.questionnaireResults.isNotEmpty
+//           ? data.questionnaireResults.first
+//           : null;
+//       if (result == null) return;
+
+//       final childName = data.children.childName;
+//       final probability = result.result.probability;
+//       final prediction = result.result.prediction;
+//       final responses = data.responses;
+//       final submittedAt = data.submittedAt;
+
+//       final pdf = pw.Document();
+
+//       pdf.addPage(
+//         pw.MultiPage(
+//           pageFormat: PdfPageFormat.a4,
+//           margin: const pw.EdgeInsets.all(40),
+//           build: (pw.Context ctx) => [
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(20),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('6C63FF'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(12)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text(
+//                     'ASD Screening Report',
+//                     style: pw.TextStyle(
+//                       fontSize: 24,
+//                       fontWeight: pw.FontWeight.bold,
+//                       color: PdfColors.white,
+//                     ),
+//                   ),
+//                   pw.SizedBox(height: 6),
+//                   pw.Text(
+//                     'SpeechSpectrum — Confidential Assessment',
+//                     style:
+//                         const pw.TextStyle(fontSize: 12, color: PdfColors.white),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(16),
+//               decoration: pw.BoxDecoration(
+//                 border: pw.Border.all(color: PdfColor.fromHex('E0E0E0')),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text('Screening Result',
+//                       style: pw.TextStyle(
+//                           fontSize: 16, fontWeight: pw.FontWeight.bold)),
+//                   pw.SizedBox(height: 10),
+//                   pw.Row(children: [
+//                     pw.Text('Child Name: ',
+//                         style:
+//                             pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+//                     pw.Text(childName.isNotEmpty ? childName : 'N/A'),
+//                   ]),
+//                   pw.SizedBox(height: 4),
+//                   pw.Row(children: [
+//                     pw.Text('Prediction: ',
+//                         style:
+//                             pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+//                     pw.Text(prediction),
+//                   ]),
+//                   pw.SizedBox(height: 4),
+//                   pw.Row(children: [
+//                     pw.Text('Probability: ',
+//                         style:
+//                             pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+//                     pw.Text(probability),
+//                   ]),
+//                   pw.SizedBox(height: 4),
+//                   pw.Row(children: [
+//                     pw.Text('Assessment Date: ',
+//                         style:
+//                             pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+//                     pw.Text(() {
+//                       try {
+//                         return DateFormat('MMMM dd, yyyy')
+//                             .format(DateTime.parse(submittedAt));
+//                       } catch (_) {
+//                         return DateFormat('MMMM dd, yyyy')
+//                             .format(DateTime.now());
+//                       }
+//                     }()),
+//                   ]),
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+//             pw.Text('Submission Information',
+//                 style: pw.TextStyle(
+//                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
+//             pw.SizedBox(height: 8),
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('F8F9FA'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   _pdfInfoRow(
+//                       'Age (Months)', '${responses['Age_Mons'] ?? 'N/A'}'),
+//                   _pdfInfoRow(
+//                       'Gender', responses['Sex'] == 1 ? 'Male' : 'Female'),
+//                   _pdfInfoRow('Jaundice History',
+//                       responses['Jaundice'] == 1 ? 'Yes' : 'No'),
+//                   _pdfInfoRow('Family History of ASD',
+//                       responses['Family_mem_with_ASD'] == 1 ? 'Yes' : 'No'),
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+//             pw.Text('Questionnaire Responses',
+//                 style: pw.TextStyle(
+//                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
+//             pw.SizedBox(height: 8),
+//             ...[
+//               'A1','A2','A3','A4','A5','A6','A7','A8','A9','A10'
+//             ].map((key) {
+//               final val = responses[key];
+//               final isPositive = val == 1;
+//               return pw.Container(
+//                 margin: const pw.EdgeInsets.only(bottom: 6),
+//                 padding: const pw.EdgeInsets.symmetric(
+//                     horizontal: 12, vertical: 8),
+//                 decoration: pw.BoxDecoration(
+//                   color: isPositive
+//                       ? PdfColor.fromHex('E8F5E9')
+//                       : PdfColor.fromHex('FFEBEE'),
+//                   borderRadius:
+//                       const pw.BorderRadius.all(pw.Radius.circular(6)),
+//                 ),
+//                 child: pw.Row(
+//                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+//                   children: [
+//                     pw.Expanded(
+//                       child: pw.Text(
+//                         _questionLabel(key),
+//                         style: const pw.TextStyle(fontSize: 11),
+//                       ),
+//                     ),
+//                     pw.SizedBox(width: 10),
+//                     pw.Text(
+//                       isPositive ? 'Positive' : 'Negative',
+//                       style: pw.TextStyle(
+//                         fontSize: 11,
+//                         fontWeight: pw.FontWeight.bold,
+//                         color: isPositive
+//                             ? PdfColor.fromHex('388E3C')
+//                             : PdfColor.fromHex('D32F2F'),
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               );
+//             }).toList(),
+//             pw.SizedBox(height: 20),
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('FFF8E1'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 'Disclaimer: This is a screening tool, not a diagnostic assessment. '
+//                 'Professional evaluation by a qualified healthcare provider is recommended.',
+//                 style: const pw.TextStyle(fontSize: 10),
+//               ),
+//             ),
+//           ],
+//         ),
+//       );
+
+//       final Uint8List bytes = await pdf.save();
+//       final dir = await getApplicationDocumentsDirectory();
+//       final childSafe = childName.isNotEmpty
+//           ? childName.replaceAll(RegExp(r'[^\w]'), '_')
+//           : 'report';
+//       final file = File('${dir.path}/ASD_Report_$childSafe.pdf');
+//       await file.writeAsBytes(bytes);
+//       await OpenFile.open(file.path);
+//     } catch (e) {
+//       Get.snackbar(
+//         'Error',
+//         'Could not generate PDF: $e',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: AppColors.errorColor,
+//         colorText: AppColors.whiteColor,
+//       );
+//     }
+//   }
+
+//   pw.Widget _pdfInfoRow(String label, String value) {
+//     return pw.Padding(
+//       padding: const pw.EdgeInsets.only(bottom: 4),
+//       child: pw.Row(children: [
+//         pw.Text('$label: ',
+//             style: pw.TextStyle(
+//                 fontWeight: pw.FontWeight.bold, fontSize: 11)),
+//         pw.Text(value, style: const pw.TextStyle(fontSize: 11)),
+//       ]),
+//     );
+//   }
+
+//   // ── build ────────────────────────────────────────────────────────────────────
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+
+//     return Scaffold(
+//       backgroundColor: AppColors.lightGreyColor,
+//       appBar: AppBar(
+//         backgroundColor: AppColors.whiteColor,
+//         elevation: 0,
+//         leading: IconButton(
+//           icon: const Icon(Icons.arrow_back,
+//               color: AppColors.textPrimaryColor),
+//           onPressed: () => Get.back(),
+//         ),
+//         title: Text(
+//           'Submission Details',
+//           style: GoogleFonts.poppins(
+//             color: AppColors.textPrimaryColor,
+//             fontSize: 18,
+//             fontWeight: FontWeight.w600,
+//           ),
+//         ),
+//         actions: [
+//           Obx(() {
+//             final data = submission.value;
+//             if (data == null) return const SizedBox.shrink();
+//             return IconButton(
+//               icon: const Icon(Icons.download_outlined,
+//                   color: AppColors.textPrimaryColor),
+//               onPressed: () => _downloadPdf(context, data),
+//               tooltip: 'Download PDF Report',
+//             );
+//           }),
+//           IconButton(
+//             icon: const Icon(Icons.delete_outline,
+//                 color: AppColors.errorColor),
+//             onPressed: () => _showDeleteDialog(context),
+//           ),
+//         ],
+//       ),
+//       body: Obx(() {
+//         if (isLoading.value || submission.value == null) {
+//           return const Center(
+//             child: CircularProgressIndicator(
+//                 color: AppColors.primaryColor),
+//           );
+//         }
+
+//         final data = submission.value!;
+//         final result = data.questionnaireResults.isNotEmpty
+//             ? data.questionnaireResults.first
+//             : null;
+
+//         // ── CHANGE 2: high score → expert card, low score → therapy card ──
+//         final isHigh = result != null &&
+//             _isHighProbability(result.result.probability);
+//         final isLow = result != null && !isHigh;
+
+//         return SingleChildScrollView(
+//           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//           child: Column(
+//             children: [
+//               if (result != null) _buildResultCard(context, result),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // High probability → Consult Therapist (expert) card
+//               if (isHigh) _buildExpertRecommendationCard(context, data),
+//               if (isHigh)
+//                 SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // Low probability → Therapy Exercises card
+//               if (isLow) _buildTherapyExercisesCard(context),
+//               if (isLow)
+//                 SizedBox(height: size.customHeight(context) * 0.025),
+
+//               _buildInfoCard(context, data),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+//               _buildResponsesCard(context, data.responses),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               SizedBox(
+//                 width: double.infinity,
+//                 height: size.customHeight(context) * 0.065,
+//                 child: ElevatedButton.icon(
+//                   onPressed: () => _downloadPdf(context, data),
+//                   icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+//                   label: Text(
+//                     'Download PDF Report',
+//                     style: GoogleFonts.poppins(
+//                       fontSize: 15,
+//                       fontWeight: FontWeight.w600,
+//                     ),
+//                   ),
+//                   style: ElevatedButton.styleFrom(
+//                     backgroundColor: AppColors.primaryColor,
+//                     foregroundColor: AppColors.whiteColor,
+//                     shape: RoundedRectangleBorder(
+//                       borderRadius: BorderRadius.circular(14),
+//                     ),
+//                     elevation: 0,
+//                   ),
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.03),
+//             ],
+//           ),
+//         );
+//       }),
+//     );
+//   }
+
+//   // ── Result Card (unchanged) ──────────────────────────────────────────────────
+//   Widget _buildResultCard(BuildContext context, QuestionnaireResult result) {
+//     final size = CustomSize();
+
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.06),
+//       decoration: BoxDecoration(
+//         gradient: LinearGradient(
+//           colors: [
+//             result.result.getRiskColor(),
+//             result.result.getRiskColor().withOpacity(0.7),
+//           ],
+//           begin: Alignment.topLeft,
+//           end: Alignment.bottomRight,
+//         ),
+//         borderRadius: BorderRadius.circular(25),
+//         boxShadow: [
+//           BoxShadow(
+//             color: result.result.getRiskColor().withOpacity(0.3),
+//             blurRadius: 20,
+//             offset: const Offset(0, 10),
+//           ),
+//         ],
+//       ),
+//       child: Column(
+//         children: [
+//           SizedBox(
+//             height: size.customHeight(context) * 0.15,
+//             width: size.customHeight(context) * 0.15,
+//             child: CircularProgressIndicator(
+//               value: double.parse(
+//                       result.result.probability.replaceAll('%', '')) /
+//                   100,
+//               strokeWidth: 12,
+//               backgroundColor: AppColors.whiteColor.withOpacity(0.3),
+//               valueColor: const AlwaysStoppedAnimation<Color>(
+//                   AppColors.whiteColor),
+//             ),
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           Text(
+//             result.result.probability,
+//             style: GoogleFonts.poppins(
+//               color: AppColors.whiteColor,
+//               fontSize: 40,
+//               fontWeight: FontWeight.bold,
+//               height: 1,
+//             ),
+//           ),
+//           const SizedBox(height: 6),
+//           Text(
+//             'probability',
+//             style: GoogleFonts.poppins(
+//               color: AppColors.whiteColor.withOpacity(0.9),
+//               fontSize: 14,
+//             ),
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.025),
+//           Container(
+//             padding:
+//                 const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+//             decoration: BoxDecoration(
+//               color: AppColors.whiteColor.withOpacity(0.2),
+//               borderRadius: BorderRadius.circular(20),
+//             ),
+//             child: Text(
+//               result.result.prediction,
+//               style: GoogleFonts.poppins(
+//                 color: AppColors.whiteColor,
+//                 fontSize: 16,
+//                 fontWeight: FontWeight.w600,
+//                 letterSpacing: 0.5,
+//               ),
+//               textAlign: TextAlign.center,
+//             ),
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           Text(
+//             'Based on questionnaire responses and analysis',
+//             style: GoogleFonts.poppins(
+//               color: AppColors.whiteColor.withOpacity(0.85),
+//               fontSize: 12,
+//               height: 1.4,
+//             ),
+//             textAlign: TextAlign.center,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // ── CHANGE 1 & 2: Expert card — button now says "Consult Therapist" ──────────
+//   Widget _buildExpertRecommendationCard(
+//       BuildContext context, SubmissionItem data) {
+//     final size = CustomSize();
+
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//       decoration: BoxDecoration(
+//         gradient: LinearGradient(
+//           colors: [
+//             AppColors.accentColor.withOpacity(0.1),
+//             AppColors.primaryColor.withOpacity(0.05),
+//           ],
+//           begin: Alignment.topLeft,
+//           end: Alignment.bottomRight,
+//         ),
+//         borderRadius: BorderRadius.circular(20),
+//         border: Border.all(
+//           color: AppColors.accentColor.withOpacity(0.3),
+//           width: 1.5,
+//         ),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(
+//             children: [
+//               Container(
+//                 padding: const EdgeInsets.all(12),
+//                 decoration: BoxDecoration(
+//                   gradient: LinearGradient(
+//                     colors: [AppColors.accentColor, AppColors.primaryColor],
+//                   ),
+//                   borderRadius: BorderRadius.circular(12),
+//                   boxShadow: [
+//                     BoxShadow(
+//                       color: AppColors.accentColor.withOpacity(0.3),
+//                       blurRadius: 10,
+//                       offset: const Offset(0, 4),
+//                     ),
+//                   ],
+//                 ),
+//                 child: const Icon(
+//                   Icons.medical_services_rounded,
+//                   color: AppColors.whiteColor,
+//                   size: 24,
+//                 ),
+//               ),
+//               const SizedBox(width: 15),
+//               Expanded(
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Text(
+//                       'Expert Consultation Recommended',
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.042,
+//                         fontWeight: FontWeight.bold,
+//                         color: AppColors.textPrimaryColor,
+//                       ),
+//                     ),
+//                     SizedBox(height: size.customHeight(context) * 0.004),
+//                     Text(
+//                       'Consider consulting with a specialist',
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.032,
+//                         color: AppColors.textSecondaryColor,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ],
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           Container(
+//             padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//             decoration: BoxDecoration(
+//               color: AppColors.whiteColor,
+//               borderRadius: BorderRadius.circular(12),
+//             ),
+//             child: Text(
+//               'Based on the assessment results, we recommend consulting with a qualified expert for ${data.children.childName}. Early professional guidance can be beneficial.',
+//               style: GoogleFonts.poppins(
+//                 fontSize: size.customWidth(context) * 0.036,
+//                 color: AppColors.textPrimaryColor,
+//                 height: 1.6,
+//               ),
+//             ),
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+
+//           // ── CHANGE 1: "Consult Therapist" (was "View All Experts") ─────────
+//           SizedBox(
+//             width: double.infinity,
+//             child: ElevatedButton.icon(
+//               onPressed: () {
+//                 Get.toNamed(
+//                   AppRoutes.expertsList,
+//                   arguments: {
+//                     'childId': data.childId,
+//                     'childName': data.children.childName,
+//                   },
+//                 );
+//               },
+//               icon: const Icon(Icons.health_and_safety_rounded, size: 20),
+//               label: Text(
+//                 'Consult Therapist',                       // ← CHANGED
+//                 style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.04,
+//                   fontWeight: FontWeight.w600,
+//                 ),
+//               ),
+//               style: ElevatedButton.styleFrom(
+//                 backgroundColor: AppColors.accentColor,
+//                 foregroundColor: AppColors.whiteColor,
+//                 shape: RoundedRectangleBorder(
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 padding: EdgeInsets.symmetric(
+//                   vertical: size.customHeight(context) * 0.018,
+//                 ),
+//                 elevation: 0,
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // ── CHANGE 2: NEW Therapy Exercises card (shown when score is LOW) ────────────
+//   Widget _buildTherapyExercisesCard(BuildContext context) {
+//     final size = CustomSize();
+
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//       decoration: BoxDecoration(
+//         gradient: LinearGradient(
+//           colors: [
+//             const Color(0xFF00BCD4).withOpacity(0.1),
+//             const Color(0xFF4CAF50).withOpacity(0.05),
+//           ],
+//           begin: Alignment.topLeft,
+//           end: Alignment.bottomRight,
+//         ),
+//         borderRadius: BorderRadius.circular(20),
+//         border: Border.all(
+//           color: const Color(0xFF00BCD4).withOpacity(0.3),
+//           width: 1.5,
+//         ),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(
+//             children: [
+//               Container(
+//                 padding: const EdgeInsets.all(12),
+//                 decoration: BoxDecoration(
+//                   gradient: const LinearGradient(
+//                     colors: [Color(0xFF00BCD4), Color(0xFF4CAF50)],
+//                     begin: Alignment.topLeft,
+//                     end: Alignment.bottomRight,
+//                   ),
+//                   borderRadius: BorderRadius.circular(12),
+//                   boxShadow: [
+//                     BoxShadow(
+//                       color: const Color(0xFF00BCD4).withOpacity(0.3),
+//                       blurRadius: 10,
+//                       offset: const Offset(0, 4),
+//                     ),
+//                   ],
+//                 ),
+//                 child: const Icon(
+//                   Icons.play_lesson_rounded,
+//                   color: Colors.white,
+//                   size: 24,
+//                 ),
+//               ),
+//               const SizedBox(width: 15),
+//               Expanded(
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Text(
+//                       'Therapy Exercises Available',
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.042,
+//                         fontWeight: FontWeight.bold,
+//                         color: AppColors.textPrimaryColor,
+//                       ),
+//                     ),
+//                     SizedBox(height: size.customHeight(context) * 0.004),
+//                     Text(
+//                       'Guided video sessions for your child',
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.032,
+//                         color: AppColors.textSecondaryColor,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ],
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           Container(
+//             padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//             decoration: BoxDecoration(
+//               color: AppColors.whiteColor,
+//               borderRadius: BorderRadius.circular(12),
+//             ),
+//             child: Text(
+//               'Great news! The score is low risk. We recommend continuing with our structured therapy exercise videos to support your child\'s speech and development journey.',
+//               style: GoogleFonts.poppins(
+//                 fontSize: size.customWidth(context) * 0.036,
+//                 color: AppColors.textPrimaryColor,
+//                 height: 1.6,
+//               ),
+//             ),
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           SizedBox(
+//             width: double.infinity,
+//             child: ElevatedButton.icon(
+//               onPressed: () => Get.toNamed(AppRoutes.therapy),
+//               icon: const Icon(Icons.play_circle_outline_rounded, size: 20),
+//               label: Text(
+//                 'View Therapy Exercises',
+//                 style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.04,
+//                   fontWeight: FontWeight.w600,
+//                 ),
+//               ),
+//               style: ElevatedButton.styleFrom(
+//                 backgroundColor: const Color(0xFF00BCD4),
+//                 foregroundColor: Colors.white,
+//                 shape: RoundedRectangleBorder(
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 padding: EdgeInsets.symmetric(
+//                   vertical: size.customHeight(context) * 0.018,
+//                 ),
+//                 elevation: 0,
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // ── Info Card (unchanged) ────────────────────────────────────────────────────
+//   Widget _buildInfoCard(BuildContext context, SubmissionItem data) {
+//     final size = CustomSize();
+
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(
+//             children: [
+//               Container(
+//                 padding: const EdgeInsets.all(8),
+//                 decoration: BoxDecoration(
+//                   color: AppColors.primaryColor.withOpacity(0.1),
+//                   borderRadius: BorderRadius.circular(10),
+//                 ),
+//                 child: const Icon(Icons.info_outline,
+//                     color: AppColors.primaryColor, size: 20),
+//               ),
+//               const SizedBox(width: 12),
+//               Text(
+//                 'Submission Information',
+//                 style: GoogleFonts.poppins(
+//                   fontSize: 16,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.textPrimaryColor,
+//                 ),
+//               ),
+//             ],
+//           ),
+//           const SizedBox(height: 20),
+//           _buildInfoRow(context, 'Child Name',
+//               data.children.childName, Icons.person_outline),
+//           _buildInfoRow(
+//               context,
+//               'Submission Date',
+//               DateFormat('MMMM dd, yyyy')
+//                   .format(DateTime.parse(data.submittedAt)),
+//               Icons.calendar_today_outlined),
+//           _buildInfoRow(context, 'Submission Time',
+//               data.getFormattedTime(), Icons.access_time_outlined),
+//           _buildInfoRow(context, 'Age (Months)',
+//               '${data.responses['Age_Mons'] ?? 'N/A'}', Icons.cake_outlined),
+//           _buildInfoRow(
+//               context,
+//               'Gender',
+//               data.responses['Sex'] == 1 ? 'Male' : 'Female',
+//               Icons.wc_outlined),
+//           _buildInfoRow(
+//               context,
+//               'Jaundice History',
+//               data.responses['Jaundice'] == 1 ? 'Yes' : 'No',
+//               Icons.medical_information_outlined),
+//           _buildInfoRow(
+//               context,
+//               'Family History of ASD',
+//               data.responses['Family_mem_with_ASD'] == 1 ? 'Yes' : 'No',
+//               Icons.family_restroom_outlined,
+//               isLast: true),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // ── Responses Card (unchanged) ───────────────────────────────────────────────
+//   Widget _buildResponsesCard(
+//       BuildContext context, Map<String, dynamic> responses) {
+//     final size = CustomSize();
+
+//     const questionKeys = [
+//       'A1','A2','A3','A4','A5','A6','A7','A8','A9','A10'
+//     ];
+
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(
+//             children: [
+//               Container(
+//                 padding: const EdgeInsets.all(8),
+//                 decoration: BoxDecoration(
+//                   color: AppColors.accentColor.withOpacity(0.1),
+//                   borderRadius: BorderRadius.circular(10),
+//                 ),
+//                 child: const Icon(Icons.quiz_outlined,
+//                     color: AppColors.accentColor, size: 20),
+//               ),
+//               const SizedBox(width: 12),
+//               Text(
+//                 'Questionnaire Responses',
+//                 style: GoogleFonts.poppins(
+//                   fontSize: 16,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.textPrimaryColor,
+//                 ),
+//               ),
+//             ],
+//           ),
+//           const SizedBox(height: 16),
+//           ...questionKeys.map((key) {
+//             final value = responses[key];
+//             final isPositive = value == 1;
+//             return _buildResponseItem(
+//               context,
+//               _questionLabel(key),
+//               isPositive ? 'Positive' : 'Negative',
+//               isPositive,
+//             );
+//           }).toList(),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildInfoRow(
+//       BuildContext context, String label, String value, IconData icon,
+//       {bool isLast = false}) {
+//     final size = CustomSize();
+
+//     return Column(
+//       children: [
+//         Padding(
+//           padding: EdgeInsets.symmetric(
+//               vertical: size.customHeight(context) * 0.01),
+//           child: Row(
+//             children: [
+//               Container(
+//                 padding: const EdgeInsets.all(8),
+//                 decoration: BoxDecoration(
+//                   color: AppColors.primaryColor.withOpacity(0.1),
+//                   borderRadius: BorderRadius.circular(8),
+//                 ),
+//                 child: Icon(icon, size: 20, color: AppColors.primaryColor),
+//               ),
+//               const SizedBox(width: 12),
+//               Expanded(
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Text(label,
+//                         style: GoogleFonts.poppins(
+//                             fontSize: size.customWidth(context) * 0.032,
+//                             color: AppColors.textSecondaryColor)),
+//                     Text(value,
+//                         style: GoogleFonts.poppins(
+//                             fontSize: size.customWidth(context) * 0.038,
+//                             fontWeight: FontWeight.w600,
+//                             color: AppColors.textPrimaryColor)),
+//                   ],
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//         if (!isLast) Divider(color: AppColors.greyColor.withOpacity(0.2)),
+//       ],
+//     );
+//   }
+
+//   Widget _buildResponseItem(
+//       BuildContext context, String question, String answer, bool isPositive) {
+//     final size = CustomSize();
+
+//     return Container(
+//       margin: const EdgeInsets.only(bottom: 12),
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: isPositive
+//             ? AppColors.successColor.withOpacity(0.05)
+//             : AppColors.errorColor.withOpacity(0.05),
+//         borderRadius: BorderRadius.circular(12),
+//         border: Border.all(
+//           color: isPositive
+//               ? AppColors.successColor.withOpacity(0.2)
+//               : AppColors.errorColor.withOpacity(0.2),
+//         ),
+//       ),
+//       child: Row(
+//         children: [
+//           Icon(
+//             isPositive
+//                 ? Icons.check_circle_outline
+//                 : Icons.cancel_outlined,
+//             color:
+//                 isPositive ? AppColors.successColor : AppColors.errorColor,
+//             size: 24,
+//           ),
+//           const SizedBox(width: 12),
+//           Expanded(
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Text(question,
+//                     style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.035,
+//                         color: AppColors.textPrimaryColor)),
+//                 const SizedBox(height: 4),
+//                 Text(answer,
+//                     style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.032,
+//                         fontWeight: FontWeight.w600,
+//                         color: isPositive
+//                             ? AppColors.successColor
+//                             : AppColors.errorColor)),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // ── Delete Dialog (unchanged) ─────────────────────────────────────────────────
+//   void _showDeleteDialog(BuildContext context) {
+//     final size = CustomSize();
+
+//     Get.dialog(
+//       Dialog(
+//         shape:
+//             RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+//         child: Container(
+//           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//           child: Column(
+//             mainAxisSize: MainAxisSize.min,
+//             children: [
+//               Container(
+//                 width: 80,
+//                 height: 80,
+//                 decoration: BoxDecoration(
+//                   color: AppColors.errorColor.withOpacity(0.1),
+//                   shape: BoxShape.circle,
+//                 ),
+//                 child: const Icon(Icons.warning_amber_rounded,
+//                     color: AppColors.errorColor, size: 45),
+//               ),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+//               Text(
+//                 'Delete Submission',
+//                 style: GoogleFonts.poppins(
+//                   fontWeight: FontWeight.bold,
+//                   fontSize: size.customWidth(context) * 0.05,
+//                   color: AppColors.textPrimaryColor,
+//                 ),
+//               ),
+//               SizedBox(height: size.customHeight(context) * 0.015),
+//               Text(
+//                 'Are you sure you want to delete this submission?',
+//                 textAlign: TextAlign.center,
+//                 style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.038,
+//                   color: AppColors.textSecondaryColor,
+//                   height: 1.4,
+//                 ),
+//               ),
+//               SizedBox(height: size.customHeight(context) * 0.01),
+//               Text(
+//                 'This action cannot be undone.',
+//                 textAlign: TextAlign.center,
+//                 style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.034,
+//                   color: AppColors.errorColor,
+//                   fontWeight: FontWeight.w500,
+//                 ),
+//               ),
+//               SizedBox(height: size.customHeight(context) * 0.03),
+//               Row(
+//                 children: [
+//                   Expanded(
+//                     child: OutlinedButton(
+//                       onPressed: () => Get.back(),
+//                       style: OutlinedButton.styleFrom(
+//                         padding: EdgeInsets.symmetric(
+//                             vertical:
+//                                 size.customHeight(context) * 0.015),
+//                         side: BorderSide(
+//                             color: AppColors.greyColor.withOpacity(0.5)),
+//                         shape: RoundedRectangleBorder(
+//                             borderRadius: BorderRadius.circular(12)),
+//                       ),
+//                       child: Text('Cancel',
+//                           style: GoogleFonts.poppins(
+//                               color: AppColors.textSecondaryColor,
+//                               fontWeight: FontWeight.w600)),
+//                     ),
+//                   ),
+//                   SizedBox(width: size.customWidth(context) * 0.03),
+//                   Expanded(
+//                     child: Obx(() => ElevatedButton(
+//                           onPressed: controller.isDeleting.value
+//                               ? null
+//                               : () {
+//                                   controller
+//                                       .deleteSubmission(submissionId)
+//                                       .then((_) {
+//                                     if (!controller.isDeleting.value) {
+//                                       Get.back();
+//                                     }
+//                                   });
+//                                 },
+//                           style: ElevatedButton.styleFrom(
+//                             backgroundColor: AppColors.errorColor,
+//                             padding: EdgeInsets.symmetric(
+//                                 vertical:
+//                                     size.customHeight(context) * 0.015),
+//                             shape: RoundedRectangleBorder(
+//                                 borderRadius: BorderRadius.circular(12)),
+//                           ),
+//                           child: controller.isDeleting.value
+//                               ? const SizedBox(
+//                                   width: 20,
+//                                   height: 20,
+//                                   child: CircularProgressIndicator(
+//                                       color: AppColors.whiteColor,
+//                                       strokeWidth: 2),
+//                                 )
+//                               : Text('Delete',
+//                                   style: GoogleFonts.poppins(
+//                                       color: AppColors.whiteColor,
+//                                       fontWeight: FontWeight.w600)),
+//                         )),
+//                   ),
+//                 ],
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+
 // lib/view/history/submission_details_screen.dart
 import 'dart:io';
 import 'dart:typed_data';
@@ -1858,7 +3953,6 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
     }
   }
 
-  // ── question label helper (same as questionnaire_results_screen) ────────────
   String _questionLabel(String key) {
     const map = {
       'A1': 'Does your child look at you when called?',
@@ -1875,7 +3969,6 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
     return map[key] ?? key;
   }
 
-  // ── PDF generation (same logic as questionnaire_results_screen) ─────────────
   Future<void> _downloadPdf(BuildContext context, SubmissionItem data) async {
     try {
       final result = data.questionnaireResults.isNotEmpty
@@ -1896,7 +3989,6 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(40),
           build: (pw.Context ctx) => [
-            // Header
             pw.Container(
               padding: const pw.EdgeInsets.all(20),
               decoration: pw.BoxDecoration(
@@ -1925,8 +4017,6 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
               ),
             ),
             pw.SizedBox(height: 20),
-
-            // Result summary
             pw.Container(
               padding: const pw.EdgeInsets.all(16),
               decoration: pw.BoxDecoration(
@@ -1980,8 +4070,6 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
               ),
             ),
             pw.SizedBox(height: 20),
-
-            // Submission info
             pw.Text('Submission Information',
                 style: pw.TextStyle(
                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
@@ -2008,23 +4096,12 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
               ),
             ),
             pw.SizedBox(height: 20),
-
-            // Questionnaire responses
             pw.Text('Questionnaire Responses',
                 style: pw.TextStyle(
                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 8),
             ...[
-              'A1',
-              'A2',
-              'A3',
-              'A4',
-              'A5',
-              'A6',
-              'A7',
-              'A8',
-              'A9',
-              'A10'
+              'A1','A2','A3','A4','A5','A6','A7','A8','A9','A10'
             ].map((key) {
               final val = responses[key];
               final isPositive = val == 1;
@@ -2063,7 +4140,6 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
                 ),
               );
             }).toList(),
-
             pw.SizedBox(height: 20),
             pw.Container(
               padding: const pw.EdgeInsets.all(12),
@@ -2083,14 +4159,12 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
       );
 
       final Uint8List bytes = await pdf.save();
-
       final dir = await getApplicationDocumentsDirectory();
       final childSafe = childName.isNotEmpty
           ? childName.replaceAll(RegExp(r'[^\w]'), '_')
           : 'report';
       final file = File('${dir.path}/ASD_Report_$childSafe.pdf');
       await file.writeAsBytes(bytes);
-
       await OpenFile.open(file.path);
     } catch (e) {
       Get.snackbar(
@@ -2140,7 +4214,6 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
           ),
         ),
         actions: [
-          // ── Download PDF icon in AppBar (same as questionnaire results) ──
           Obx(() {
             final data = submission.value;
             if (data == null) return const SizedBox.shrink();
@@ -2178,20 +4251,18 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
               if (result != null) _buildResultCard(context, result),
               SizedBox(height: size.customHeight(context) * 0.025),
 
-              // ── Expert card: only "View All Experts" button ───────────────
-              if (result != null &&
-                  _isHighProbability(result.result.probability))
-                _buildExpertRecommendationCard(context, data),
-              if (result != null &&
-                  _isHighProbability(result.result.probability))
-                SizedBox(height: size.customHeight(context) * 0.025),
+              // Always show BOTH cards regardless of risk level
+              _buildExpertRecommendationCard(context, data),
+              SizedBox(height: size.customHeight(context) * 0.025),
+
+              _buildTherapyExercisesCard(context),
+              SizedBox(height: size.customHeight(context) * 0.025),
 
               _buildInfoCard(context, data),
               SizedBox(height: size.customHeight(context) * 0.025),
               _buildResponsesCard(context, data.responses),
               SizedBox(height: size.customHeight(context) * 0.025),
 
-              // ── Download PDF Button (same as questionnaire results screen) ─
               SizedBox(
                 width: double.infinity,
                 height: size.customHeight(context) * 0.065,
@@ -2224,7 +4295,7 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
     );
   }
 
-  // ── Result Card (100% same as questionnaire_results_screen) ─────────────────
+  // ── Result Card ──────────────────────────────────────────────────────────────
   Widget _buildResultCard(BuildContext context, QuestionnaireResult result) {
     final size = CustomSize();
 
@@ -2315,7 +4386,7 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
     );
   }
 
-  // ── Expert Card: ONLY "View All Experts" button (Find Expert removed) ────────
+  // ── Expert Recommendation Card — always visible, button says "Consult Therapist" ──
   Widget _buildExpertRecommendationCard(
       BuildContext context, SubmissionItem data) {
     final size = CustomSize();
@@ -2369,7 +4440,7 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Expert Consultation Recommended',
+                      'Expert Consultation',
                       style: GoogleFonts.poppins(
                         fontSize: size.customWidth(context) * 0.042,
                         fontWeight: FontWeight.bold,
@@ -2378,7 +4449,7 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
                     ),
                     SizedBox(height: size.customHeight(context) * 0.004),
                     Text(
-                      'Consider consulting with a specialist',
+                      'Connect with a qualified specialist',
                       style: GoogleFonts.poppins(
                         fontSize: size.customWidth(context) * 0.032,
                         color: AppColors.textSecondaryColor,
@@ -2397,7 +4468,7 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              'Based on the assessment results, we recommend consulting with a qualified expert for ${data.children.childName}. Early professional guidance can be beneficial.',
+              'We recommend consulting with a qualified expert for ${data.children.childName}. Early professional guidance can be highly beneficial for your child\'s development.',
               style: GoogleFonts.poppins(
                 fontSize: size.customWidth(context) * 0.036,
                 color: AppColors.textPrimaryColor,
@@ -2406,8 +4477,6 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
             ),
           ),
           SizedBox(height: size.customHeight(context) * 0.02),
-
-          // ── Single full-width "View All Experts" button only ──────────────
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
@@ -2420,9 +4489,9 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
                   },
                 );
               },
-              icon: const Icon(Icons.person_search_rounded, size: 20),
+              icon: const Icon(Icons.health_and_safety_rounded, size: 20),
               label: Text(
-                'View All Experts',
+                'Consult Therapist',
                 style: GoogleFonts.poppins(
                   fontSize: size.customWidth(context) * 0.04,
                   fontWeight: FontWeight.w600,
@@ -2446,7 +4515,129 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
     );
   }
 
-  // ── Info Card (unchanged) ────────────────────────────────────────────────────
+  // ── Therapy Exercises Card — always visible ───────────────────────────────────
+  Widget _buildTherapyExercisesCard(BuildContext context) {
+    final size = CustomSize();
+
+    return Container(
+      padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF00BCD4).withOpacity(0.1),
+            const Color(0xFF4CAF50).withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF00BCD4).withOpacity(0.3),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF00BCD4), Color(0xFF4CAF50)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00BCD4).withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.play_lesson_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Therapy Exercises Available',
+                      style: GoogleFonts.poppins(
+                        fontSize: size.customWidth(context) * 0.042,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimaryColor,
+                      ),
+                    ),
+                    SizedBox(height: size.customHeight(context) * 0.004),
+                    Text(
+                      'Guided video sessions for your child',
+                      style: GoogleFonts.poppins(
+                        fontSize: size.customWidth(context) * 0.032,
+                        color: AppColors.textSecondaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: size.customHeight(context) * 0.02),
+          Container(
+            padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+            decoration: BoxDecoration(
+              color: AppColors.whiteColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'Explore our structured therapy exercise videos to support your child\'s speech and development journey. Regular practice can make a meaningful difference.',
+              style: GoogleFonts.poppins(
+                fontSize: size.customWidth(context) * 0.036,
+                color: AppColors.textPrimaryColor,
+                height: 1.6,
+              ),
+            ),
+          ),
+          SizedBox(height: size.customHeight(context) * 0.02),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => Get.toNamed(AppRoutes.therapy),
+              icon: const Icon(Icons.play_circle_outline_rounded, size: 20),
+              label: Text(
+                'View Therapy Exercises',
+                style: GoogleFonts.poppins(
+                  fontSize: size.customWidth(context) * 0.04,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00BCD4),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: EdgeInsets.symmetric(
+                  vertical: size.customHeight(context) * 0.018,
+                ),
+                elevation: 0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Info Card ────────────────────────────────────────────────────────────────
   Widget _buildInfoCard(BuildContext context, SubmissionItem data) {
     final size = CustomSize();
 
@@ -2515,7 +4706,7 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
     );
   }
 
-  // ── Responses Card (unchanged) ───────────────────────────────────────────────
+  // ── Responses Card ───────────────────────────────────────────────────────────
   Widget _buildResponsesCard(
       BuildContext context, Map<String, dynamic> responses) {
     final size = CustomSize();
@@ -2669,7 +4860,7 @@ class _SubmissionDetailsScreenState extends State<SubmissionDetailsScreen> {
     );
   }
 
-  // ── Delete Dialog (unchanged) ─────────────────────────────────────────────────
+  // ── Delete Dialog ─────────────────────────────────────────────────────────────
   void _showDeleteDialog(BuildContext context) {
     final size = CustomSize();
 

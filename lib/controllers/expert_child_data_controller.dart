@@ -101,8 +101,8 @@ class ExpertChildDataController extends GetxController {
       filteredSpeechList.assignAll(speechList.where((s) {
         if (!s.hasResults) return false;
         final risk = s.latestResult!.result.riskInterpretation
-            .toLowerCase();
-        return risk.contains(q);
+            ?.toLowerCase();
+        return risk!.contains(q);
       }).toList());
     }
   }

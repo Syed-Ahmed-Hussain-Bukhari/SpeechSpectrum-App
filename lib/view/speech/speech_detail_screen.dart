@@ -3659,7 +3659,6790 @@
 // }
 
 
+// // lib/view/speech/speech_detail_screen.dart
+
+// import 'dart:io';
+// import 'dart:typed_data';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:intl/intl.dart';
+// import 'package:open_file/open_file.dart';
+// import 'package:path_provider/path_provider.dart';
+// import 'package:pdf/pdf.dart';
+// import 'package:pdf/widgets.dart' as pw;
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/controllers/speech_controller.dart';
+// import 'package:speechspectrum/models/speech_models.dart';
+// import 'package:speechspectrum/routes/app_routes.dart';
+
+// class SpeechDetailScreen extends StatefulWidget {
+//   const SpeechDetailScreen({super.key});
+
+//   @override
+//   State<SpeechDetailScreen> createState() => _SpeechDetailScreenState();
+// }
+
+// class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
+//   final SpeechController controller = SpeechController.instance;
+//   late String submissionId;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     submissionId = Get.arguments as String;
+
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       _loadDetails();
+//     });
+//   }
+
+//   void _loadDetails() {
+//     final cached = controller.speechSubmissions.firstWhereOrNull(
+//       (s) => s.speechSubmissionId == submissionId,
+//     );
+//     if (cached != null) {
+//       controller.currentSubmission.value = cached;
+//     }
+//     controller.fetchSubmissionDetail(submissionId);
+//   }
+
+//   // ── Risk colour helpers ───────────────────────────────────────────────────
+//   Color _riskColor(AnalysisResult r) {
+//     if (r.isHighRisk()) return AppColors.errorColor;
+//     if (r.isModerateRisk()) return AppColors.warningColor;
+//     return AppColors.successColor;
+//   }
+
+//   IconData _riskIcon(AnalysisResult r) {
+//     if (r.isHighRisk()) return Icons.warning_rounded;
+//     if (r.isModerateRisk()) return Icons.info_rounded;
+//     return Icons.check_circle_rounded;
+//   }
+
+//   // ── PDF generation ────────────────────────────────────────────────────────
+//   Future<void> _downloadPdf(
+//       BuildContext context, SpeechSubmissionDetail submission) async {
+//     try {
+//       final speechResult = submission.getLatestResult();
+//       if (speechResult == null) return;
+
+//       final analysisResult = speechResult.result;
+//       final childName = submission.getChildName();
+//       final bioMarkers = analysisResult.bioMarkers;
+
+//       String formattedDate = 'N/A';
+//       try {
+//         formattedDate = DateFormat('MMMM dd, yyyy')
+//             .format(DateTime.parse(submission.submittedAt));
+//       } catch (_) {
+//         formattedDate =
+//             DateFormat('MMMM dd, yyyy').format(DateTime.now());
+//       }
+
+//       final pdf = pw.Document();
+
+//       pdf.addPage(
+//         pw.MultiPage(
+//           pageFormat: PdfPageFormat.a4,
+//           margin: const pw.EdgeInsets.all(40),
+//           build: (pw.Context ctx) => [
+//             // ── Header ───────────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(20),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('6C63FF'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(12)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text(
+//                     'Speech Analysis Report',
+//                     style: pw.TextStyle(
+//                       fontSize: 24,
+//                       fontWeight: pw.FontWeight.bold,
+//                       color: PdfColors.white,
+//                     ),
+//                   ),
+//                   pw.SizedBox(height: 6),
+//                   pw.Text(
+//                     'SpeechSpectrum — Confidential Assessment',
+//                     style: const pw.TextStyle(
+//                         fontSize: 12, color: PdfColors.white),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Result summary ────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(16),
+//               decoration: pw.BoxDecoration(
+//                 border: pw.Border.all(color: PdfColor.fromHex('E0E0E0')),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text('Analysis Result',
+//                       style: pw.TextStyle(
+//                           fontSize: 16,
+//                           fontWeight: pw.FontWeight.bold)),
+//                   pw.SizedBox(height: 10),
+//                   _pdfRow('Child Name',
+//                       childName.isNotEmpty ? childName : 'N/A'),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Risk Level', analysisResult.riskInterpretation),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Severity Score',
+//                       '${analysisResult.severityScore} / ${analysisResult.maxScore}'),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Assessment Date', formattedDate),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Duration',
+//                       '${submission.recordingDurationSeconds} seconds'),
+//                   if (submission.recordingFormat != null) ...[
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('Format',
+//                         submission.recordingFormat!.toUpperCase()),
+//                   ],
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Bio-markers ───────────────────────────────────────────────
+//             if (bioMarkers != null) ...[
+//               pw.Text('Bio-markers',
+//                   style: pw.TextStyle(
+//                       fontSize: 14,
+//                       fontWeight: pw.FontWeight.bold)),
+//               pw.SizedBox(height: 8),
+//               pw.Container(
+//                 padding: const pw.EdgeInsets.all(12),
+//                 decoration: pw.BoxDecoration(
+//                   color: PdfColor.fromHex('F8F9FA'),
+//                   borderRadius:
+//                       const pw.BorderRadius.all(pw.Radius.circular(8)),
+//                 ),
+//                 child: pw.Column(
+//                   crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                   children: [
+//                     _pdfRow('Pitch Instability',
+//                         '${bioMarkers.pitchInstability.toStringAsFixed(1)} Hz'),
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('Resonance Jitter F1',
+//                         '${bioMarkers.resonanceJitterF1.toStringAsFixed(1)} Hz'),
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('Resonance Jitter F2',
+//                         '${bioMarkers.resonanceJitterF2.toStringAsFixed(1)} Hz'),
+//                   ],
+//                 ),
+//               ),
+//               pw.SizedBox(height: 20),
+//             ],
+
+//             // ── Interpretation ────────────────────────────────────────────
+//             pw.Text('Interpretation',
+//                 style: pw.TextStyle(
+//                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
+//             pw.SizedBox(height: 8),
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('F8F9FA'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 _interpretationText(analysisResult),
+//                 style: const pw.TextStyle(fontSize: 11),
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Disclaimer ────────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('FFF8E1'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 'Disclaimer: This is a screening tool, not a diagnostic assessment. '
+//                 'Professional evaluation by a qualified healthcare provider is recommended.',
+//                 style: const pw.TextStyle(fontSize: 10),
+//               ),
+//             ),
+//           ],
+//         ),
+//       );
+
+//       final Uint8List bytes = await pdf.save();
+//       final dir = await getApplicationDocumentsDirectory();
+//       final childSafe = childName.isNotEmpty
+//           ? childName.replaceAll(RegExp(r'[^\w]'), '_')
+//           : 'report';
+//       final file =
+//           File('${dir.path}/Speech_Report_$childSafe.pdf');
+//       await file.writeAsBytes(bytes);
+//       await OpenFile.open(file.path);
+//     } catch (e) {
+//       Get.snackbar(
+//         'Error',
+//         'Could not generate PDF: $e',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: AppColors.errorColor,
+//         colorText: AppColors.whiteColor,
+//       );
+//     }
+//   }
+
+//   pw.Widget _pdfRow(String label, String value) {
+//     return pw.Padding(
+//       padding: const pw.EdgeInsets.only(bottom: 4),
+//       child: pw.Row(children: [
+//         pw.Text('$label: ',
+//             style: pw.TextStyle(
+//                 fontWeight: pw.FontWeight.bold, fontSize: 11)),
+//         pw.Text(value, style: const pw.TextStyle(fontSize: 11)),
+//       ]),
+//     );
+//   }
+
+//   String _interpretationText(AnalysisResult r) {
+//     if (r.isLowRisk()) {
+//       return 'The speech pattern shows low-risk indicators and appears within a typical developmental range.';
+//     } else if (r.isModerateRisk()) {
+//       return 'The speech pattern shows moderate-risk characteristics. Consider consulting a speech therapist for a professional assessment.';
+//     } else {
+//       return 'The speech pattern shows high-risk indicators. We strongly recommend consulting a qualified speech therapist as soon as possible.';
+//     }
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // BUILD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+
+//     return Scaffold(
+//       backgroundColor: AppColors.lightGreyColor,
+//       body: Obx(() {
+//         if (controller.isLoadingDetail.value &&
+//             controller.currentSubmission.value == null) {
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const CircularProgressIndicator(
+//                     color: AppColors.primaryColor, strokeWidth: 3),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 Text('Loading details...',
+//                     style: GoogleFonts.poppins(
+//                         color: AppColors.textSecondaryColor,
+//                         fontSize: size.customWidth(context) * 0.035)),
+//               ],
+//             ),
+//           );
+//         }
+
+//         final submission = controller.currentSubmission.value;
+//         if (submission == null) {
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const Icon(Icons.error_outline_rounded,
+//                     size: 64, color: AppColors.errorColor),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 Text('Failed to load submission',
+//                     style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.04,
+//                         color: AppColors.textSecondaryColor)),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 ElevatedButton(
+//                   onPressed: _loadDetails,
+//                   style: ElevatedButton.styleFrom(
+//                       backgroundColor: AppColors.primaryColor),
+//                   child: Text('Retry',
+//                       style: GoogleFonts.poppins(
+//                           color: AppColors.whiteColor,
+//                           fontWeight: FontWeight.w600)),
+//                 ),
+//               ],
+//             ),
+//           );
+//         }
+
+//         return CustomScrollView(
+//           slivers: [
+//             _buildAppBar(context, submission),
+//             SliverToBoxAdapter(
+//               child: Padding(
+//                 padding:
+//                     EdgeInsets.all(size.customWidth(context) * 0.05),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     // Subtle refresh indicator
+//                     if (controller.isLoadingDetail.value)
+//                       Padding(
+//                         padding: EdgeInsets.only(
+//                             bottom:
+//                                 size.customHeight(context) * 0.015),
+//                         child: Row(
+//                           mainAxisAlignment: MainAxisAlignment.center,
+//                           children: [
+//                             SizedBox(
+//                               width: 14,
+//                               height: 14,
+//                               child: CircularProgressIndicator(
+//                                 color: AppColors.primaryColor
+//                                     .withOpacity(0.6),
+//                                 strokeWidth: 2,
+//                               ),
+//                             ),
+//                             SizedBox(
+//                                 width:
+//                                     size.customWidth(context) * 0.02),
+//                             Text(
+//                               'Refreshing results...',
+//                               style: GoogleFonts.poppins(
+//                                   fontSize:
+//                                       size.customWidth(context) * 0.03,
+//                                   color: AppColors.textSecondaryColor),
+//                             ),
+//                           ],
+//                         ),
+//                       ),
+
+//                     _buildInfoCard(context, submission),
+//                     SizedBox(height: size.customHeight(context) * 0.02),
+//                     _buildResultsSection(context, submission),
+//                     SizedBox(height: size.customHeight(context) * 0.02),
+
+//                     // ── Find Therapist button ─────────────────────────────
+//                     if (submission.hasResults())
+//                       _buildFindTherapistButton(context, submission),
+//                     if (submission.hasResults())
+//                       SizedBox(
+//                           height: size.customHeight(context) * 0.015),
+
+//                     // ── Download PDF Report button ─────────────────────────
+//                     if (submission.hasResults())
+//                       _buildDownloadPdfButton(context, submission),
+//                     if (submission.hasResults())
+//                       SizedBox(
+//                           height: size.customHeight(context) * 0.015),
+
+//                     _buildDeleteButton(context),
+//                     SizedBox(height: size.customHeight(context) * 0.04),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ],
+//         );
+//       }),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // APP BAR
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildAppBar(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     final hasResults = submission.hasResults();
+//     final result = submission.getLatestResult()?.result;
+
+//     return SliverAppBar(
+//       expandedHeight: size.customHeight(context) * 0.25,
+//       pinned: true,
+//       backgroundColor: AppColors.primaryColor,
+//       flexibleSpace: FlexibleSpaceBar(
+//         background: Container(
+//           decoration: const BoxDecoration(
+//             gradient: LinearGradient(
+//               colors: [AppColors.primaryColor, AppColors.secondaryColor],
+//               begin: Alignment.topLeft,
+//               end: Alignment.bottomRight,
+//             ),
+//           ),
+//           child: SafeArea(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 Container(
+//                   width: 70,
+//                   height: 70,
+//                   decoration: BoxDecoration(
+//                     color: AppColors.whiteColor.withOpacity(0.2),
+//                     shape: BoxShape.circle,
+//                   ),
+//                   child: Icon(
+//                     hasResults && result != null
+//                         ? _riskIcon(result)
+//                         : Icons.pending_rounded,
+//                     size: 40,
+//                     color: AppColors.whiteColor,
+//                   ),
+//                 ),
+//                 SizedBox(height: size.customHeight(context) * 0.015),
+//                 Text(
+//                   'Speech Analysis',
+//                   style: GoogleFonts.poppins(
+//                     color: AppColors.whiteColor,
+//                     fontSize: size.customWidth(context) * 0.06,
+//                     fontWeight: FontWeight.bold,
+//                   ),
+//                 ),
+//                 SizedBox(height: size.customHeight(context) * 0.005),
+//                 Text(
+//                   submission.getChildName(),
+//                   style: GoogleFonts.poppins(
+//                     color: AppColors.whiteColor.withOpacity(0.9),
+//                     fontSize: size.customWidth(context) * 0.035,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//       leading: IconButton(
+//         icon: const Icon(Icons.arrow_back, color: AppColors.whiteColor),
+//         onPressed: () => Get.back(),
+//       ),
+//       actions: [
+//         // Download icon in app bar (only when results exist)
+//         Obx(() {
+//           final sub = controller.currentSubmission.value;
+//           if (sub == null || !sub.hasResults()) {
+//             return const SizedBox.shrink();
+//           }
+//           return IconButton(
+//             icon: const Icon(Icons.download_outlined,
+//                 color: AppColors.whiteColor),
+//             onPressed: () => _downloadPdf(context, sub),
+//             tooltip: 'Download PDF Report',
+//           );
+//         }),
+//       ],
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // INFO CARD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildInfoCard(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withOpacity(0.06),
+//             blurRadius: 15,
+//             offset: const Offset(0, 4),
+//           ),
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Text('Recording Information',
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.045,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.textPrimaryColor)),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _infoRow(context, Icons.person_rounded, 'Child',
+//               submission.getChildName()),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.access_time_rounded, 'Duration',
+//               '${submission.recordingDurationSeconds} seconds'),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.calendar_today_outlined, 'Date',
+//               submission.getFormattedDate()),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.schedule_rounded, 'Time',
+//               submission.getFormattedTime()),
+//           if (submission.recordingFormat != null) ...[
+//             SizedBox(height: size.customHeight(context) * 0.015),
+//             _infoRow(context, Icons.audio_file_rounded, 'Format',
+//                 submission.recordingFormat!.toUpperCase()),
+//           ],
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _infoRow(BuildContext context, IconData icon, String label,
+//       String value) {
+//     final size = CustomSize();
+//     return Row(children: [
+//       Container(
+//         width: 40,
+//         height: 40,
+//         decoration: BoxDecoration(
+//           color: AppColors.primaryColor.withOpacity(0.1),
+//           borderRadius: BorderRadius.circular(10),
+//         ),
+//         child: Icon(icon, color: AppColors.primaryColor, size: 20),
+//       ),
+//       SizedBox(width: size.customWidth(context) * 0.03),
+//       Expanded(
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(label,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.032,
+//                     color: AppColors.textSecondaryColor)),
+//             Text(value,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.038,
+//                     fontWeight: FontWeight.w600,
+//                     color: AppColors.textPrimaryColor)),
+//           ],
+//         ),
+//       ),
+//     ]);
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // RESULTS SECTION
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildResultsSection(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+
+//     if (!submission.hasResults()) {
+//       return Container(
+//         padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//         decoration: BoxDecoration(
+//           color: AppColors.warningColor.withOpacity(0.1),
+//           borderRadius: BorderRadius.circular(20),
+//           border:
+//               Border.all(color: AppColors.warningColor.withOpacity(0.3)),
+//         ),
+//         child: Column(children: [
+//           const Icon(Icons.pending_rounded,
+//               size: 50, color: AppColors.warningColor),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           Text('Analysis Pending',
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.045,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.warningColor)),
+//           SizedBox(height: size.customHeight(context) * 0.01),
+//           Text(
+//             'The speech analysis is being processed.\nPlease check back later.',
+//             textAlign: TextAlign.center,
+//             style: GoogleFonts.poppins(
+//                 fontSize: size.customWidth(context) * 0.035,
+//                 color: AppColors.textSecondaryColor),
+//           ),
+//         ]),
+//       );
+//     }
+
+//     final analysisResult = submission.getLatestResult()!.result;
+//     final riskColor = _riskColor(analysisResult);
+
+//     return Column(
+//       children: [
+//         // ── Score circle card ──────────────────────────────────────────────
+//         Container(
+//           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//           decoration: BoxDecoration(
+//             color: AppColors.whiteColor,
+//             borderRadius: BorderRadius.circular(20),
+//             boxShadow: [
+//               BoxShadow(
+//                   color: Colors.black.withOpacity(0.06),
+//                   blurRadius: 15,
+//                   offset: const Offset(0, 4))
+//             ],
+//           ),
+//           child: Column(
+//             children: [
+//               Text('Analysis Results',
+//                   style: GoogleFonts.poppins(
+//                       fontSize: size.customWidth(context) * 0.045,
+//                       fontWeight: FontWeight.bold,
+//                       color: AppColors.textPrimaryColor)),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // Score circle
+//               Center(
+//                 child: Stack(
+//                   alignment: Alignment.center,
+//                   children: [
+//                     SizedBox(
+//                       width: size.customWidth(context) * 0.42,
+//                       height: size.customWidth(context) * 0.42,
+//                       child: CircularProgressIndicator(
+//                         value: analysisResult.severityScore /
+//                             analysisResult.maxScore,
+//                         strokeWidth: 10,
+//                         backgroundColor:
+//                             riskColor.withOpacity(0.15),
+//                         valueColor:
+//                             AlwaysStoppedAnimation<Color>(riskColor),
+//                       ),
+//                     ),
+//                     Column(
+//                       mainAxisSize: MainAxisSize.min,
+//                       children: [
+//                         Text(
+//                           '${analysisResult.severityScore}',
+//                           style: GoogleFonts.poppins(
+//                             fontSize:
+//                                 size.customWidth(context) * 0.13,
+//                             fontWeight: FontWeight.bold,
+//                             color: riskColor,
+//                           ),
+//                         ),
+//                         Text(
+//                           'out of ${analysisResult.maxScore}',
+//                           style: GoogleFonts.poppins(
+//                             fontSize:
+//                                 size.customWidth(context) * 0.03,
+//                             color: AppColors.textSecondaryColor,
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // Risk label badge
+//               Container(
+//                 padding: EdgeInsets.symmetric(
+//                   horizontal: size.customWidth(context) * 0.06,
+//                   vertical: size.customHeight(context) * 0.012,
+//                 ),
+//                 decoration: BoxDecoration(
+//                   color: riskColor.withOpacity(0.1),
+//                   borderRadius: BorderRadius.circular(25),
+//                   border: Border.all(
+//                       color: riskColor.withOpacity(0.4), width: 2),
+//                 ),
+//                 child: Row(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     Icon(_riskIcon(analysisResult),
+//                         color: riskColor, size: 20),
+//                     SizedBox(width: size.customWidth(context) * 0.02),
+//                     Text(
+//                       analysisResult.riskInterpretation,
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.042,
+//                         fontWeight: FontWeight.bold,
+//                         color: riskColor,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.02),
+
+//               // Interpretation text
+//               Container(
+//                 padding:
+//                     EdgeInsets.all(size.customWidth(context) * 0.04),
+//                 decoration: BoxDecoration(
+//                   color: AppColors.primaryColor.withOpacity(0.05),
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 child: Row(children: [
+//                   const Icon(Icons.info_outline_rounded,
+//                       color: AppColors.primaryColor, size: 18),
+//                   SizedBox(width: size.customWidth(context) * 0.02),
+//                   Expanded(
+//                     child: Text(
+//                       _interpretationText(analysisResult),
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.032,
+//                         color: AppColors.textPrimaryColor,
+//                         height: 1.4,
+//                       ),
+//                     ),
+//                   ),
+//                 ]),
+//               ),
+//             ],
+//           ),
+//         ),
+
+//         SizedBox(height: size.customHeight(context) * 0.02),
+
+//         // ── Bio-markers card ───────────────────────────────────────────────
+//         if (analysisResult.bioMarkers != null)
+//           _buildBioMarkersCard(context, analysisResult.bioMarkers!),
+//       ],
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // BIO-MARKERS CARD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildBioMarkersCard(
+//       BuildContext context, BioMarkers bioMarkers) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//               color: Colors.black.withOpacity(0.06),
+//               blurRadius: 15,
+//               offset: const Offset(0, 4))
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(children: [
+//             Container(
+//               width: 36,
+//               height: 36,
+//               decoration: BoxDecoration(
+//                 color: AppColors.primaryColor.withOpacity(0.1),
+//                 borderRadius: BorderRadius.circular(10),
+//               ),
+//               child: const Icon(Icons.analytics_rounded,
+//                   color: AppColors.primaryColor, size: 20),
+//             ),
+//             SizedBox(width: size.customWidth(context) * 0.03),
+//             Text('Bio-markers',
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.042,
+//                     fontWeight: FontWeight.bold,
+//                     color: AppColors.textPrimaryColor)),
+//           ]),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Pitch Instability',
+//             value: bioMarkers.pitchInstability,
+//             unit: 'Hz',
+//             icon: Icons.graphic_eq_rounded,
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Resonance Jitter F1',
+//             value: bioMarkers.resonanceJitterF1,
+//             unit: 'Hz',
+//             icon: Icons.waves_rounded,
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Resonance Jitter F2',
+//             value: bioMarkers.resonanceJitterF2,
+//             unit: 'Hz',
+//             icon: Icons.waves_rounded,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _bioMarkerRow(
+//     BuildContext context, {
+//     required String label,
+//     required double value,
+//     required String unit,
+//     required IconData icon,
+//   }) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.035),
+//       decoration: BoxDecoration(
+//         color: AppColors.lightGreyColor,
+//         borderRadius: BorderRadius.circular(12),
+//       ),
+//       child: Row(children: [
+//         Icon(icon, color: AppColors.primaryColor, size: 20),
+//         SizedBox(width: size.customWidth(context) * 0.03),
+//         Expanded(
+//           child: Text(label,
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.035,
+//                   color: AppColors.textSecondaryColor)),
+//         ),
+//         Text(
+//           '${value.toStringAsFixed(1)} $unit',
+//           style: GoogleFonts.poppins(
+//             fontSize: size.customWidth(context) * 0.036,
+//             fontWeight: FontWeight.w600,
+//             color: AppColors.textPrimaryColor,
+//           ),
+//         ),
+//       ]),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // FIND THERAPIST BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildFindTherapistButton(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       child: ElevatedButton.icon(
+//         onPressed: () {
+//           Get.toNamed(
+//             AppRoutes.expertsList,
+//             arguments: {
+//               'childId': submission.childId,
+//               'childName': submission.getChildName(),
+//             },
+//           );
+//         },
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.primaryColor,
+//           padding: EdgeInsets.symmetric(
+//               vertical: size.customHeight(context) * 0.018),
+//           shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(15)),
+//           elevation: 2,
+//         ),
+//         icon: const Icon(Icons.person_search_rounded,
+//             color: AppColors.whiteColor),
+//         label: Text(
+//           'Find Therapist for Consultation',
+//           style: GoogleFonts.poppins(
+//               color: AppColors.whiteColor,
+//               fontWeight: FontWeight.w600,
+//               fontSize: size.customWidth(context) * 0.04),
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DOWNLOAD PDF BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildDownloadPdfButton(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       height: size.customHeight(context) * 0.065,
+//       child: ElevatedButton.icon(
+//         onPressed: () => _downloadPdf(context, submission),
+//         icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+//         label: Text(
+//           'Download PDF Report',
+//           style: GoogleFonts.poppins(
+//             fontSize: 15,
+//             fontWeight: FontWeight.w600,
+//           ),
+//         ),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.primaryColor,
+//           foregroundColor: AppColors.whiteColor,
+//           shape: RoundedRectangleBorder(
+//             borderRadius: BorderRadius.circular(14),
+//           ),
+//           elevation: 0,
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DELETE BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildDeleteButton(BuildContext context) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       child: ElevatedButton.icon(
+//         onPressed: () => _showDeleteConfirmation(context),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.errorColor,
+//           padding: EdgeInsets.symmetric(
+//               vertical: size.customHeight(context) * 0.018),
+//           shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(15)),
+//         ),
+//         icon: const Icon(Icons.delete_rounded,
+//             color: AppColors.whiteColor),
+//         label: Text('Delete Submission',
+//             style: GoogleFonts.poppins(
+//                 color: AppColors.whiteColor,
+//                 fontWeight: FontWeight.w600,
+//                 fontSize: size.customWidth(context) * 0.04)),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DELETE DIALOG
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   void _showDeleteConfirmation(BuildContext context) {
+//     final size = CustomSize();
+//     Get.dialog(AlertDialog(
+//       shape: RoundedRectangleBorder(
+//           borderRadius: BorderRadius.circular(20)),
+//       title: Row(children: [
+//         const Icon(Icons.warning_rounded,
+//             color: AppColors.errorColor, size: 28),
+//         SizedBox(width: size.customWidth(context) * 0.02),
+//         Text('Delete Submission',
+//             style: GoogleFonts.poppins(
+//                 fontWeight: FontWeight.bold,
+//                 fontSize: size.customWidth(context) * 0.045)),
+//       ]),
+//       content: Text(
+//         'Are you sure you want to delete this speech recording? '
+//         'This action cannot be undone.',
+//         style: GoogleFonts.poppins(
+//             fontSize: size.customWidth(context) * 0.038,
+//             color: AppColors.textSecondaryColor),
+//       ),
+//       actions: [
+//         TextButton(
+//           onPressed: () => Get.back(),
+//           child: Text('Cancel',
+//               style: GoogleFonts.poppins(
+//                   color: AppColors.textSecondaryColor,
+//                   fontWeight: FontWeight.w600)),
+//         ),
+//         ElevatedButton(
+//           onPressed: () async {
+//             Get.back();
+//             final success =
+//                 await controller.deleteSubmission(submissionId);
+//             if (success) {
+//               controller.currentSubmission.value = null;
+//               Get.back();
+//             }
+//           },
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: AppColors.errorColor,
+//             shape: RoundedRectangleBorder(
+//                 borderRadius: BorderRadius.circular(10)),
+//           ),
+//           child: Text('Delete',
+//               style: GoogleFonts.poppins(
+//                   color: AppColors.whiteColor,
+//                   fontWeight: FontWeight.w600)),
+//         ),
+//       ],
+//     ));
+//   }
+// }
+
+
+
+// // lib/view/speech/speech_detail_screen.dart
+
+// import 'dart:io';
+// import 'dart:typed_data';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:intl/intl.dart';
+// import 'package:open_file/open_file.dart';
+// import 'package:path_provider/path_provider.dart';
+// import 'package:pdf/pdf.dart';
+// import 'package:pdf/widgets.dart' as pw;
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/controllers/speech_controller.dart';
+// import 'package:speechspectrum/models/speech_models.dart';
+// import 'package:speechspectrum/routes/app_routes.dart';
+
+// class SpeechDetailScreen extends StatefulWidget {
+//   const SpeechDetailScreen({super.key});
+
+//   @override
+//   State<SpeechDetailScreen> createState() => _SpeechDetailScreenState();
+// }
+
+// class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
+//   final SpeechController controller = SpeechController.instance;
+//   late String submissionId;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     submissionId = Get.arguments as String;
+
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       _loadDetails();
+//     });
+//   }
+
+//   void _loadDetails() {
+//     final cached = controller.speechSubmissions.firstWhereOrNull(
+//       (s) => s.speechSubmissionId == submissionId,
+//     );
+//     if (cached != null) {
+//       controller.currentSubmission.value = cached;
+//     }
+//     controller.fetchSubmissionDetail(submissionId);
+//   }
+
+//   // ── Risk colour helpers ───────────────────────────────────────────────────
+//   Color _riskColor(AnalysisResult r) {
+//     if (r.isHighRisk()) return AppColors.errorColor;
+//     if (r.isModerateRisk()) return AppColors.warningColor;
+//     return AppColors.successColor;
+//   }
+
+//   IconData _riskIcon(AnalysisResult r) {
+//     if (r.isHighRisk()) return Icons.warning_rounded;
+//     if (r.isModerateRisk()) return Icons.info_rounded;
+//     return Icons.check_circle_rounded;
+//   }
+
+//   // ── PDF generation ────────────────────────────────────────────────────────
+//   Future<void> _downloadPdf(
+//       BuildContext context, SpeechSubmissionDetail submission) async {
+//     try {
+//       final speechResult = submission.getLatestResult();
+//       if (speechResult == null) return;
+
+//       final analysisResult = speechResult.result;
+//       final childName = submission.getChildName();
+//       final bioMarkers = analysisResult.bioMarkers;
+
+//       String formattedDate = 'N/A';
+//       try {
+//         formattedDate = DateFormat('MMMM dd, yyyy')
+//             .format(DateTime.parse(submission.submittedAt));
+//       } catch (_) {
+//         formattedDate =
+//             DateFormat('MMMM dd, yyyy').format(DateTime.now());
+//       }
+
+//       final pdf = pw.Document();
+
+//       pdf.addPage(
+//         pw.MultiPage(
+//           pageFormat: PdfPageFormat.a4,
+//           margin: const pw.EdgeInsets.all(40),
+//           build: (pw.Context ctx) => [
+//             // ── Header ───────────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(20),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('6C63FF'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(12)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text(
+//                     'Speech Analysis Report',
+//                     style: pw.TextStyle(
+//                       fontSize: 24,
+//                       fontWeight: pw.FontWeight.bold,
+//                       color: PdfColors.white,
+//                     ),
+//                   ),
+//                   pw.SizedBox(height: 6),
+//                   pw.Text(
+//                     'SpeechSpectrum — Confidential Assessment',
+//                     style: const pw.TextStyle(
+//                         fontSize: 12, color: PdfColors.white),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Result summary ────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(16),
+//               decoration: pw.BoxDecoration(
+//                 border: pw.Border.all(color: PdfColor.fromHex('E0E0E0')),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text('Analysis Result',
+//                       style: pw.TextStyle(
+//                           fontSize: 16,
+//                           fontWeight: pw.FontWeight.bold)),
+//                   pw.SizedBox(height: 10),
+//                   _pdfRow('Child Name',
+//                       childName.isNotEmpty ? childName : 'N/A'),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Risk Level', analysisResult.riskInterpretation),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Severity Score',
+//                       '${analysisResult.severityScore} / ${analysisResult.maxScore}'),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Assessment Date', formattedDate),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Duration',
+//                       '${submission.recordingDurationSeconds} seconds'),
+//                   if (submission.recordingFormat != null) ...[
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('Format',
+//                         submission.recordingFormat!.toUpperCase()),
+//                   ],
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Bio-markers ───────────────────────────────────────────────
+//             if (bioMarkers != null) ...[
+//               pw.Text('Bio-markers',
+//                   style: pw.TextStyle(
+//                       fontSize: 14,
+//                       fontWeight: pw.FontWeight.bold)),
+//               pw.SizedBox(height: 8),
+//               pw.Container(
+//                 padding: const pw.EdgeInsets.all(12),
+//                 decoration: pw.BoxDecoration(
+//                   color: PdfColor.fromHex('F8F9FA'),
+//                   borderRadius:
+//                       const pw.BorderRadius.all(pw.Radius.circular(8)),
+//                 ),
+//                 child: pw.Column(
+//                   crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                   children: [
+//                     _pdfRow('Pitch Instability',
+//                         '${bioMarkers.pitchInstability.toStringAsFixed(1)} Hz'),
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('Resonance Jitter F1',
+//                         '${bioMarkers.resonanceJitterF1.toStringAsFixed(1)} Hz'),
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('Resonance Jitter F2',
+//                         '${bioMarkers.resonanceJitterF2.toStringAsFixed(1)} Hz'),
+//                   ],
+//                 ),
+//               ),
+//               pw.SizedBox(height: 20),
+//             ],
+
+//             // ── Interpretation ────────────────────────────────────────────
+//             pw.Text('Interpretation',
+//                 style: pw.TextStyle(
+//                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
+//             pw.SizedBox(height: 8),
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('F8F9FA'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 _interpretationText(analysisResult),
+//                 style: const pw.TextStyle(fontSize: 11),
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Disclaimer ────────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('FFF8E1'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 'Disclaimer: This is a screening tool, not a diagnostic assessment. '
+//                 'Professional evaluation by a qualified healthcare provider is recommended.',
+//                 style: const pw.TextStyle(fontSize: 10),
+//               ),
+//             ),
+//           ],
+//         ),
+//       );
+
+//       final Uint8List bytes = await pdf.save();
+//       final dir = await getApplicationDocumentsDirectory();
+//       final childSafe = childName.isNotEmpty
+//           ? childName.replaceAll(RegExp(r'[^\w]'), '_')
+//           : 'report';
+//       final file =
+//           File('${dir.path}/Speech_Report_$childSafe.pdf');
+//       await file.writeAsBytes(bytes);
+//       await OpenFile.open(file.path);
+//     } catch (e) {
+//       Get.snackbar(
+//         'Error',
+//         'Could not generate PDF: $e',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: AppColors.errorColor,
+//         colorText: AppColors.whiteColor,
+//       );
+//     }
+//   }
+
+//   pw.Widget _pdfRow(String label, String value) {
+//     return pw.Padding(
+//       padding: const pw.EdgeInsets.only(bottom: 4),
+//       child: pw.Row(children: [
+//         pw.Text('$label: ',
+//             style: pw.TextStyle(
+//                 fontWeight: pw.FontWeight.bold, fontSize: 11)),
+//         pw.Text(value, style: const pw.TextStyle(fontSize: 11)),
+//       ]),
+//     );
+//   }
+
+//   String _interpretationText(AnalysisResult r) {
+//     if (r.isLowRisk()) {
+//       return 'The speech pattern shows low-risk indicators and appears within a typical developmental range.';
+//     } else if (r.isModerateRisk()) {
+//       return 'The speech pattern shows moderate-risk characteristics. Consider consulting a speech therapist for a professional assessment.';
+//     } else {
+//       return 'The speech pattern shows high-risk indicators. We strongly recommend consulting a qualified speech therapist as soon as possible.';
+//     }
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // BUILD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+
+//     return Scaffold(
+//       backgroundColor: AppColors.lightGreyColor,
+//       body: Obx(() {
+//         if (controller.isLoadingDetail.value &&
+//             controller.currentSubmission.value == null) {
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const CircularProgressIndicator(
+//                     color: AppColors.primaryColor, strokeWidth: 3),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 Text('Loading details...',
+//                     style: GoogleFonts.poppins(
+//                         color: AppColors.textSecondaryColor,
+//                         fontSize: size.customWidth(context) * 0.035)),
+//               ],
+//             ),
+//           );
+//         }
+
+//         final submission = controller.currentSubmission.value;
+//         if (submission == null) {
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const Icon(Icons.error_outline_rounded,
+//                     size: 64, color: AppColors.errorColor),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 Text('Failed to load submission',
+//                     style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.04,
+//                         color: AppColors.textSecondaryColor)),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 ElevatedButton(
+//                   onPressed: _loadDetails,
+//                   style: ElevatedButton.styleFrom(
+//                       backgroundColor: AppColors.primaryColor),
+//                   child: Text('Retry',
+//                       style: GoogleFonts.poppins(
+//                           color: AppColors.whiteColor,
+//                           fontWeight: FontWeight.w600)),
+//                 ),
+//               ],
+//             ),
+//           );
+//         }
+
+//         return CustomScrollView(
+//           slivers: [
+//             _buildAppBar(context, submission),
+//             SliverToBoxAdapter(
+//               child: Padding(
+//                 padding:
+//                     EdgeInsets.all(size.customWidth(context) * 0.05),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     // Subtle refresh indicator
+//                     if (controller.isLoadingDetail.value)
+//                       Padding(
+//                         padding: EdgeInsets.only(
+//                             bottom:
+//                                 size.customHeight(context) * 0.015),
+//                         child: Row(
+//                           mainAxisAlignment: MainAxisAlignment.center,
+//                           children: [
+//                             SizedBox(
+//                               width: 14,
+//                               height: 14,
+//                               child: CircularProgressIndicator(
+//                                 color: AppColors.primaryColor
+//                                     .withOpacity(0.6),
+//                                 strokeWidth: 2,
+//                               ),
+//                             ),
+//                             SizedBox(
+//                                 width:
+//                                     size.customWidth(context) * 0.02),
+//                             Text(
+//                               'Refreshing results...',
+//                               style: GoogleFonts.poppins(
+//                                   fontSize:
+//                                       size.customWidth(context) * 0.03,
+//                                   color: AppColors.textSecondaryColor),
+//                             ),
+//                           ],
+//                         ),
+//                       ),
+
+//                     _buildInfoCard(context, submission),
+//                     SizedBox(height: size.customHeight(context) * 0.02),
+//                     _buildResultsSection(context, submission),
+//                     SizedBox(height: size.customHeight(context) * 0.02),
+
+//                     // ── Find Therapist button ─────────────────────────────
+//                     if (submission.hasResults())
+//                       _buildFindTherapistButton(context, submission),
+//                     if (submission.hasResults())
+//                       SizedBox(
+//                           height: size.customHeight(context) * 0.015),
+
+//                     // ── Download PDF Report button ─────────────────────────
+//                     if (submission.hasResults())
+//                       _buildDownloadPdfButton(context, submission),
+//                     if (submission.hasResults())
+//                       SizedBox(
+//                           height: size.customHeight(context) * 0.015),
+
+//                     _buildDeleteButton(context),
+//                     SizedBox(height: size.customHeight(context) * 0.04),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ],
+//         );
+//       }),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // APP BAR
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildAppBar(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     final hasResults = submission.hasResults();
+//     final result = submission.getLatestResult()?.result;
+
+//     return SliverAppBar(
+//       expandedHeight: size.customHeight(context) * 0.25,
+//       pinned: true,
+//       backgroundColor: AppColors.primaryColor,
+//       flexibleSpace: FlexibleSpaceBar(
+//         background: Container(
+//           decoration: const BoxDecoration(
+//             gradient: LinearGradient(
+//               colors: [AppColors.primaryColor, AppColors.secondaryColor],
+//               begin: Alignment.topLeft,
+//               end: Alignment.bottomRight,
+//             ),
+//           ),
+//           child: SafeArea(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 Container(
+//                   width: 70,
+//                   height: 70,
+//                   decoration: BoxDecoration(
+//                     color: AppColors.whiteColor.withOpacity(0.2),
+//                     shape: BoxShape.circle,
+//                   ),
+//                   child: Icon(
+//                     hasResults && result != null
+//                         ? _riskIcon(result)
+//                         : Icons.pending_rounded,
+//                     size: 40,
+//                     color: AppColors.whiteColor,
+//                   ),
+//                 ),
+//                 SizedBox(height: size.customHeight(context) * 0.015),
+//                 Text(
+//                   'Speech Analysis',
+//                   style: GoogleFonts.poppins(
+//                     color: AppColors.whiteColor,
+//                     fontSize: size.customWidth(context) * 0.06,
+//                     fontWeight: FontWeight.bold,
+//                   ),
+//                 ),
+//                 SizedBox(height: size.customHeight(context) * 0.005),
+//                 Text(
+//                   submission.getChildName(),
+//                   style: GoogleFonts.poppins(
+//                     color: AppColors.whiteColor.withOpacity(0.9),
+//                     fontSize: size.customWidth(context) * 0.035,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//       leading: IconButton(
+//         icon: const Icon(Icons.arrow_back, color: AppColors.whiteColor),
+//         onPressed: () => Get.back(),
+//       ),
+//       actions: [
+//         // Download icon in app bar (only when results exist)
+//         Obx(() {
+//           final sub = controller.currentSubmission.value;
+//           if (sub == null || !sub.hasResults()) {
+//             return const SizedBox.shrink();
+//           }
+//           return IconButton(
+//             icon: const Icon(Icons.download_outlined,
+//                 color: AppColors.whiteColor),
+//             onPressed: () => _downloadPdf(context, sub),
+//             tooltip: 'Download PDF Report',
+//           );
+//         }),
+//       ],
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // INFO CARD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildInfoCard(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withOpacity(0.06),
+//             blurRadius: 15,
+//             offset: const Offset(0, 4),
+//           ),
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Text('Recording Information',
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.045,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.textPrimaryColor)),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _infoRow(context, Icons.person_rounded, 'Child',
+//               submission.getChildName()),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.access_time_rounded, 'Duration',
+//               '${submission.recordingDurationSeconds} seconds'),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.calendar_today_outlined, 'Date',
+//               submission.getFormattedDate()),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.schedule_rounded, 'Time',
+//               submission.getFormattedTime()),
+//           if (submission.recordingFormat != null) ...[
+//             SizedBox(height: size.customHeight(context) * 0.015),
+//             _infoRow(context, Icons.audio_file_rounded, 'Format',
+//                 submission.recordingFormat!.toUpperCase()),
+//           ],
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _infoRow(BuildContext context, IconData icon, String label,
+//       String value) {
+//     final size = CustomSize();
+//     return Row(children: [
+//       Container(
+//         width: 40,
+//         height: 40,
+//         decoration: BoxDecoration(
+//           color: AppColors.primaryColor.withOpacity(0.1),
+//           borderRadius: BorderRadius.circular(10),
+//         ),
+//         child: Icon(icon, color: AppColors.primaryColor, size: 20),
+//       ),
+//       SizedBox(width: size.customWidth(context) * 0.03),
+//       Expanded(
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(label,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.032,
+//                     color: AppColors.textSecondaryColor)),
+//             Text(value,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.038,
+//                     fontWeight: FontWeight.w600,
+//                     color: AppColors.textPrimaryColor)),
+//           ],
+//         ),
+//       ),
+//     ]);
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // RESULTS SECTION
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildResultsSection(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+
+//     if (!submission.hasResults()) {
+//       return Container(
+//         padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//         decoration: BoxDecoration(
+//           color: AppColors.warningColor.withOpacity(0.1),
+//           borderRadius: BorderRadius.circular(20),
+//           border:
+//               Border.all(color: AppColors.warningColor.withOpacity(0.3)),
+//         ),
+//         child: Column(children: [
+//           const Icon(Icons.pending_rounded,
+//               size: 50, color: AppColors.warningColor),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           Text('Analysis Pending',
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.045,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.warningColor)),
+//           SizedBox(height: size.customHeight(context) * 0.01),
+//           Text(
+//             'The speech analysis is being processed.\nPlease check back later.',
+//             textAlign: TextAlign.center,
+//             style: GoogleFonts.poppins(
+//                 fontSize: size.customWidth(context) * 0.035,
+//                 color: AppColors.textSecondaryColor),
+//           ),
+//         ]),
+//       );
+//     }
+
+//     final analysisResult = submission.getLatestResult()!.result;
+//     final riskColor = _riskColor(analysisResult);
+
+//     return Column(
+//       children: [
+//         // ── Score circle card ──────────────────────────────────────────────
+//         Container(
+//           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//           decoration: BoxDecoration(
+//             color: AppColors.whiteColor,
+//             borderRadius: BorderRadius.circular(20),
+//             boxShadow: [
+//               BoxShadow(
+//                   color: Colors.black.withOpacity(0.06),
+//                   blurRadius: 15,
+//                   offset: const Offset(0, 4))
+//             ],
+//           ),
+//           child: Column(
+//             children: [
+//               Text('Analysis Results',
+//                   style: GoogleFonts.poppins(
+//                       fontSize: size.customWidth(context) * 0.045,
+//                       fontWeight: FontWeight.bold,
+//                       color: AppColors.textPrimaryColor)),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // Score circle
+//               Center(
+//                 child: Stack(
+//                   alignment: Alignment.center,
+//                   children: [
+//                     SizedBox(
+//                       width: size.customWidth(context) * 0.42,
+//                       height: size.customWidth(context) * 0.42,
+//                       child: CircularProgressIndicator(
+//                         value: analysisResult.severityScore /
+//                             analysisResult.maxScore,
+//                         strokeWidth: 10,
+//                         backgroundColor:
+//                             riskColor.withOpacity(0.15),
+//                         valueColor:
+//                             AlwaysStoppedAnimation<Color>(riskColor),
+//                       ),
+//                     ),
+//                     Column(
+//                       mainAxisSize: MainAxisSize.min,
+//                       children: [
+//                         Text(
+//                           '${analysisResult.severityScore}',
+//                           style: GoogleFonts.poppins(
+//                             fontSize:
+//                                 size.customWidth(context) * 0.13,
+//                             fontWeight: FontWeight.bold,
+//                             color: riskColor,
+//                           ),
+//                         ),
+//                         Text(
+//                           'out of ${analysisResult.maxScore}',
+//                           style: GoogleFonts.poppins(
+//                             fontSize:
+//                                 size.customWidth(context) * 0.03,
+//                             color: AppColors.textSecondaryColor,
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // Risk label badge
+//               Container(
+//                 padding: EdgeInsets.symmetric(
+//                   horizontal: size.customWidth(context) * 0.06,
+//                   vertical: size.customHeight(context) * 0.012,
+//                 ),
+//                 decoration: BoxDecoration(
+//                   color: riskColor.withOpacity(0.1),
+//                   borderRadius: BorderRadius.circular(25),
+//                   border: Border.all(
+//                       color: riskColor.withOpacity(0.4), width: 2),
+//                 ),
+//                 child: Row(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     Icon(_riskIcon(analysisResult),
+//                         color: riskColor, size: 20),
+//                     SizedBox(width: size.customWidth(context) * 0.02),
+//                     Text(
+//                       analysisResult.riskInterpretation,
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.042,
+//                         fontWeight: FontWeight.bold,
+//                         color: riskColor,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.02),
+
+//               // Interpretation text
+//               Container(
+//                 padding:
+//                     EdgeInsets.all(size.customWidth(context) * 0.04),
+//                 decoration: BoxDecoration(
+//                   color: AppColors.primaryColor.withOpacity(0.05),
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 child: Row(children: [
+//                   const Icon(Icons.info_outline_rounded,
+//                       color: AppColors.primaryColor, size: 18),
+//                   SizedBox(width: size.customWidth(context) * 0.02),
+//                   Expanded(
+//                     child: Text(
+//                       _interpretationText(analysisResult),
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.032,
+//                         color: AppColors.textPrimaryColor,
+//                         height: 1.4,
+//                       ),
+//                     ),
+//                   ),
+//                 ]),
+//               ),
+//             ],
+//           ),
+//         ),
+
+//         SizedBox(height: size.customHeight(context) * 0.02),
+
+//         // ── Bio-markers card ───────────────────────────────────────────────
+//         if (analysisResult.bioMarkers != null)
+//           _buildBioMarkersCard(context, analysisResult.bioMarkers!),
+//       ],
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // BIO-MARKERS CARD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildBioMarkersCard(
+//       BuildContext context, BioMarkers bioMarkers) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//               color: Colors.black.withOpacity(0.06),
+//               blurRadius: 15,
+//               offset: const Offset(0, 4))
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(children: [
+//             Container(
+//               width: 36,
+//               height: 36,
+//               decoration: BoxDecoration(
+//                 color: AppColors.primaryColor.withOpacity(0.1),
+//                 borderRadius: BorderRadius.circular(10),
+//               ),
+//               child: const Icon(Icons.analytics_rounded,
+//                   color: AppColors.primaryColor, size: 20),
+//             ),
+//             SizedBox(width: size.customWidth(context) * 0.03),
+//             Text('Bio-markers',
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.042,
+//                     fontWeight: FontWeight.bold,
+//                     color: AppColors.textPrimaryColor)),
+//           ]),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Pitch Instability',
+//             value: bioMarkers.pitchInstability,
+//             unit: 'Hz',
+//             icon: Icons.graphic_eq_rounded,
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Resonance Jitter F1',
+//             value: bioMarkers.resonanceJitterF1,
+//             unit: 'Hz',
+//             icon: Icons.waves_rounded,
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Resonance Jitter F2',
+//             value: bioMarkers.resonanceJitterF2,
+//             unit: 'Hz',
+//             icon: Icons.waves_rounded,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _bioMarkerRow(
+//     BuildContext context, {
+//     required String label,
+//     required double value,
+//     required String unit,
+//     required IconData icon,
+//   }) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.035),
+//       decoration: BoxDecoration(
+//         color: AppColors.lightGreyColor,
+//         borderRadius: BorderRadius.circular(12),
+//       ),
+//       child: Row(children: [
+//         Icon(icon, color: AppColors.primaryColor, size: 20),
+//         SizedBox(width: size.customWidth(context) * 0.03),
+//         Expanded(
+//           child: Text(label,
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.035,
+//                   color: AppColors.textSecondaryColor)),
+//         ),
+//         Text(
+//           '${value.toStringAsFixed(1)} $unit',
+//           style: GoogleFonts.poppins(
+//             fontSize: size.customWidth(context) * 0.036,
+//             fontWeight: FontWeight.w600,
+//             color: AppColors.textPrimaryColor,
+//           ),
+//         ),
+//       ]),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // FIND THERAPIST BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildFindTherapistButton(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       child: ElevatedButton.icon(
+//         onPressed: () {
+//           Get.toNamed(
+//             AppRoutes.expertsList,
+//             arguments: {
+//               'childId': submission.childId,
+//               'childName': submission.getChildName(),
+//             },
+//           );
+//         },
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.primaryColor,
+//           padding: EdgeInsets.symmetric(
+//               vertical: size.customHeight(context) * 0.018),
+//           shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(15)),
+//           elevation: 2,
+//         ),
+//         icon: const Icon(Icons.person_search_rounded,
+//             color: AppColors.whiteColor),
+//         label: Text(
+//           'Find Therapist for Consultation',
+//           style: GoogleFonts.poppins(
+//               color: AppColors.whiteColor,
+//               fontWeight: FontWeight.w600,
+//               fontSize: size.customWidth(context) * 0.04),
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DOWNLOAD PDF BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildDownloadPdfButton(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       height: size.customHeight(context) * 0.065,
+//       child: ElevatedButton.icon(
+//         onPressed: () => _downloadPdf(context, submission),
+//         icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+//         label: Text(
+//           'Download PDF Report',
+//           style: GoogleFonts.poppins(
+//             fontSize: 15,
+//             fontWeight: FontWeight.w600,
+//           ),
+//         ),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.primaryColor,
+//           foregroundColor: AppColors.whiteColor,
+//           shape: RoundedRectangleBorder(
+//             borderRadius: BorderRadius.circular(14),
+//           ),
+//           elevation: 0,
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DELETE BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildDeleteButton(BuildContext context) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       child: ElevatedButton.icon(
+//         onPressed: () => _showDeleteConfirmation(context),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.errorColor,
+//           padding: EdgeInsets.symmetric(
+//               vertical: size.customHeight(context) * 0.018),
+//           shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(15)),
+//         ),
+//         icon: const Icon(Icons.delete_rounded,
+//             color: AppColors.whiteColor),
+//         label: Text('Delete Submission',
+//             style: GoogleFonts.poppins(
+//                 color: AppColors.whiteColor,
+//                 fontWeight: FontWeight.w600,
+//                 fontSize: size.customWidth(context) * 0.04)),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DELETE DIALOG
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   void _showDeleteConfirmation(BuildContext context) {
+//     final size = CustomSize();
+//     Get.dialog(AlertDialog(
+//       shape: RoundedRectangleBorder(
+//           borderRadius: BorderRadius.circular(20)),
+//       title: Row(children: [
+//         const Icon(Icons.warning_rounded,
+//             color: AppColors.errorColor, size: 28),
+//         SizedBox(width: size.customWidth(context) * 0.02),
+//         Text('Delete Submission',
+//             style: GoogleFonts.poppins(
+//                 fontWeight: FontWeight.bold,
+//                 fontSize: size.customWidth(context) * 0.045)),
+//       ]),
+//       content: Text(
+//         'Are you sure you want to delete this speech recording? '
+//         'This action cannot be undone.',
+//         style: GoogleFonts.poppins(
+//             fontSize: size.customWidth(context) * 0.038,
+//             color: AppColors.textSecondaryColor),
+//       ),
+//       actions: [
+//         TextButton(
+//           onPressed: () => Get.back(),
+//           child: Text('Cancel',
+//               style: GoogleFonts.poppins(
+//                   color: AppColors.textSecondaryColor,
+//                   fontWeight: FontWeight.w600)),
+//         ),
+//         ElevatedButton(
+//           onPressed: () async {
+//             Get.back();
+//             final success =
+//                 await controller.deleteSubmission(submissionId);
+//             if (success) {
+//               controller.currentSubmission.value = null;
+//               Get.back();
+//             }
+//           },
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: AppColors.errorColor,
+//             shape: RoundedRectangleBorder(
+//                 borderRadius: BorderRadius.circular(10)),
+//           ),
+//           child: Text('Delete',
+//               style: GoogleFonts.poppins(
+//                   color: AppColors.whiteColor,
+//                   fontWeight: FontWeight.w600)),
+//         ),
+//       ],
+//     ));
+//   }
+// }
+
+
+// // lib/view/speech/speech_detail_screen.dart
+
+// import 'dart:io';
+// import 'dart:typed_data';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:intl/intl.dart';
+// import 'package:open_file/open_file.dart';
+// import 'package:path_provider/path_provider.dart';
+// import 'package:pdf/pdf.dart';
+// import 'package:pdf/widgets.dart' as pw;
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/controllers/speech_controller.dart';
+// import 'package:speechspectrum/models/speech_models.dart';
+// import 'package:speechspectrum/routes/app_routes.dart';
+
+// class SpeechDetailScreen extends StatefulWidget {
+//   const SpeechDetailScreen({super.key});
+
+//   @override
+//   State<SpeechDetailScreen> createState() => _SpeechDetailScreenState();
+// }
+
+// class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
+//   final SpeechController controller = SpeechController.instance;
+//   late String submissionId;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     submissionId = Get.arguments as String;
+
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       _loadDetails();
+//     });
+//   }
+
+//   void _loadDetails() {
+//     final cached = controller.speechSubmissions.firstWhereOrNull(
+//       (s) => s.speechSubmissionId == submissionId,
+//     );
+//     if (cached != null) {
+//       controller.currentSubmission.value = cached;
+//     }
+//     controller.fetchSubmissionDetail(submissionId);
+//   }
+
+//   // ── Risk colour helpers ───────────────────────────────────────────────────
+//   Color _riskColor(AnalysisResult r) {
+//     if (r.isHighRisk()) return AppColors.errorColor;
+//     if (r.isModerateRisk()) return AppColors.warningColor;
+//     return AppColors.successColor;
+//   }
+
+//   IconData _riskIcon(AnalysisResult r) {
+//     if (r.isHighRisk()) return Icons.warning_rounded;
+//     if (r.isModerateRisk()) return Icons.info_rounded;
+//     return Icons.check_circle_rounded;
+//   }
+
+//   // ── PDF generation ────────────────────────────────────────────────────────
+//   Future<void> _downloadPdf(
+//       BuildContext context, SpeechSubmissionDetail submission) async {
+//     try {
+//       final speechResult = submission.getLatestResult();
+//       if (speechResult == null) return;
+
+//       final analysisResult = speechResult.result;
+//       final childName = submission.getChildName();
+//       final bioMarkers = analysisResult.bioMarkers;
+
+//       String formattedDate = 'N/A';
+//       try {
+//         formattedDate = DateFormat('MMMM dd, yyyy')
+//             .format(DateTime.parse(submission.submittedAt));
+//       } catch (_) {
+//         formattedDate = DateFormat('MMMM dd, yyyy').format(DateTime.now());
+//       }
+
+//       final pdf = pw.Document();
+
+//       pdf.addPage(
+//         pw.MultiPage(
+//           pageFormat: PdfPageFormat.a4,
+//           margin: const pw.EdgeInsets.all(40),
+//           build: (pw.Context ctx) => [
+//             // ── Header ────────────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(20),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('6C63FF'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(12)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text(
+//                     'Speech Analysis Report',
+//                     style: pw.TextStyle(
+//                       fontSize: 24,
+//                       fontWeight: pw.FontWeight.bold,
+//                       color: PdfColors.white,
+//                     ),
+//                   ),
+//                   pw.SizedBox(height: 6),
+//                   pw.Text(
+//                     'SpeechSpectrum — Confidential Assessment',
+//                     style: const pw.TextStyle(
+//                         fontSize: 12, color: PdfColors.white),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Result summary ─────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(16),
+//               decoration: pw.BoxDecoration(
+//                 border: pw.Border.all(color: PdfColor.fromHex('E0E0E0')),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text('Analysis Result',
+//                       style: pw.TextStyle(
+//                           fontSize: 16,
+//                           fontWeight: pw.FontWeight.bold)),
+//                   pw.SizedBox(height: 10),
+//                   _pdfRow('Child Name',
+//                       childName.isNotEmpty ? childName : 'N/A'),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Risk Level', analysisResult.riskInterpretation),
+//                   pw.SizedBox(height: 4),
+//                   if (analysisResult.saScore != null) ...[
+//                     _pdfRow('SA Score',
+//                         '${analysisResult.saScore!.toStringAsFixed(2)} / ${analysisResult.maxScore}'),
+//                     pw.SizedBox(height: 4),
+//                   ],
+//                   if (analysisResult.severityPercentage != null) ...[
+//                     _pdfRow(
+//                         'Severity', analysisResult.severityPercentage!),
+//                     pw.SizedBox(height: 4),
+//                   ],
+//                   if (analysisResult.modelType != null) ...[
+//                     _pdfRow('Model', analysisResult.modelType!),
+//                     pw.SizedBox(height: 4),
+//                   ],
+//                   _pdfRow('Assessment Date', formattedDate),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Duration',
+//                       '${submission.recordingDurationSeconds} seconds'),
+//                   if (submission.recordingFormat != null) ...[
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('Format',
+//                         submission.recordingFormat!.toUpperCase()),
+//                   ],
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Bio-markers (old format only) ──────────────────────────────
+//             if (bioMarkers != null) ...[
+//               pw.Text('Bio-markers',
+//                   style: pw.TextStyle(
+//                       fontSize: 14,
+//                       fontWeight: pw.FontWeight.bold)),
+//               pw.SizedBox(height: 8),
+//               pw.Container(
+//                 padding: const pw.EdgeInsets.all(12),
+//                 decoration: pw.BoxDecoration(
+//                   color: PdfColor.fromHex('F8F9FA'),
+//                   borderRadius:
+//                       const pw.BorderRadius.all(pw.Radius.circular(8)),
+//                 ),
+//                 child: pw.Column(
+//                   crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                   children: [
+//                     _pdfRow('Pitch Instability',
+//                         '${bioMarkers.pitchInstability.toStringAsFixed(1)} Hz'),
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('Resonance Jitter F1',
+//                         '${bioMarkers.resonanceJitterF1.toStringAsFixed(1)} Hz'),
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('Resonance Jitter F2',
+//                         '${bioMarkers.resonanceJitterF2.toStringAsFixed(1)} Hz'),
+//                   ],
+//                 ),
+//               ),
+//               pw.SizedBox(height: 20),
+//             ],
+
+//             // ── Interpretation ─────────────────────────────────────────────
+//             pw.Text('Interpretation',
+//                 style: pw.TextStyle(
+//                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
+//             pw.SizedBox(height: 8),
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('F8F9FA'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 _interpretationText(analysisResult),
+//                 style: const pw.TextStyle(fontSize: 11),
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Disclaimer ─────────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('FFF8E1'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 'Disclaimer: This is a screening tool, not a diagnostic assessment. '
+//                 'Professional evaluation by a qualified healthcare provider is recommended.',
+//                 style: const pw.TextStyle(fontSize: 10),
+//               ),
+//             ),
+//           ],
+//         ),
+//       );
+
+//       final Uint8List bytes = await pdf.save();
+//       final dir = await getApplicationDocumentsDirectory();
+//       final childSafe = childName.isNotEmpty
+//           ? childName.replaceAll(RegExp(r'[^\w]'), '_')
+//           : 'report';
+//       final file = File('${dir.path}/Speech_Report_$childSafe.pdf');
+//       await file.writeAsBytes(bytes);
+//       await OpenFile.open(file.path);
+//     } catch (e) {
+//       Get.snackbar(
+//         'Error',
+//         'Could not generate PDF: $e',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: AppColors.errorColor,
+//         colorText: AppColors.whiteColor,
+//       );
+//     }
+//   }
+
+//   pw.Widget _pdfRow(String label, String value) {
+//     return pw.Padding(
+//       padding: const pw.EdgeInsets.only(bottom: 4),
+//       child: pw.Row(children: [
+//         pw.Text('$label: ',
+//             style: pw.TextStyle(
+//                 fontWeight: pw.FontWeight.bold, fontSize: 11)),
+//         pw.Text(value, style: const pw.TextStyle(fontSize: 11)),
+//       ]),
+//     );
+//   }
+
+//   String _interpretationText(AnalysisResult r) {
+//     if (r.isLowRisk()) {
+//       return 'The speech pattern shows low-risk indicators and appears within a typical developmental range.';
+//     } else if (r.isModerateRisk()) {
+//       return 'The speech pattern shows moderate-risk characteristics. Consider consulting a speech therapist for a professional assessment.';
+//     } else {
+//       return 'The speech pattern shows high-risk indicators. We strongly recommend consulting a qualified speech therapist as soon as possible.';
+//     }
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // BUILD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+
+//     return Scaffold(
+//       backgroundColor: AppColors.lightGreyColor,
+//       body: Obx(() {
+//         if (controller.isLoadingDetail.value &&
+//             controller.currentSubmission.value == null) {
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const CircularProgressIndicator(
+//                     color: AppColors.primaryColor, strokeWidth: 3),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 Text('Loading details...',
+//                     style: GoogleFonts.poppins(
+//                         color: AppColors.textSecondaryColor,
+//                         fontSize: size.customWidth(context) * 0.035)),
+//               ],
+//             ),
+//           );
+//         }
+
+//         final submission = controller.currentSubmission.value;
+//         if (submission == null) {
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const Icon(Icons.error_outline_rounded,
+//                     size: 64, color: AppColors.errorColor),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 Text('Failed to load submission',
+//                     style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.04,
+//                         color: AppColors.textSecondaryColor)),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 ElevatedButton(
+//                   onPressed: _loadDetails,
+//                   style: ElevatedButton.styleFrom(
+//                       backgroundColor: AppColors.primaryColor),
+//                   child: Text('Retry',
+//                       style: GoogleFonts.poppins(
+//                           color: AppColors.whiteColor,
+//                           fontWeight: FontWeight.w600)),
+//                 ),
+//               ],
+//             ),
+//           );
+//         }
+
+//         return CustomScrollView(
+//           slivers: [
+//             _buildAppBar(context, submission),
+//             SliverToBoxAdapter(
+//               child: Padding(
+//                 padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     // Subtle refresh indicator
+//                     if (controller.isLoadingDetail.value)
+//                       Padding(
+//                         padding: EdgeInsets.only(
+//                             bottom: size.customHeight(context) * 0.015),
+//                         child: Row(
+//                           mainAxisAlignment: MainAxisAlignment.center,
+//                           children: [
+//                             SizedBox(
+//                               width: 14,
+//                               height: 14,
+//                               child: CircularProgressIndicator(
+//                                 color:
+//                                     AppColors.primaryColor.withOpacity(0.6),
+//                                 strokeWidth: 2,
+//                               ),
+//                             ),
+//                             SizedBox(
+//                                 width: size.customWidth(context) * 0.02),
+//                             Text(
+//                               'Refreshing results...',
+//                               style: GoogleFonts.poppins(
+//                                   fontSize:
+//                                       size.customWidth(context) * 0.03,
+//                                   color: AppColors.textSecondaryColor),
+//                             ),
+//                           ],
+//                         ),
+//                       ),
+
+//                     _buildInfoCard(context, submission),
+//                     SizedBox(height: size.customHeight(context) * 0.02),
+//                     _buildResultsSection(context, submission),
+//                     SizedBox(height: size.customHeight(context) * 0.02),
+
+//                     // ── Horizontal action row (Therapy + Consult) ──────────
+//                     if (submission.hasResults())
+//                       _buildHorizontalActionRow(context, submission),
+//                     if (submission.hasResults())
+//                       SizedBox(
+//                           height: size.customHeight(context) * 0.015),
+
+//                     // ── Download PDF ───────────────────────────────────────
+//                     if (submission.hasResults())
+//                       _buildDownloadPdfButton(context, submission),
+//                     if (submission.hasResults())
+//                       SizedBox(
+//                           height: size.customHeight(context) * 0.015),
+
+//                     _buildDeleteButton(context),
+//                     SizedBox(height: size.customHeight(context) * 0.04),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ],
+//         );
+//       }),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // APP BAR
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildAppBar(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     final hasResults = submission.hasResults();
+//     final result = submission.getLatestResult()?.result;
+
+//     return SliverAppBar(
+//       expandedHeight: size.customHeight(context) * 0.25,
+//       pinned: true,
+//       backgroundColor: AppColors.primaryColor,
+//       flexibleSpace: FlexibleSpaceBar(
+//         background: Container(
+//           decoration: const BoxDecoration(
+//             gradient: LinearGradient(
+//               colors: [AppColors.primaryColor, AppColors.secondaryColor],
+//               begin: Alignment.topLeft,
+//               end: Alignment.bottomRight,
+//             ),
+//           ),
+//           child: SafeArea(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 Container(
+//                   width: 70,
+//                   height: 70,
+//                   decoration: BoxDecoration(
+//                     color: AppColors.whiteColor.withOpacity(0.2),
+//                     shape: BoxShape.circle,
+//                   ),
+//                   child: Icon(
+//                     hasResults && result != null
+//                         ? _riskIcon(result)
+//                         : Icons.pending_rounded,
+//                     size: 40,
+//                     color: AppColors.whiteColor,
+//                   ),
+//                 ),
+//                 SizedBox(height: size.customHeight(context) * 0.015),
+//                 Text(
+//                   'Speech Analysis',
+//                   style: GoogleFonts.poppins(
+//                     color: AppColors.whiteColor,
+//                     fontSize: size.customWidth(context) * 0.06,
+//                     fontWeight: FontWeight.bold,
+//                   ),
+//                 ),
+//                 SizedBox(height: size.customHeight(context) * 0.005),
+//                 Text(
+//                   submission.getChildName(),
+//                   style: GoogleFonts.poppins(
+//                     color: AppColors.whiteColor.withOpacity(0.9),
+//                     fontSize: size.customWidth(context) * 0.035,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//       leading: IconButton(
+//         icon: const Icon(Icons.arrow_back, color: AppColors.whiteColor),
+//         onPressed: () => Get.back(),
+//       ),
+//       actions: [
+//         Obx(() {
+//           final sub = controller.currentSubmission.value;
+//           if (sub == null || !sub.hasResults()) {
+//             return const SizedBox.shrink();
+//           }
+//           return IconButton(
+//             icon: const Icon(Icons.download_outlined,
+//                 color: AppColors.whiteColor),
+//             onPressed: () => _downloadPdf(context, sub),
+//             tooltip: 'Download PDF Report',
+//           );
+//         }),
+//       ],
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // INFO CARD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildInfoCard(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withOpacity(0.06),
+//             blurRadius: 15,
+//             offset: const Offset(0, 4),
+//           ),
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Text('Recording Information',
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.045,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.textPrimaryColor)),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _infoRow(context, Icons.person_rounded, 'Child',
+//               submission.getChildName()),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.access_time_rounded, 'Duration',
+//               '${submission.recordingDurationSeconds} seconds'),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.calendar_today_outlined, 'Date',
+//               submission.getFormattedDate()),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.schedule_rounded, 'Time',
+//               submission.getFormattedTime()),
+//           if (submission.recordingFormat != null) ...[
+//             SizedBox(height: size.customHeight(context) * 0.015),
+//             _infoRow(context, Icons.audio_file_rounded, 'Format',
+//                 submission.recordingFormat!.toUpperCase()),
+//           ],
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _infoRow(BuildContext context, IconData icon, String label,
+//       String value) {
+//     final size = CustomSize();
+//     return Row(children: [
+//       Container(
+//         width: 40,
+//         height: 40,
+//         decoration: BoxDecoration(
+//           color: AppColors.primaryColor.withOpacity(0.1),
+//           borderRadius: BorderRadius.circular(10),
+//         ),
+//         child: Icon(icon, color: AppColors.primaryColor, size: 20),
+//       ),
+//       SizedBox(width: size.customWidth(context) * 0.03),
+//       Expanded(
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(label,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.032,
+//                     color: AppColors.textSecondaryColor)),
+//             Text(value,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.038,
+//                     fontWeight: FontWeight.w600,
+//                     color: AppColors.textPrimaryColor)),
+//           ],
+//         ),
+//       ),
+//     ]);
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // RESULTS SECTION
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildResultsSection(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+
+//     if (!submission.hasResults()) {
+//       return Container(
+//         padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//         decoration: BoxDecoration(
+//           color: AppColors.warningColor.withOpacity(0.1),
+//           borderRadius: BorderRadius.circular(20),
+//           border:
+//               Border.all(color: AppColors.warningColor.withOpacity(0.3)),
+//         ),
+//         child: Column(children: [
+//           const Icon(Icons.pending_rounded,
+//               size: 50, color: AppColors.warningColor),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           Text('Analysis Pending',
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.045,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.warningColor)),
+//           SizedBox(height: size.customHeight(context) * 0.01),
+//           Text(
+//             'The speech analysis is being processed.\nPlease check back later.',
+//             textAlign: TextAlign.center,
+//             style: GoogleFonts.poppins(
+//                 fontSize: size.customWidth(context) * 0.035,
+//                 color: AppColors.textSecondaryColor),
+//           ),
+//         ]),
+//       );
+//     }
+
+//     final analysisResult = submission.getLatestResult()!.result;
+//     final riskColor = _riskColor(analysisResult);
+//     final isNewFormat = analysisResult.saScore != null;
+
+//     return Column(
+//       children: [
+//         // ── Score card ─────────────────────────────────────────────────────
+//         Container(
+//           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//           decoration: BoxDecoration(
+//             color: AppColors.whiteColor,
+//             borderRadius: BorderRadius.circular(20),
+//             boxShadow: [
+//               BoxShadow(
+//                   color: Colors.black.withOpacity(0.06),
+//                   blurRadius: 15,
+//                   offset: const Offset(0, 4))
+//             ],
+//           ),
+//           child: Column(
+//             children: [
+//               Text('Analysis Results',
+//                   style: GoogleFonts.poppins(
+//                       fontSize: size.customWidth(context) * 0.045,
+//                       fontWeight: FontWeight.bold,
+//                       color: AppColors.textPrimaryColor)),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // Score circle
+//               Center(
+//                 child: Stack(
+//                   alignment: Alignment.center,
+//                   children: [
+//                     SizedBox(
+//                       width: size.customWidth(context) * 0.42,
+//                       height: size.customWidth(context) * 0.42,
+//                       child: CircularProgressIndicator(
+//                         value: analysisResult.severityScore /
+//                             analysisResult.maxScore,
+//                         strokeWidth: 10,
+//                         backgroundColor: riskColor.withOpacity(0.15),
+//                         valueColor:
+//                             AlwaysStoppedAnimation<Color>(riskColor),
+//                       ),
+//                     ),
+//                     Column(
+//                       mainAxisSize: MainAxisSize.min,
+//                       children: [
+//                         // New format: show sa_score with 2 decimals
+//                         Text(
+//                           isNewFormat
+//                               ? analysisResult.saScore!
+//                                   .toStringAsFixed(1)
+//                               : '${analysisResult.severityScore}',
+//                           style: GoogleFonts.poppins(
+//                             fontSize: size.customWidth(context) * 0.11,
+//                             fontWeight: FontWeight.bold,
+//                             color: riskColor,
+//                           ),
+//                         ),
+//                         Text(
+//                           'out of ${analysisResult.maxScore}',
+//                           style: GoogleFonts.poppins(
+//                             fontSize: size.customWidth(context) * 0.03,
+//                             color: AppColors.textSecondaryColor,
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // Risk badge
+//               Container(
+//                 padding: EdgeInsets.symmetric(
+//                   horizontal: size.customWidth(context) * 0.06,
+//                   vertical: size.customHeight(context) * 0.012,
+//                 ),
+//                 decoration: BoxDecoration(
+//                   color: riskColor.withOpacity(0.1),
+//                   borderRadius: BorderRadius.circular(25),
+//                   border: Border.all(
+//                       color: riskColor.withOpacity(0.4), width: 2),
+//                 ),
+//                 child: Row(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     Icon(_riskIcon(analysisResult),
+//                         color: riskColor, size: 20),
+//                     SizedBox(width: size.customWidth(context) * 0.02),
+//                     Text(
+//                       analysisResult.riskInterpretation,
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.042,
+//                         fontWeight: FontWeight.bold,
+//                         color: riskColor,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               // ── New-format extra stats row ─────────────────────────────
+//               if (isNewFormat) ...[
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 Row(
+//                   children: [
+//                     Expanded(
+//                       child: _statChip(
+//                         context,
+//                         label: 'Severity',
+//                         value: analysisResult.severityPercentage ?? '—',
+//                         icon: Icons.bar_chart_rounded,
+//                         color: riskColor,
+//                       ),
+//                     ),
+//                     SizedBox(width: size.customWidth(context) * 0.03),
+//                     Expanded(
+//                       child: _statChip(
+//                         context,
+//                         label: 'SA Score',
+//                         value: analysisResult.saScore != null
+//                             ? analysisResult.saScore!.toStringAsFixed(2)
+//                             : '—',
+//                         icon: Icons.analytics_rounded,
+//                         color: AppColors.primaryColor,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ],
+
+//               SizedBox(height: size.customHeight(context) * 0.02),
+
+//               // Interpretation text
+//               Container(
+//                 padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//                 decoration: BoxDecoration(
+//                   color: AppColors.primaryColor.withOpacity(0.05),
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 child: Row(children: [
+//                   const Icon(Icons.info_outline_rounded,
+//                       color: AppColors.primaryColor, size: 18),
+//                   SizedBox(width: size.customWidth(context) * 0.02),
+//                   Expanded(
+//                     child: Text(
+//                       _interpretationText(analysisResult),
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.032,
+//                         color: AppColors.textPrimaryColor,
+//                         height: 1.4,
+//                       ),
+//                     ),
+//                   ),
+//                 ]),
+//               ),
+//             ],
+//           ),
+//         ),
+
+//         SizedBox(height: size.customHeight(context) * 0.02),
+
+//         // ── Model info card (new format only) ─────────────────────────────
+//         if (isNewFormat && analysisResult.modelType != null)
+//           _buildModelInfoCard(context, analysisResult),
+
+//         // ── Bio-markers card (old format only) ────────────────────────────
+//         if (!isNewFormat && analysisResult.bioMarkers != null) ...[
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _buildBioMarkersCard(context, analysisResult.bioMarkers!),
+//         ],
+//       ],
+//     );
+//   }
+
+//   /// Small stat chip used in new-format results
+//   Widget _statChip(
+//     BuildContext context, {
+//     required String label,
+//     required String value,
+//     required IconData icon,
+//     required Color color,
+//   }) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.symmetric(
+//         horizontal: size.customWidth(context) * 0.03,
+//         vertical: size.customHeight(context) * 0.012,
+//       ),
+//       decoration: BoxDecoration(
+//         color: color.withOpacity(0.08),
+//         borderRadius: BorderRadius.circular(12),
+//         border: Border.all(color: color.withOpacity(0.25)),
+//       ),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           Icon(icon, color: color, size: 16),
+//           SizedBox(width: size.customWidth(context) * 0.015),
+//           Column(
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//               Text(label,
+//                   style: GoogleFonts.poppins(
+//                       fontSize: size.customWidth(context) * 0.028,
+//                       color: AppColors.textSecondaryColor)),
+//               Text(value,
+//                   style: GoogleFonts.poppins(
+//                       fontSize: size.customWidth(context) * 0.036,
+//                       fontWeight: FontWeight.bold,
+//                       color: color)),
+//             ],
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // MODEL INFO CARD (new format)
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildModelInfoCard(
+//       BuildContext context, AnalysisResult analysisResult) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//               color: Colors.black.withOpacity(0.06),
+//               blurRadius: 15,
+//               offset: const Offset(0, 4))
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(children: [
+//             Container(
+//               width: 36,
+//               height: 36,
+//               decoration: BoxDecoration(
+//                 color: AppColors.primaryColor.withOpacity(0.1),
+//                 borderRadius: BorderRadius.circular(10),
+//               ),
+//               child: const Icon(Icons.memory_rounded,
+//                   color: AppColors.primaryColor, size: 20),
+//             ),
+//             SizedBox(width: size.customWidth(context) * 0.03),
+//             Text('Model Details',
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.042,
+//                     fontWeight: FontWeight.bold,
+//                     color: AppColors.textPrimaryColor)),
+//           ]),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+
+//           // Model type row
+//           _modelDetailRow(
+//             context,
+//             icon: Icons.smart_toy_rounded,
+//             label: 'Model',
+//             value: analysisResult.modelType ?? '—',
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.012),
+
+//           // Filename row
+//           if (analysisResult.filename != null)
+//             _modelDetailRow(
+//               context,
+//               icon: Icons.audio_file_rounded,
+//               label: 'File',
+//               value: analysisResult.filename!,
+//             ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _modelDetailRow(BuildContext context,
+//       {required IconData icon,
+//       required String label,
+//       required String value}) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.035),
+//       decoration: BoxDecoration(
+//         color: AppColors.lightGreyColor,
+//         borderRadius: BorderRadius.circular(12),
+//       ),
+//       child: Row(children: [
+//         Icon(icon, color: AppColors.primaryColor, size: 18),
+//         SizedBox(width: size.customWidth(context) * 0.03),
+//         Expanded(
+//           child: Column(
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//               Text(label,
+//                   style: GoogleFonts.poppins(
+//                       fontSize: size.customWidth(context) * 0.03,
+//                       color: AppColors.textSecondaryColor)),
+//               Text(value,
+//                   style: GoogleFonts.poppins(
+//                       fontSize: size.customWidth(context) * 0.034,
+//                       fontWeight: FontWeight.w600,
+//                       color: AppColors.textPrimaryColor),
+//                   maxLines: 2,
+//                   overflow: TextOverflow.ellipsis),
+//             ],
+//           ),
+//         ),
+//       ]),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // BIO-MARKERS CARD (old format)
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildBioMarkersCard(
+//       BuildContext context, BioMarkers bioMarkers) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//               color: Colors.black.withOpacity(0.06),
+//               blurRadius: 15,
+//               offset: const Offset(0, 4))
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(children: [
+//             Container(
+//               width: 36,
+//               height: 36,
+//               decoration: BoxDecoration(
+//                 color: AppColors.primaryColor.withOpacity(0.1),
+//                 borderRadius: BorderRadius.circular(10),
+//               ),
+//               child: const Icon(Icons.analytics_rounded,
+//                   color: AppColors.primaryColor, size: 20),
+//             ),
+//             SizedBox(width: size.customWidth(context) * 0.03),
+//             Text('Bio-markers',
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.042,
+//                     fontWeight: FontWeight.bold,
+//                     color: AppColors.textPrimaryColor)),
+//           ]),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Pitch Instability',
+//             value: bioMarkers.pitchInstability,
+//             unit: 'Hz',
+//             icon: Icons.graphic_eq_rounded,
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Resonance Jitter F1',
+//             value: bioMarkers.resonanceJitterF1,
+//             unit: 'Hz',
+//             icon: Icons.waves_rounded,
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Resonance Jitter F2',
+//             value: bioMarkers.resonanceJitterF2,
+//             unit: 'Hz',
+//             icon: Icons.waves_rounded,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _bioMarkerRow(
+//     BuildContext context, {
+//     required String label,
+//     required double value,
+//     required String unit,
+//     required IconData icon,
+//   }) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.035),
+//       decoration: BoxDecoration(
+//         color: AppColors.lightGreyColor,
+//         borderRadius: BorderRadius.circular(12),
+//       ),
+//       child: Row(children: [
+//         Icon(icon, color: AppColors.primaryColor, size: 20),
+//         SizedBox(width: size.customWidth(context) * 0.03),
+//         Expanded(
+//           child: Text(label,
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.035,
+//                   color: AppColors.textSecondaryColor)),
+//         ),
+//         Text(
+//           '${value.toStringAsFixed(1)} $unit',
+//           style: GoogleFonts.poppins(
+//             fontSize: size.customWidth(context) * 0.036,
+//             fontWeight: FontWeight.w600,
+//             color: AppColors.textPrimaryColor,
+//           ),
+//         ),
+//       ]),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // HORIZONTAL ACTION ROW  (Watch Therapy Video + Find Therapist)
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildHorizontalActionRow(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     final result = submission.getLatestResult()?.result;
+//     final isLow = result?.isLowRisk() ?? true;
+//     final isHigh = result?.isHighRisk() ?? false;
+//     final isModerate = result?.isModerateRisk() ?? false;
+
+//     // Low risk → show Therapy Videos prominently + Consult as secondary
+//     // Moderate/High → show Consult prominently + Therapy Videos as secondary
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Text(
+//           'Next Steps',
+//           style: GoogleFonts.poppins(
+//               fontSize: size.customWidth(context) * 0.042,
+//               fontWeight: FontWeight.bold,
+//               color: AppColors.textPrimaryColor),
+//         ),
+//         SizedBox(height: size.customHeight(context) * 0.012),
+//         Row(
+//           children: [
+//             // ── Therapy Videos button ──────────────────────────────────────
+//             Expanded(
+//               child: _actionCard(
+//                 context,
+//                 icon: Icons.play_lesson_outlined,
+//                 label: 'Therapy\nExercises',
+//                 sublabel: isLow ? 'Recommended' : 'Optional',
+//                 gradient: isLow
+//                     ? [
+//                         AppColors.primaryColor,
+//                         AppColors.secondaryColor,
+//                       ]
+//                     : [
+//                         AppColors.greyColor.withOpacity(0.6),
+//                         AppColors.greyColor,
+//                       ],
+//                 isPrimary: isLow,
+//                 onTap: () => Get.toNamed(AppRoutes.therapy),
+//               ),
+//             ),
+//             SizedBox(width: size.customWidth(context) * 0.03),
+
+//             // ── Consult Therapist button ───────────────────────────────────
+//             Expanded(
+//               child: _actionCard(
+//                 context,
+//                 icon: Icons.person_search_rounded,
+//                 label: 'Find\nTherapist',
+//                 sublabel: (isHigh || isModerate) ? 'Recommended' : 'Optional',
+//                 gradient: (isHigh || isModerate)
+//                     ? [
+//                         AppColors.errorColor.withOpacity(0.85),
+//                         AppColors.errorColor,
+//                       ]
+//                     : [
+//                         AppColors.primaryColor.withOpacity(0.6),
+//                         AppColors.primaryColor.withOpacity(0.85),
+//                       ],
+//                 isPrimary: isHigh || isModerate,
+//                 onTap: () => Get.toNamed(
+//                   AppRoutes.expertsList,
+//                   arguments: {
+//                     'childId': submission.childId,
+//                     'childName': submission.getChildName(),
+//                   },
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ],
+//     );
+//   }
+
+//   Widget _actionCard(
+//     BuildContext context, {
+//     required IconData icon,
+//     required String label,
+//     required String sublabel,
+//     required List<Color> gradient,
+//     required bool isPrimary,
+//     required VoidCallback onTap,
+//   }) {
+//     final size = CustomSize();
+//     return GestureDetector(
+//       onTap: onTap,
+//       child: Container(
+//         padding: EdgeInsets.symmetric(
+//           vertical: size.customHeight(context) * 0.022,
+//           horizontal: size.customWidth(context) * 0.04,
+//         ),
+//         decoration: BoxDecoration(
+//           gradient: LinearGradient(
+//             colors: gradient,
+//             begin: Alignment.topLeft,
+//             end: Alignment.bottomRight,
+//           ),
+//           borderRadius: BorderRadius.circular(18),
+//           boxShadow: isPrimary
+//               ? [
+//                   BoxShadow(
+//                     color: gradient.last.withOpacity(0.35),
+//                     blurRadius: 12,
+//                     offset: const Offset(0, 6),
+//                   )
+//                 ]
+//               : [],
+//         ),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Container(
+//               width: 40,
+//               height: 40,
+//               decoration: BoxDecoration(
+//                 color: AppColors.whiteColor.withOpacity(0.2),
+//                 borderRadius: BorderRadius.circular(10),
+//               ),
+//               child: Icon(icon, color: AppColors.whiteColor, size: 22),
+//             ),
+//             SizedBox(height: size.customHeight(context) * 0.012),
+//             Text(
+//               label,
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.038,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.whiteColor,
+//                   height: 1.2),
+//             ),
+//             SizedBox(height: size.customHeight(context) * 0.004),
+//             Container(
+//               padding: EdgeInsets.symmetric(
+//                   horizontal: size.customWidth(context) * 0.02,
+//                   vertical: 2),
+//               decoration: BoxDecoration(
+//                 color: AppColors.whiteColor.withOpacity(0.2),
+//                 borderRadius: BorderRadius.circular(6),
+//               ),
+//               child: Text(
+//                 sublabel,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.026,
+//                     color: AppColors.whiteColor,
+//                     fontWeight: FontWeight.w500),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DOWNLOAD PDF BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildDownloadPdfButton(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       height: size.customHeight(context) * 0.065,
+//       child: ElevatedButton.icon(
+//         onPressed: () => _downloadPdf(context, submission),
+//         icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+//         label: Text(
+//           'Download PDF Report',
+//           style: GoogleFonts.poppins(
+//             fontSize: 15,
+//             fontWeight: FontWeight.w600,
+//           ),
+//         ),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.primaryColor,
+//           foregroundColor: AppColors.whiteColor,
+//           shape: RoundedRectangleBorder(
+//             borderRadius: BorderRadius.circular(14),
+//           ),
+//           elevation: 0,
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DELETE BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildDeleteButton(BuildContext context) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       child: ElevatedButton.icon(
+//         onPressed: () => _showDeleteConfirmation(context),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.errorColor,
+//           padding: EdgeInsets.symmetric(
+//               vertical: size.customHeight(context) * 0.018),
+//           shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(15)),
+//         ),
+//         icon: const Icon(Icons.delete_rounded,
+//             color: AppColors.whiteColor),
+//         label: Text('Delete Submission',
+//             style: GoogleFonts.poppins(
+//                 color: AppColors.whiteColor,
+//                 fontWeight: FontWeight.w600,
+//                 fontSize: size.customWidth(context) * 0.04)),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DELETE DIALOG
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   void _showDeleteConfirmation(BuildContext context) {
+//     final size = CustomSize();
+//     Get.dialog(AlertDialog(
+//       shape: RoundedRectangleBorder(
+//           borderRadius: BorderRadius.circular(20)),
+//       title: Row(children: [
+//         const Icon(Icons.warning_rounded,
+//             color: AppColors.errorColor, size: 28),
+//         SizedBox(width: size.customWidth(context) * 0.02),
+//         Text('Delete Submission',
+//             style: GoogleFonts.poppins(
+//                 fontWeight: FontWeight.bold,
+//                 fontSize: size.customWidth(context) * 0.045)),
+//       ]),
+//       content: Text(
+//         'Are you sure you want to delete this speech recording? '
+//         'This action cannot be undone.',
+//         style: GoogleFonts.poppins(
+//             fontSize: size.customWidth(context) * 0.038,
+//             color: AppColors.textSecondaryColor),
+//       ),
+//       actions: [
+//         TextButton(
+//           onPressed: () => Get.back(),
+//           child: Text('Cancel',
+//               style: GoogleFonts.poppins(
+//                   color: AppColors.textSecondaryColor,
+//                   fontWeight: FontWeight.w600)),
+//         ),
+//         ElevatedButton(
+//           onPressed: () async {
+//             Get.back();
+//             final success =
+//                 await controller.deleteSubmission(submissionId);
+//             if (success) {
+//               controller.currentSubmission.value = null;
+//               Get.back();
+//             }
+//           },
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: AppColors.errorColor,
+//             shape: RoundedRectangleBorder(
+//                 borderRadius: BorderRadius.circular(10)),
+//           ),
+//           child: Text('Delete',
+//               style: GoogleFonts.poppins(
+//                   color: AppColors.whiteColor,
+//                   fontWeight: FontWeight.w600)),
+//         ),
+//       ],
+//     ));
+//   }
+// }
+
+
+// // lib/view/speech/speech_detail_screen.dart
+
+// import 'dart:io';
+// import 'dart:typed_data';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:intl/intl.dart';
+// import 'package:open_file/open_file.dart';
+// import 'package:path_provider/path_provider.dart';
+// import 'package:pdf/pdf.dart';
+// import 'package:pdf/widgets.dart' as pw;
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/controllers/speech_controller.dart';
+// import 'package:speechspectrum/models/speech_models.dart';
+// import 'package:speechspectrum/routes/app_routes.dart';
+
+// class SpeechDetailScreen extends StatefulWidget {
+//   const SpeechDetailScreen({super.key});
+
+//   @override
+//   State<SpeechDetailScreen> createState() => _SpeechDetailScreenState();
+// }
+
+// class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
+//   final SpeechController controller = SpeechController.instance;
+//   late String submissionId;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     submissionId = Get.arguments as String;
+
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       _loadDetails();
+//     });
+//   }
+
+//   void _loadDetails() {
+//     final cached = controller.speechSubmissions.firstWhereOrNull(
+//       (s) => s.speechSubmissionId == submissionId,
+//     );
+//     if (cached != null) {
+//       controller.currentSubmission.value = cached;
+//     }
+//     controller.fetchSubmissionDetail(submissionId);
+//   }
+
+//   // ── Risk colour helpers ───────────────────────────────────────────────────
+//   Color _riskColor(AnalysisResult r) {
+//     if (r.isHighRisk()) return AppColors.errorColor;
+//     if (r.isModerateRisk()) return AppColors.warningColor;
+//     return AppColors.successColor;
+//   }
+
+//   IconData _riskIcon(AnalysisResult r) {
+//     if (r.isHighRisk()) return Icons.warning_rounded;
+//     if (r.isModerateRisk()) return Icons.info_rounded;
+//     return Icons.check_circle_rounded;
+//   }
+
+//   // ── PDF generation ────────────────────────────────────────────────────────
+//   Future<void> _downloadPdf(
+//       BuildContext context, SpeechSubmissionDetail submission) async {
+//     try {
+//       final speechResult = submission.getLatestResult();
+//       if (speechResult == null) return;
+
+//       final analysisResult = speechResult.result;
+//       final childName = submission.getChildName();
+//       final bioMarkers = analysisResult.bioMarkers;
+
+//       String formattedDate = 'N/A';
+//       try {
+//         formattedDate = DateFormat('MMMM dd, yyyy')
+//             .format(DateTime.parse(submission.submittedAt));
+//       } catch (_) {
+//         formattedDate = DateFormat('MMMM dd, yyyy').format(DateTime.now());
+//       }
+
+//       final pdf = pw.Document();
+
+//       pdf.addPage(
+//         pw.MultiPage(
+//           pageFormat: PdfPageFormat.a4,
+//           margin: const pw.EdgeInsets.all(40),
+//           build: (pw.Context ctx) => [
+//             // ── Header ────────────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(20),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('6C63FF'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(12)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text(
+//                     'Speech Analysis Report',
+//                     style: pw.TextStyle(
+//                       fontSize: 24,
+//                       fontWeight: pw.FontWeight.bold,
+//                       color: PdfColors.white,
+//                     ),
+//                   ),
+//                   pw.SizedBox(height: 6),
+//                   pw.Text(
+//                     'SpeechSpectrum — Confidential Assessment',
+//                     style: const pw.TextStyle(
+//                         fontSize: 12, color: PdfColors.white),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Result summary ─────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(16),
+//               decoration: pw.BoxDecoration(
+//                 border: pw.Border.all(color: PdfColor.fromHex('E0E0E0')),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text('Analysis Result',
+//                       style: pw.TextStyle(
+//                           fontSize: 16,
+//                           fontWeight: pw.FontWeight.bold)),
+//                   pw.SizedBox(height: 10),
+//                   _pdfRow('Child Name',
+//                       childName.isNotEmpty ? childName : 'N/A'),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Risk Level', analysisResult.riskInterpretation),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Assessment Date', formattedDate),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Duration',
+//                       '${submission.recordingDurationSeconds} seconds'),
+//                   if (submission.recordingFormat != null) ...[
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('Format',
+//                         submission.recordingFormat!.toUpperCase()),
+//                   ],
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Bio-markers (old format only) ──────────────────────────────
+//             if (bioMarkers != null) ...[
+//               pw.Text('Bio-markers',
+//                   style: pw.TextStyle(
+//                       fontSize: 14,
+//                       fontWeight: pw.FontWeight.bold)),
+//               pw.SizedBox(height: 8),
+//               pw.Container(
+//                 padding: const pw.EdgeInsets.all(12),
+//                 decoration: pw.BoxDecoration(
+//                   color: PdfColor.fromHex('F8F9FA'),
+//                   borderRadius:
+//                       const pw.BorderRadius.all(pw.Radius.circular(8)),
+//                 ),
+//                 child: pw.Column(
+//                   crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                   children: [
+//                     _pdfRow('Pitch Instability',
+//                         '${bioMarkers.pitchInstability.toStringAsFixed(1)} Hz'),
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('Resonance Jitter F1',
+//                         '${bioMarkers.resonanceJitterF1.toStringAsFixed(1)} Hz'),
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('Resonance Jitter F2',
+//                         '${bioMarkers.resonanceJitterF2.toStringAsFixed(1)} Hz'),
+//                   ],
+//                 ),
+//               ),
+//               pw.SizedBox(height: 20),
+//             ],
+
+//             // ── Interpretation ─────────────────────────────────────────────
+//             pw.Text('Interpretation',
+//                 style: pw.TextStyle(
+//                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
+//             pw.SizedBox(height: 8),
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('F8F9FA'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 _interpretationText(analysisResult),
+//                 style: const pw.TextStyle(fontSize: 11),
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Disclaimer ─────────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('FFF8E1'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 'Disclaimer: This is a screening tool, not a diagnostic assessment. '
+//                 'Professional evaluation by a qualified healthcare provider is recommended.',
+//                 style: const pw.TextStyle(fontSize: 10),
+//               ),
+//             ),
+//           ],
+//         ),
+//       );
+
+//       final Uint8List bytes = await pdf.save();
+//       final dir = await getApplicationDocumentsDirectory();
+//       final childSafe = childName.isNotEmpty
+//           ? childName.replaceAll(RegExp(r'[^\w]'), '_')
+//           : 'report';
+//       final file = File('${dir.path}/Speech_Report_$childSafe.pdf');
+//       await file.writeAsBytes(bytes);
+//       await OpenFile.open(file.path);
+//     } catch (e) {
+//       Get.snackbar(
+//         'Error',
+//         'Could not generate PDF: $e',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: AppColors.errorColor,
+//         colorText: AppColors.whiteColor,
+//       );
+//     }
+//   }
+
+//   pw.Widget _pdfRow(String label, String value) {
+//     return pw.Padding(
+//       padding: const pw.EdgeInsets.only(bottom: 4),
+//       child: pw.Row(children: [
+//         pw.Text('$label: ',
+//             style: pw.TextStyle(
+//                 fontWeight: pw.FontWeight.bold, fontSize: 11)),
+//         pw.Text(value, style: const pw.TextStyle(fontSize: 11)),
+//       ]),
+//     );
+//   }
+
+//   String _interpretationText(AnalysisResult r) {
+//     if (r.isLowRisk()) {
+//       return 'The speech pattern shows low-risk indicators and appears within a typical developmental range.';
+//     } else if (r.isModerateRisk()) {
+//       return 'The speech pattern shows moderate-risk characteristics. Consider consulting a speech therapist for a professional assessment.';
+//     } else {
+//       return 'The speech pattern shows high-risk indicators. We strongly recommend consulting a qualified speech therapist as soon as possible.';
+//     }
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // BUILD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+
+//     return Scaffold(
+//       backgroundColor: AppColors.lightGreyColor,
+//       body: Obx(() {
+//         if (controller.isLoadingDetail.value &&
+//             controller.currentSubmission.value == null) {
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const CircularProgressIndicator(
+//                     color: AppColors.primaryColor, strokeWidth: 3),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 Text('Loading details...',
+//                     style: GoogleFonts.poppins(
+//                         color: AppColors.textSecondaryColor,
+//                         fontSize: size.customWidth(context) * 0.035)),
+//               ],
+//             ),
+//           );
+//         }
+
+//         final submission = controller.currentSubmission.value;
+//         if (submission == null) {
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const Icon(Icons.error_outline_rounded,
+//                     size: 64, color: AppColors.errorColor),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 Text('Failed to load submission',
+//                     style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.04,
+//                         color: AppColors.textSecondaryColor)),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 ElevatedButton(
+//                   onPressed: _loadDetails,
+//                   style: ElevatedButton.styleFrom(
+//                       backgroundColor: AppColors.primaryColor),
+//                   child: Text('Retry',
+//                       style: GoogleFonts.poppins(
+//                           color: AppColors.whiteColor,
+//                           fontWeight: FontWeight.w600)),
+//                 ),
+//               ],
+//             ),
+//           );
+//         }
+
+//         return CustomScrollView(
+//           slivers: [
+//             _buildAppBar(context, submission),
+//             SliverToBoxAdapter(
+//               child: Padding(
+//                 padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     // Subtle refresh indicator
+//                     if (controller.isLoadingDetail.value)
+//                       Padding(
+//                         padding: EdgeInsets.only(
+//                             bottom: size.customHeight(context) * 0.015),
+//                         child: Row(
+//                           mainAxisAlignment: MainAxisAlignment.center,
+//                           children: [
+//                             SizedBox(
+//                               width: 14,
+//                               height: 14,
+//                               child: CircularProgressIndicator(
+//                                 color:
+//                                     AppColors.primaryColor.withOpacity(0.6),
+//                                 strokeWidth: 2,
+//                               ),
+//                             ),
+//                             SizedBox(
+//                                 width: size.customWidth(context) * 0.02),
+//                             Text(
+//                               'Refreshing results...',
+//                               style: GoogleFonts.poppins(
+//                                   fontSize:
+//                                       size.customWidth(context) * 0.03,
+//                                   color: AppColors.textSecondaryColor),
+//                             ),
+//                           ],
+//                         ),
+//                       ),
+
+//                     _buildInfoCard(context, submission),
+//                     SizedBox(height: size.customHeight(context) * 0.02),
+//                     _buildResultsSection(context, submission),
+//                     SizedBox(height: size.customHeight(context) * 0.02),
+
+//                     // ── Horizontal action row (Therapy + Consult) ──────────
+//                     if (submission.hasResults())
+//                       _buildHorizontalActionRow(context, submission),
+//                     if (submission.hasResults())
+//                       SizedBox(
+//                           height: size.customHeight(context) * 0.015),
+
+//                     // ── Download PDF ───────────────────────────────────────
+//                     if (submission.hasResults())
+//                       _buildDownloadPdfButton(context, submission),
+//                     if (submission.hasResults())
+//                       SizedBox(
+//                           height: size.customHeight(context) * 0.015),
+
+//                     _buildDeleteButton(context),
+//                     SizedBox(height: size.customHeight(context) * 0.04),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ],
+//         );
+//       }),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // APP BAR
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildAppBar(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     final hasResults = submission.hasResults();
+//     final result = submission.getLatestResult()?.result;
+
+//     return SliverAppBar(
+//       expandedHeight: size.customHeight(context) * 0.25,
+//       pinned: true,
+//       backgroundColor: AppColors.primaryColor,
+//       flexibleSpace: FlexibleSpaceBar(
+//         background: Container(
+//           decoration: const BoxDecoration(
+//             gradient: LinearGradient(
+//               colors: [AppColors.primaryColor, AppColors.secondaryColor],
+//               begin: Alignment.topLeft,
+//               end: Alignment.bottomRight,
+//             ),
+//           ),
+//           child: SafeArea(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 Container(
+//                   width: 70,
+//                   height: 70,
+//                   decoration: BoxDecoration(
+//                     color: AppColors.whiteColor.withOpacity(0.2),
+//                     shape: BoxShape.circle,
+//                   ),
+//                   child: Icon(
+//                     hasResults && result != null
+//                         ? _riskIcon(result)
+//                         : Icons.pending_rounded,
+//                     size: 40,
+//                     color: AppColors.whiteColor,
+//                   ),
+//                 ),
+//                 SizedBox(height: size.customHeight(context) * 0.015),
+//                 Text(
+//                   'Speech Analysis',
+//                   style: GoogleFonts.poppins(
+//                     color: AppColors.whiteColor,
+//                     fontSize: size.customWidth(context) * 0.06,
+//                     fontWeight: FontWeight.bold,
+//                   ),
+//                 ),
+//                 SizedBox(height: size.customHeight(context) * 0.005),
+//                 Text(
+//                   submission.getChildName(),
+//                   style: GoogleFonts.poppins(
+//                     color: AppColors.whiteColor.withOpacity(0.9),
+//                     fontSize: size.customWidth(context) * 0.035,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//       leading: IconButton(
+//         icon: const Icon(Icons.arrow_back, color: AppColors.whiteColor),
+//         onPressed: () => Get.back(),
+//       ),
+//       actions: [
+//         Obx(() {
+//           final sub = controller.currentSubmission.value;
+//           if (sub == null || !sub.hasResults()) {
+//             return const SizedBox.shrink();
+//           }
+//           return IconButton(
+//             icon: const Icon(Icons.download_outlined,
+//                 color: AppColors.whiteColor),
+//             onPressed: () => _downloadPdf(context, sub),
+//             tooltip: 'Download PDF Report',
+//           );
+//         }),
+//       ],
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // INFO CARD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildInfoCard(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withOpacity(0.06),
+//             blurRadius: 15,
+//             offset: const Offset(0, 4),
+//           ),
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Text('Recording Information',
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.045,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.textPrimaryColor)),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _infoRow(context, Icons.person_rounded, 'Child',
+//               submission.getChildName()),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.access_time_rounded, 'Duration',
+//               '${submission.recordingDurationSeconds} seconds'),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.calendar_today_outlined, 'Date',
+//               submission.getFormattedDate()),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.schedule_rounded, 'Time',
+//               submission.getFormattedTime()),
+//           if (submission.recordingFormat != null) ...[
+//             SizedBox(height: size.customHeight(context) * 0.015),
+//             _infoRow(context, Icons.audio_file_rounded, 'Format',
+//                 submission.recordingFormat!.toUpperCase()),
+//           ],
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _infoRow(BuildContext context, IconData icon, String label,
+//       String value) {
+//     final size = CustomSize();
+//     return Row(children: [
+//       Container(
+//         width: 40,
+//         height: 40,
+//         decoration: BoxDecoration(
+//           color: AppColors.primaryColor.withOpacity(0.1),
+//           borderRadius: BorderRadius.circular(10),
+//         ),
+//         child: Icon(icon, color: AppColors.primaryColor, size: 20),
+//       ),
+//       SizedBox(width: size.customWidth(context) * 0.03),
+//       Expanded(
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(label,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.032,
+//                     color: AppColors.textSecondaryColor)),
+//             Text(value,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.038,
+//                     fontWeight: FontWeight.w600,
+//                     color: AppColors.textPrimaryColor)),
+//           ],
+//         ),
+//       ),
+//     ]);
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // RESULTS SECTION
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildResultsSection(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+
+//     if (!submission.hasResults()) {
+//       return Container(
+//         padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//         decoration: BoxDecoration(
+//           color: AppColors.warningColor.withOpacity(0.1),
+//           borderRadius: BorderRadius.circular(20),
+//           border:
+//               Border.all(color: AppColors.warningColor.withOpacity(0.3)),
+//         ),
+//         child: Column(children: [
+//           const Icon(Icons.pending_rounded,
+//               size: 50, color: AppColors.warningColor),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           Text('Analysis Pending',
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.045,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.warningColor)),
+//           SizedBox(height: size.customHeight(context) * 0.01),
+//           Text(
+//             'The speech analysis is being processed.\nPlease check back later.',
+//             textAlign: TextAlign.center,
+//             style: GoogleFonts.poppins(
+//                 fontSize: size.customWidth(context) * 0.035,
+//                 color: AppColors.textSecondaryColor),
+//           ),
+//         ]),
+//       );
+//     }
+
+//     final analysisResult = submission.getLatestResult()!.result;
+//     final riskColor = _riskColor(analysisResult);
+
+//     return Column(
+//       children: [
+//         // ── Score card ─────────────────────────────────────────────────────
+//         Container(
+//           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//           decoration: BoxDecoration(
+//             color: AppColors.whiteColor,
+//             borderRadius: BorderRadius.circular(20),
+//             boxShadow: [
+//               BoxShadow(
+//                   color: Colors.black.withOpacity(0.06),
+//                   blurRadius: 15,
+//                   offset: const Offset(0, 4))
+//             ],
+//           ),
+//           child: Column(
+//             children: [
+//               Text('Analysis Results',
+//                   style: GoogleFonts.poppins(
+//                       fontSize: size.customWidth(context) * 0.045,
+//                       fontWeight: FontWeight.bold,
+//                       color: AppColors.textPrimaryColor)),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // Score circle
+//               Center(
+//                 child: Stack(
+//                   alignment: Alignment.center,
+//                   children: [
+//                     SizedBox(
+//                       width: size.customWidth(context) * 0.42,
+//                       height: size.customWidth(context) * 0.42,
+//                       child: CircularProgressIndicator(
+//                         value: analysisResult.severityScore /
+//                             analysisResult.maxScore,
+//                         strokeWidth: 10,
+//                         backgroundColor: riskColor.withOpacity(0.15),
+//                         valueColor:
+//                             AlwaysStoppedAnimation<Color>(riskColor),
+//                       ),
+//                     ),
+//                     Column(
+//                       mainAxisSize: MainAxisSize.min,
+//                       children: [
+//                         Text(
+//                           '${analysisResult.severityScore}',
+//                           style: GoogleFonts.poppins(
+//                             fontSize: size.customWidth(context) * 0.11,
+//                             fontWeight: FontWeight.bold,
+//                             color: riskColor,
+//                           ),
+//                         ),
+//                         Text(
+//                           'out of ${analysisResult.maxScore}',
+//                           style: GoogleFonts.poppins(
+//                             fontSize: size.customWidth(context) * 0.03,
+//                             color: AppColors.textSecondaryColor,
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // Risk badge
+//               Container(
+//                 padding: EdgeInsets.symmetric(
+//                   horizontal: size.customWidth(context) * 0.06,
+//                   vertical: size.customHeight(context) * 0.012,
+//                 ),
+//                 decoration: BoxDecoration(
+//                   color: riskColor.withOpacity(0.1),
+//                   borderRadius: BorderRadius.circular(25),
+//                   border: Border.all(
+//                       color: riskColor.withOpacity(0.4), width: 2),
+//                 ),
+//                 child: Row(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     Icon(_riskIcon(analysisResult),
+//                         color: riskColor, size: 20),
+//                     SizedBox(width: size.customWidth(context) * 0.02),
+//                     Text(
+//                       analysisResult.riskInterpretation,
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.042,
+//                         fontWeight: FontWeight.bold,
+//                         color: riskColor,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.02),
+
+//               // Interpretation text
+//               Container(
+//                 padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//                 decoration: BoxDecoration(
+//                   color: AppColors.primaryColor.withOpacity(0.05),
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 child: Row(children: [
+//                   const Icon(Icons.info_outline_rounded,
+//                       color: AppColors.primaryColor, size: 18),
+//                   SizedBox(width: size.customWidth(context) * 0.02),
+//                   Expanded(
+//                     child: Text(
+//                       _interpretationText(analysisResult),
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.032,
+//                         color: AppColors.textPrimaryColor,
+//                         height: 1.4,
+//                       ),
+//                     ),
+//                   ),
+//                 ]),
+//               ),
+//             ],
+//           ),
+//         ),
+
+//         // ── Bio-markers card (old format only) ────────────────────────────
+//         if (analysisResult.bioMarkers != null) ...[
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _buildBioMarkersCard(context, analysisResult.bioMarkers!),
+//         ],
+//       ],
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // BIO-MARKERS CARD (old format)
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildBioMarkersCard(
+//       BuildContext context, BioMarkers bioMarkers) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//               color: Colors.black.withOpacity(0.06),
+//               blurRadius: 15,
+//               offset: const Offset(0, 4))
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(children: [
+//             Container(
+//               width: 36,
+//               height: 36,
+//               decoration: BoxDecoration(
+//                 color: AppColors.primaryColor.withOpacity(0.1),
+//                 borderRadius: BorderRadius.circular(10),
+//               ),
+//               child: const Icon(Icons.analytics_rounded,
+//                   color: AppColors.primaryColor, size: 20),
+//             ),
+//             SizedBox(width: size.customWidth(context) * 0.03),
+//             Text('Bio-markers',
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.042,
+//                     fontWeight: FontWeight.bold,
+//                     color: AppColors.textPrimaryColor)),
+//           ]),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Pitch Instability',
+//             value: bioMarkers.pitchInstability,
+//             unit: 'Hz',
+//             icon: Icons.graphic_eq_rounded,
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Resonance Jitter F1',
+//             value: bioMarkers.resonanceJitterF1,
+//             unit: 'Hz',
+//             icon: Icons.waves_rounded,
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Resonance Jitter F2',
+//             value: bioMarkers.resonanceJitterF2,
+//             unit: 'Hz',
+//             icon: Icons.waves_rounded,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _bioMarkerRow(
+//     BuildContext context, {
+//     required String label,
+//     required double value,
+//     required String unit,
+//     required IconData icon,
+//   }) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.035),
+//       decoration: BoxDecoration(
+//         color: AppColors.lightGreyColor,
+//         borderRadius: BorderRadius.circular(12),
+//       ),
+//       child: Row(children: [
+//         Icon(icon, color: AppColors.primaryColor, size: 20),
+//         SizedBox(width: size.customWidth(context) * 0.03),
+//         Expanded(
+//           child: Text(label,
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.035,
+//                   color: AppColors.textSecondaryColor)),
+//         ),
+//         Text(
+//           '${value.toStringAsFixed(1)} $unit',
+//           style: GoogleFonts.poppins(
+//             fontSize: size.customWidth(context) * 0.036,
+//             fontWeight: FontWeight.w600,
+//             color: AppColors.textPrimaryColor,
+//           ),
+//         ),
+//       ]),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // HORIZONTAL ACTION ROW  (Watch Therapy Video + Find Therapist)
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildHorizontalActionRow(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     final result = submission.getLatestResult()?.result;
+//     final isLow = result?.isLowRisk() ?? true;
+//     final isHigh = result?.isHighRisk() ?? false;
+//     final isModerate = result?.isModerateRisk() ?? false;
+
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Text(
+//           'Next Steps',
+//           style: GoogleFonts.poppins(
+//               fontSize: size.customWidth(context) * 0.042,
+//               fontWeight: FontWeight.bold,
+//               color: AppColors.textPrimaryColor),
+//         ),
+//         SizedBox(height: size.customHeight(context) * 0.012),
+//         Row(
+//           children: [
+//             // ── Therapy Videos button ──────────────────────────────────────
+//             Expanded(
+//               child: _actionCard(
+//                 context,
+//                 icon: Icons.play_lesson_outlined,
+//                 label: 'Therapy\nExercises',
+//                 sublabel: isLow ? 'Recommended' : 'Optional',
+//                 gradient: isLow
+//                     ? [
+//                         AppColors.primaryColor,
+//                         AppColors.secondaryColor,
+//                       ]
+//                     : [
+//                         AppColors.greyColor.withOpacity(0.6),
+//                         AppColors.greyColor,
+//                       ],
+//                 isPrimary: isLow,
+//                 onTap: () => Get.toNamed(AppRoutes.therapy),
+//               ),
+//             ),
+//             SizedBox(width: size.customWidth(context) * 0.03),
+
+//             // ── Consult Therapist button ───────────────────────────────────
+//             Expanded(
+//               child: _actionCard(
+//                 context,
+//                 icon: Icons.person_search_rounded,
+//                 label: 'Find\nTherapist',
+//                 sublabel: (isHigh || isModerate) ? 'Recommended' : 'Optional',
+//                 gradient: (isHigh || isModerate)
+//                     ? [
+//                         AppColors.errorColor.withOpacity(0.85),
+//                         AppColors.errorColor,
+//                       ]
+//                     : [
+//                         AppColors.primaryColor.withOpacity(0.6),
+//                         AppColors.primaryColor.withOpacity(0.85),
+//                       ],
+//                 isPrimary: isHigh || isModerate,
+//                 onTap: () => Get.toNamed(
+//                   AppRoutes.expertsList,
+//                   arguments: {
+//                     'childId': submission.childId,
+//                     'childName': submission.getChildName(),
+//                   },
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ],
+//     );
+//   }
+
+//   Widget _actionCard(
+//     BuildContext context, {
+//     required IconData icon,
+//     required String label,
+//     required String sublabel,
+//     required List<Color> gradient,
+//     required bool isPrimary,
+//     required VoidCallback onTap,
+//   }) {
+//     final size = CustomSize();
+//     return GestureDetector(
+//       onTap: onTap,
+//       child: Container(
+//         padding: EdgeInsets.symmetric(
+//           vertical: size.customHeight(context) * 0.022,
+//           horizontal: size.customWidth(context) * 0.04,
+//         ),
+//         decoration: BoxDecoration(
+//           gradient: LinearGradient(
+//             colors: gradient,
+//             begin: Alignment.topLeft,
+//             end: Alignment.bottomRight,
+//           ),
+//           borderRadius: BorderRadius.circular(18),
+//           boxShadow: isPrimary
+//               ? [
+//                   BoxShadow(
+//                     color: gradient.last.withOpacity(0.35),
+//                     blurRadius: 12,
+//                     offset: const Offset(0, 6),
+//                   )
+//                 ]
+//               : [],
+//         ),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Container(
+//               width: 40,
+//               height: 40,
+//               decoration: BoxDecoration(
+//                 color: AppColors.whiteColor.withOpacity(0.2),
+//                 borderRadius: BorderRadius.circular(10),
+//               ),
+//               child: Icon(icon, color: AppColors.whiteColor, size: 22),
+//             ),
+//             SizedBox(height: size.customHeight(context) * 0.012),
+//             Text(
+//               label,
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.038,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.whiteColor,
+//                   height: 1.2),
+//             ),
+//             SizedBox(height: size.customHeight(context) * 0.004),
+//             Container(
+//               padding: EdgeInsets.symmetric(
+//                   horizontal: size.customWidth(context) * 0.02,
+//                   vertical: 2),
+//               decoration: BoxDecoration(
+//                 color: AppColors.whiteColor.withOpacity(0.2),
+//                 borderRadius: BorderRadius.circular(6),
+//               ),
+//               child: Text(
+//                 sublabel,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.026,
+//                     color: AppColors.whiteColor,
+//                     fontWeight: FontWeight.w500),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DOWNLOAD PDF BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildDownloadPdfButton(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       height: size.customHeight(context) * 0.065,
+//       child: ElevatedButton.icon(
+//         onPressed: () => _downloadPdf(context, submission),
+//         icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+//         label: Text(
+//           'Download PDF Report',
+//           style: GoogleFonts.poppins(
+//             fontSize: 15,
+//             fontWeight: FontWeight.w600,
+//           ),
+//         ),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.primaryColor,
+//           foregroundColor: AppColors.whiteColor,
+//           shape: RoundedRectangleBorder(
+//             borderRadius: BorderRadius.circular(14),
+//           ),
+//           elevation: 0,
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DELETE BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildDeleteButton(BuildContext context) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       child: ElevatedButton.icon(
+//         onPressed: () => _showDeleteConfirmation(context),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.errorColor,
+//           padding: EdgeInsets.symmetric(
+//               vertical: size.customHeight(context) * 0.018),
+//           shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(15)),
+//         ),
+//         icon: const Icon(Icons.delete_rounded,
+//             color: AppColors.whiteColor),
+//         label: Text('Delete Submission',
+//             style: GoogleFonts.poppins(
+//                 color: AppColors.whiteColor,
+//                 fontWeight: FontWeight.w600,
+//                 fontSize: size.customWidth(context) * 0.04)),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DELETE DIALOG
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   void _showDeleteConfirmation(BuildContext context) {
+//     final size = CustomSize();
+//     Get.dialog(AlertDialog(
+//       shape: RoundedRectangleBorder(
+//           borderRadius: BorderRadius.circular(20)),
+//       title: Row(children: [
+//         const Icon(Icons.warning_rounded,
+//             color: AppColors.errorColor, size: 28),
+//         SizedBox(width: size.customWidth(context) * 0.02),
+//         Text('Delete Submission',
+//             style: GoogleFonts.poppins(
+//                 fontWeight: FontWeight.bold,
+//                 fontSize: size.customWidth(context) * 0.045)),
+//       ]),
+//       content: Text(
+//         'Are you sure you want to delete this speech recording? '
+//         'This action cannot be undone.',
+//         style: GoogleFonts.poppins(
+//             fontSize: size.customWidth(context) * 0.038,
+//             color: AppColors.textSecondaryColor),
+//       ),
+//       actions: [
+//         TextButton(
+//           onPressed: () => Get.back(),
+//           child: Text('Cancel',
+//               style: GoogleFonts.poppins(
+//                   color: AppColors.textSecondaryColor,
+//                   fontWeight: FontWeight.w600)),
+//         ),
+//         ElevatedButton(
+//           onPressed: () async {
+//             Get.back();
+//             final success =
+//                 await controller.deleteSubmission(submissionId);
+//             if (success) {
+//               controller.currentSubmission.value = null;
+//               Get.back();
+//             }
+//           },
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: AppColors.errorColor,
+//             shape: RoundedRectangleBorder(
+//                 borderRadius: BorderRadius.circular(10)),
+//           ),
+//           child: Text('Delete',
+//               style: GoogleFonts.poppins(
+//                   color: AppColors.whiteColor,
+//                   fontWeight: FontWeight.w600)),
+//         ),
+//       ],
+//     ));
+//   }
+// }
+
+
+// // lib/view/speech/speech_detail_screen.dart
+// //
+// // Updated to display new API response format:
+// //   sa_score, severity_percentage, risk_level, model_type
+// // PDF download also updated to show same fields.
+
+// import 'dart:io';
+// import 'dart:typed_data';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:intl/intl.dart';
+// import 'package:open_file/open_file.dart';
+// import 'package:path_provider/path_provider.dart';
+// import 'package:pdf/pdf.dart';
+// import 'package:pdf/widgets.dart' as pw;
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/controllers/speech_controller.dart';
+// import 'package:speechspectrum/models/speech_models.dart';
+// import 'package:speechspectrum/routes/app_routes.dart';
+
+// class SpeechDetailScreen extends StatefulWidget {
+//   const SpeechDetailScreen({super.key});
+
+//   @override
+//   State<SpeechDetailScreen> createState() => _SpeechDetailScreenState();
+// }
+
+// class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
+//   final SpeechController controller = SpeechController.instance;
+//   late String submissionId;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     submissionId = Get.arguments as String;
+
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       _loadDetails();
+//     });
+//   }
+
+//   void _loadDetails() {
+//     final cached = controller.speechSubmissions.firstWhereOrNull(
+//       (s) => s.speechSubmissionId == submissionId,
+//     );
+//     if (cached != null) {
+//       controller.currentSubmission.value = cached;
+//     }
+//     controller.fetchSubmissionDetail(submissionId);
+//   }
+
+//   // ── Risk colour helpers ───────────────────────────────────────────────────
+//   Color _riskColor(AnalysisResult r) {
+//     if (r.isHighRisk()) return AppColors.errorColor;
+//     if (r.isModerateRisk()) return AppColors.warningColor;
+//     return AppColors.successColor;
+//   }
+
+//   IconData _riskIcon(AnalysisResult r) {
+//     if (r.isHighRisk()) return Icons.warning_rounded;
+//     if (r.isModerateRisk()) return Icons.info_rounded;
+//     return Icons.check_circle_rounded;
+//   }
+
+//   // ── PDF generation ────────────────────────────────────────────────────────
+//   Future<void> _downloadPdf(
+//       BuildContext context, SpeechSubmissionDetail submission) async {
+//     try {
+//       final speechResult = submission.getLatestResult();
+//       if (speechResult == null) return;
+
+//       final analysisResult = speechResult.result;
+//       final childName = submission.getChildName();
+
+//       String formattedDate = 'N/A';
+//       try {
+//         formattedDate = DateFormat('MMMM dd, yyyy')
+//             .format(DateTime.parse(submission.submittedAt));
+//       } catch (_) {
+//         formattedDate = DateFormat('MMMM dd, yyyy').format(DateTime.now());
+//       }
+
+//       final pdf = pw.Document();
+
+//       pdf.addPage(
+//         pw.MultiPage(
+//           pageFormat: PdfPageFormat.a4,
+//           margin: const pw.EdgeInsets.all(40),
+//           build: (pw.Context ctx) => [
+//             // ── Header ────────────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(20),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('6C63FF'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(12)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text(
+//                     'Speech Analysis Report',
+//                     style: pw.TextStyle(
+//                       fontSize: 24,
+//                       fontWeight: pw.FontWeight.bold,
+//                       color: PdfColors.white,
+//                     ),
+//                   ),
+//                   pw.SizedBox(height: 6),
+//                   pw.Text(
+//                     'SpeechSpectrum — Confidential Assessment',
+//                     style: const pw.TextStyle(
+//                         fontSize: 12, color: PdfColors.white),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Result summary ─────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(16),
+//               decoration: pw.BoxDecoration(
+//                 border: pw.Border.all(color: PdfColor.fromHex('E0E0E0')),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text('Analysis Result',
+//                       style: pw.TextStyle(
+//                           fontSize: 16,
+//                           fontWeight: pw.FontWeight.bold)),
+//                   pw.SizedBox(height: 10),
+//                   _pdfRow('Child Name',
+//                       childName.isNotEmpty ? childName : 'N/A'),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Risk Level', analysisResult.riskInterpretation),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Assessment Date', formattedDate),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Duration',
+//                       '${submission.recordingDurationSeconds} seconds'),
+//                   // New format fields
+//                   if (analysisResult.saScore != null) ...[
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('SA Score',
+//                         analysisResult.saScore!.toStringAsFixed(2)),
+//                   ],
+//                   if (analysisResult.severityPercentage != null) ...[
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow(
+//                         'Severity', analysisResult.severityPercentage!),
+//                   ],
+//                   if (analysisResult.modelType != null) ...[
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('Model', analysisResult.modelType!),
+//                   ],
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Interpretation ─────────────────────────────────────────────
+//             pw.Text('Interpretation',
+//                 style: pw.TextStyle(
+//                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
+//             pw.SizedBox(height: 8),
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('F8F9FA'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 _interpretationText(analysisResult),
+//                 style: const pw.TextStyle(fontSize: 11),
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Disclaimer ─────────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('FFF8E1'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 'Disclaimer: This is a screening tool, not a diagnostic assessment. '
+//                 'Professional evaluation by a qualified healthcare provider is recommended.',
+//                 style: const pw.TextStyle(fontSize: 10),
+//               ),
+//             ),
+//           ],
+//         ),
+//       );
+
+//       final Uint8List bytes = await pdf.save();
+//       final dir = await getApplicationDocumentsDirectory();
+//       final childSafe = childName.isNotEmpty
+//           ? childName.replaceAll(RegExp(r'[^\w]'), '_')
+//           : 'report';
+//       final file = File('${dir.path}/Speech_Report_$childSafe.pdf');
+//       await file.writeAsBytes(bytes);
+//       await OpenFile.open(file.path);
+//     } catch (e) {
+//       Get.snackbar(
+//         'Error',
+//         'Could not generate PDF: $e',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: AppColors.errorColor,
+//         colorText: AppColors.whiteColor,
+//       );
+//     }
+//   }
+
+//   pw.Widget _pdfRow(String label, String value) {
+//     return pw.Padding(
+//       padding: const pw.EdgeInsets.only(bottom: 4),
+//       child: pw.Row(children: [
+//         pw.Text('$label: ',
+//             style: pw.TextStyle(
+//                 fontWeight: pw.FontWeight.bold, fontSize: 11)),
+//         pw.Text(value, style: const pw.TextStyle(fontSize: 11)),
+//       ]),
+//     );
+//   }
+
+//   String _interpretationText(AnalysisResult r) {
+//     if (r.isLowRisk()) {
+//       return 'The speech pattern shows low-risk indicators and appears within a typical developmental range.';
+//     } else if (r.isModerateRisk()) {
+//       return 'The speech pattern shows moderate-risk characteristics. Consider consulting a speech therapist for a professional assessment.';
+//     } else {
+//       return 'The speech pattern shows high-risk indicators. We strongly recommend consulting a qualified speech therapist as soon as possible.';
+//     }
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // BUILD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+
+//     return Scaffold(
+//       backgroundColor: AppColors.lightGreyColor,
+//       body: Obx(() {
+//         if (controller.isLoadingDetail.value &&
+//             controller.currentSubmission.value == null) {
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const CircularProgressIndicator(
+//                     color: AppColors.primaryColor, strokeWidth: 3),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 Text('Loading details...',
+//                     style: GoogleFonts.poppins(
+//                         color: AppColors.textSecondaryColor,
+//                         fontSize: size.customWidth(context) * 0.035)),
+//               ],
+//             ),
+//           );
+//         }
+
+//         final submission = controller.currentSubmission.value;
+//         if (submission == null) {
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const Icon(Icons.error_outline_rounded,
+//                     size: 64, color: AppColors.errorColor),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 Text('Failed to load submission',
+//                     style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.04,
+//                         color: AppColors.textSecondaryColor)),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 ElevatedButton(
+//                   onPressed: _loadDetails,
+//                   style: ElevatedButton.styleFrom(
+//                       backgroundColor: AppColors.primaryColor),
+//                   child: Text('Retry',
+//                       style: GoogleFonts.poppins(
+//                           color: AppColors.whiteColor,
+//                           fontWeight: FontWeight.w600)),
+//                 ),
+//               ],
+//             ),
+//           );
+//         }
+
+//         return CustomScrollView(
+//           slivers: [
+//             _buildAppBar(context, submission),
+//             SliverToBoxAdapter(
+//               child: Padding(
+//                 padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     if (controller.isLoadingDetail.value)
+//                       Padding(
+//                         padding: EdgeInsets.only(
+//                             bottom: size.customHeight(context) * 0.015),
+//                         child: Row(
+//                           mainAxisAlignment: MainAxisAlignment.center,
+//                           children: [
+//                             SizedBox(
+//                               width: 14,
+//                               height: 14,
+//                               child: CircularProgressIndicator(
+//                                 color:
+//                                     AppColors.primaryColor.withOpacity(0.6),
+//                                 strokeWidth: 2,
+//                               ),
+//                             ),
+//                             SizedBox(
+//                                 width: size.customWidth(context) * 0.02),
+//                             Text(
+//                               'Refreshing results...',
+//                               style: GoogleFonts.poppins(
+//                                   fontSize:
+//                                       size.customWidth(context) * 0.03,
+//                                   color: AppColors.textSecondaryColor),
+//                             ),
+//                           ],
+//                         ),
+//                       ),
+
+//                     _buildInfoCard(context, submission),
+//                     SizedBox(height: size.customHeight(context) * 0.02),
+//                     _buildResultsSection(context, submission),
+//                     SizedBox(height: size.customHeight(context) * 0.02),
+
+//                     if (submission.hasResults())
+//                       _buildHorizontalActionRow(context, submission),
+//                     if (submission.hasResults())
+//                       SizedBox(
+//                           height: size.customHeight(context) * 0.015),
+
+//                     if (submission.hasResults())
+//                       _buildDownloadPdfButton(context, submission),
+//                     if (submission.hasResults())
+//                       SizedBox(
+//                           height: size.customHeight(context) * 0.015),
+
+//                     _buildDeleteButton(context),
+//                     SizedBox(height: size.customHeight(context) * 0.04),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ],
+//         );
+//       }),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // APP BAR
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildAppBar(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     final hasResults = submission.hasResults();
+//     final result = submission.getLatestResult()?.result;
+
+//     return SliverAppBar(
+//       expandedHeight: size.customHeight(context) * 0.25,
+//       pinned: true,
+//       backgroundColor: AppColors.primaryColor,
+//       flexibleSpace: FlexibleSpaceBar(
+//         background: Container(
+//           decoration: const BoxDecoration(
+//             gradient: LinearGradient(
+//               colors: [AppColors.primaryColor, AppColors.secondaryColor],
+//               begin: Alignment.topLeft,
+//               end: Alignment.bottomRight,
+//             ),
+//           ),
+//           child: SafeArea(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 Container(
+//                   width: 70,
+//                   height: 70,
+//                   decoration: BoxDecoration(
+//                     color: AppColors.whiteColor.withOpacity(0.2),
+//                     shape: BoxShape.circle,
+//                   ),
+//                   child: Icon(
+//                     hasResults && result != null
+//                         ? _riskIcon(result)
+//                         : Icons.pending_rounded,
+//                     size: 40,
+//                     color: AppColors.whiteColor,
+//                   ),
+//                 ),
+//                 SizedBox(height: size.customHeight(context) * 0.015),
+//                 Text(
+//                   'Speech Analysis',
+//                   style: GoogleFonts.poppins(
+//                     color: AppColors.whiteColor,
+//                     fontSize: size.customWidth(context) * 0.06,
+//                     fontWeight: FontWeight.bold,
+//                   ),
+//                 ),
+//                 SizedBox(height: size.customHeight(context) * 0.005),
+//                 Text(
+//                   submission.getChildName(),
+//                   style: GoogleFonts.poppins(
+//                     color: AppColors.whiteColor.withOpacity(0.9),
+//                     fontSize: size.customWidth(context) * 0.035,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//       leading: IconButton(
+//         icon: const Icon(Icons.arrow_back, color: AppColors.whiteColor),
+//         onPressed: () => Get.back(),
+//       ),
+//       actions: [
+//         Obx(() {
+//           final sub = controller.currentSubmission.value;
+//           if (sub == null || !sub.hasResults()) {
+//             return const SizedBox.shrink();
+//           }
+//           return IconButton(
+//             icon: const Icon(Icons.download_outlined,
+//                 color: AppColors.whiteColor),
+//             onPressed: () => _downloadPdf(context, sub),
+//             tooltip: 'Download PDF Report',
+//           );
+//         }),
+//       ],
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // INFO CARD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildInfoCard(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withOpacity(0.06),
+//             blurRadius: 15,
+//             offset: const Offset(0, 4),
+//           ),
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Text('Recording Information',
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.045,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.textPrimaryColor)),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _infoRow(context, Icons.person_rounded, 'Child',
+//               submission.getChildName()),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.access_time_rounded, 'Duration',
+//               '${submission.recordingDurationSeconds} seconds'),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.calendar_today_outlined, 'Date',
+//               submission.getFormattedDate()),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.schedule_rounded, 'Time',
+//               submission.getFormattedTime()),
+//           if (submission.recordingFormat != null) ...[
+//             SizedBox(height: size.customHeight(context) * 0.015),
+//             _infoRow(context, Icons.audio_file_rounded, 'Format',
+//                 submission.recordingFormat!.toUpperCase()),
+//           ],
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _infoRow(BuildContext context, IconData icon, String label,
+//       String value) {
+//     final size = CustomSize();
+//     return Row(children: [
+//       Container(
+//         width: 40,
+//         height: 40,
+//         decoration: BoxDecoration(
+//           color: AppColors.primaryColor.withOpacity(0.1),
+//           borderRadius: BorderRadius.circular(10),
+//         ),
+//         child: Icon(icon, color: AppColors.primaryColor, size: 20),
+//       ),
+//       SizedBox(width: size.customWidth(context) * 0.03),
+//       Expanded(
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(label,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.032,
+//                     color: AppColors.textSecondaryColor)),
+//             Text(value,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.038,
+//                     fontWeight: FontWeight.w600,
+//                     color: AppColors.textPrimaryColor)),
+//           ],
+//         ),
+//       ),
+//     ]);
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // RESULTS SECTION  —  uses new format: sa_score, severity_percentage, risk_level
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildResultsSection(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+
+//     if (!submission.hasResults()) {
+//       return Container(
+//         padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//         decoration: BoxDecoration(
+//           color: AppColors.warningColor.withOpacity(0.1),
+//           borderRadius: BorderRadius.circular(20),
+//           border:
+//               Border.all(color: AppColors.warningColor.withOpacity(0.3)),
+//         ),
+//         child: Column(children: [
+//           const Icon(Icons.pending_rounded,
+//               size: 50, color: AppColors.warningColor),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           Text('Analysis Pending',
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.045,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.warningColor)),
+//           SizedBox(height: size.customHeight(context) * 0.01),
+//           Text(
+//             'The speech analysis is being processed.\nPlease check back later.',
+//             textAlign: TextAlign.center,
+//             style: GoogleFonts.poppins(
+//                 fontSize: size.customWidth(context) * 0.035,
+//                 color: AppColors.textSecondaryColor),
+//           ),
+//         ]),
+//       );
+//     }
+
+//     final analysisResult = submission.getLatestResult()!.result;
+//     final riskColor = _riskColor(analysisResult);
+
+//     // Determine display values — prefer new-format fields
+//     final bool isNewFormat = analysisResult.saScore != null;
+//     final String displayScore = isNewFormat
+//         ? analysisResult.saScore!.toStringAsFixed(2)
+//         : '${analysisResult.severityScore}';
+//     final String displaySubScore = isNewFormat
+//         ? '/ 22'
+//         : 'out of ${analysisResult.maxScore}';
+//     final String displaySeverity = isNewFormat
+//         ? (analysisResult.severityPercentage ?? '')
+//         : '';
+
+//     return Column(
+//       children: [
+//         // ── Score card ─────────────────────────────────────────────────────
+//         Container(
+//           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//           decoration: BoxDecoration(
+//             color: AppColors.whiteColor,
+//             borderRadius: BorderRadius.circular(20),
+//             boxShadow: [
+//               BoxShadow(
+//                   color: Colors.black.withOpacity(0.06),
+//                   blurRadius: 15,
+//                   offset: const Offset(0, 4))
+//             ],
+//           ),
+//           child: Column(
+//             children: [
+//               Text('Analysis Results',
+//                   style: GoogleFonts.poppins(
+//                       fontSize: size.customWidth(context) * 0.045,
+//                       fontWeight: FontWeight.bold,
+//                       color: AppColors.textPrimaryColor)),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // Score circle
+//               Center(
+//                 child: Stack(
+//                   alignment: Alignment.center,
+//                   children: [
+//                     SizedBox(
+//                       width: size.customWidth(context) * 0.42,
+//                       height: size.customWidth(context) * 0.42,
+//                       child: CircularProgressIndicator(
+//                         value: isNewFormat
+//                             ? (analysisResult.saScore! / 22.0).clamp(0.0, 1.0)
+//                             : (analysisResult.severityScore /
+//                                     analysisResult.maxScore)
+//                                 .clamp(0.0, 1.0),
+//                         strokeWidth: 10,
+//                         backgroundColor: riskColor.withOpacity(0.15),
+//                         valueColor:
+//                             AlwaysStoppedAnimation<Color>(riskColor),
+//                       ),
+//                     ),
+//                     Column(
+//                       mainAxisSize: MainAxisSize.min,
+//                       children: [
+//                         Text(
+//                           displayScore,
+//                           style: GoogleFonts.poppins(
+//                             fontSize: isNewFormat
+//                                 ? size.customWidth(context) * 0.085
+//                                 : size.customWidth(context) * 0.11,
+//                             fontWeight: FontWeight.bold,
+//                             color: riskColor,
+//                           ),
+//                         ),
+//                         Text(
+//                           displaySubScore,
+//                           style: GoogleFonts.poppins(
+//                             fontSize: size.customWidth(context) * 0.03,
+//                             color: AppColors.textSecondaryColor,
+//                           ),
+//                         ),
+//                         if (isNewFormat && displaySeverity.isNotEmpty)
+//                           Text(
+//                             displaySeverity,
+//                             style: GoogleFonts.poppins(
+//                               fontSize: size.customWidth(context) * 0.028,
+//                               color: riskColor,
+//                               fontWeight: FontWeight.w600,
+//                             ),
+//                           ),
+//                       ],
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // Risk badge
+//               Container(
+//                 padding: EdgeInsets.symmetric(
+//                   horizontal: size.customWidth(context) * 0.06,
+//                   vertical: size.customHeight(context) * 0.012,
+//                 ),
+//                 decoration: BoxDecoration(
+//                   color: riskColor.withOpacity(0.1),
+//                   borderRadius: BorderRadius.circular(25),
+//                   border: Border.all(
+//                       color: riskColor.withOpacity(0.4), width: 2),
+//                 ),
+//                 child: Row(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     Icon(_riskIcon(analysisResult),
+//                         color: riskColor, size: 20),
+//                     SizedBox(width: size.customWidth(context) * 0.02),
+//                     Text(
+//                       analysisResult.riskInterpretation,
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.042,
+//                         fontWeight: FontWeight.bold,
+//                         color: riskColor,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.02),
+
+//               // Interpretation text
+//               Container(
+//                 padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//                 decoration: BoxDecoration(
+//                   color: AppColors.primaryColor.withOpacity(0.05),
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 child: Row(children: [
+//                   const Icon(Icons.info_outline_rounded,
+//                       color: AppColors.primaryColor, size: 18),
+//                   SizedBox(width: size.customWidth(context) * 0.02),
+//                   Expanded(
+//                     child: Text(
+//                       _interpretationText(analysisResult),
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.032,
+//                         color: AppColors.textPrimaryColor,
+//                         height: 1.4,
+//                       ),
+//                     ),
+//                   ),
+//                 ]),
+//               ),
+//             ],
+//           ),
+//         ),
+
+//         // ── New-format detail chips ────────────────────────────────────────
+//         if (isNewFormat) ...[
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _buildNewFormatDetailsCard(context, analysisResult),
+//         ],
+
+//         // ── Bio-markers card (old format only) ────────────────────────────
+//         if (!isNewFormat && analysisResult.bioMarkers != null) ...[
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _buildBioMarkersCard(context, analysisResult.bioMarkers!),
+//         ],
+//       ],
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // NEW FORMAT DETAILS CARD  (sa_score, severity_percentage, model_type)
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildNewFormatDetailsCard(
+//       BuildContext context, AnalysisResult r) {
+//     final size = CustomSize();
+//     final riskColor = _riskColor(r);
+
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//               color: Colors.black.withOpacity(0.06),
+//               blurRadius: 15,
+//               offset: const Offset(0, 4))
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(children: [
+//             Container(
+//               width: 36,
+//               height: 36,
+//               decoration: BoxDecoration(
+//                 color: AppColors.primaryColor.withOpacity(0.1),
+//                 borderRadius: BorderRadius.circular(10),
+//               ),
+//               child: const Icon(Icons.analytics_rounded,
+//                   color: AppColors.primaryColor, size: 20),
+//             ),
+//             SizedBox(width: size.customWidth(context) * 0.03),
+//             Text('Assessment Details',
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.042,
+//                     fontWeight: FontWeight.bold,
+//                     color: AppColors.textPrimaryColor)),
+//           ]),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+
+//           // SA Score row
+//           if (r.saScore != null)
+//             _detailRow(
+//               context,
+//               icon: Icons.score_rounded,
+//               label: 'SA Score',
+//               value: r.saScore!.toStringAsFixed(2),
+//               valueColor: riskColor,
+//             ),
+
+//           // Severity percentage row
+//           if (r.severityPercentage != null) ...[
+//             SizedBox(height: size.customHeight(context) * 0.012),
+//             _detailRow(
+//               context,
+//               icon: Icons.percent_rounded,
+//               label: 'Severity',
+//               value: r.severityPercentage!,
+//               valueColor: riskColor,
+//             ),
+//           ],
+
+//           // Risk level row
+//           if (r.riskLevel != null) ...[
+//             SizedBox(height: size.customHeight(context) * 0.012),
+//             _detailRow(
+//               context,
+//               icon: _riskIcon(r),
+//               label: 'Risk Level',
+//               value: r.riskInterpretation,
+//               valueColor: riskColor,
+//             ),
+//           ],
+
+//           // Model type row
+//           if (r.modelType != null) ...[
+//             SizedBox(height: size.customHeight(context) * 0.012),
+//             _detailRow(
+//               context,
+//               icon: Icons.memory_rounded,
+//               label: 'Model',
+//               value: r.modelType!,
+//               valueColor: AppColors.textPrimaryColor,
+//             ),
+//           ],
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _detailRow(
+//     BuildContext context, {
+//     required IconData icon,
+//     required String label,
+//     required String value,
+//     required Color valueColor,
+//   }) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.035),
+//       decoration: BoxDecoration(
+//         color: AppColors.lightGreyColor,
+//         borderRadius: BorderRadius.circular(12),
+//       ),
+//       child: Row(children: [
+//         Icon(icon, color: AppColors.primaryColor, size: 20),
+//         SizedBox(width: size.customWidth(context) * 0.03),
+//         Expanded(
+//           child: Text(label,
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.035,
+//                   color: AppColors.textSecondaryColor)),
+//         ),
+//         Text(
+//           value,
+//           style: GoogleFonts.poppins(
+//             fontSize: size.customWidth(context) * 0.036,
+//             fontWeight: FontWeight.w600,
+//             color: valueColor,
+//           ),
+//         ),
+//       ]),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // BIO-MARKERS CARD (old format only)
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildBioMarkersCard(
+//       BuildContext context, BioMarkers bioMarkers) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//               color: Colors.black.withOpacity(0.06),
+//               blurRadius: 15,
+//               offset: const Offset(0, 4))
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(children: [
+//             Container(
+//               width: 36,
+//               height: 36,
+//               decoration: BoxDecoration(
+//                 color: AppColors.primaryColor.withOpacity(0.1),
+//                 borderRadius: BorderRadius.circular(10),
+//               ),
+//               child: const Icon(Icons.analytics_rounded,
+//                   color: AppColors.primaryColor, size: 20),
+//             ),
+//             SizedBox(width: size.customWidth(context) * 0.03),
+//             Text('Bio-markers',
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.042,
+//                     fontWeight: FontWeight.bold,
+//                     color: AppColors.textPrimaryColor)),
+//           ]),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Pitch Instability',
+//             value: bioMarkers.pitchInstability,
+//             unit: 'Hz',
+//             icon: Icons.graphic_eq_rounded,
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Resonance Jitter F1',
+//             value: bioMarkers.resonanceJitterF1,
+//             unit: 'Hz',
+//             icon: Icons.waves_rounded,
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Resonance Jitter F2',
+//             value: bioMarkers.resonanceJitterF2,
+//             unit: 'Hz',
+//             icon: Icons.waves_rounded,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _bioMarkerRow(
+//     BuildContext context, {
+//     required String label,
+//     required double value,
+//     required String unit,
+//     required IconData icon,
+//   }) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.035),
+//       decoration: BoxDecoration(
+//         color: AppColors.lightGreyColor,
+//         borderRadius: BorderRadius.circular(12),
+//       ),
+//       child: Row(children: [
+//         Icon(icon, color: AppColors.primaryColor, size: 20),
+//         SizedBox(width: size.customWidth(context) * 0.03),
+//         Expanded(
+//           child: Text(label,
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.035,
+//                   color: AppColors.textSecondaryColor)),
+//         ),
+//         Text(
+//           '${value.toStringAsFixed(1)} $unit',
+//           style: GoogleFonts.poppins(
+//             fontSize: size.customWidth(context) * 0.036,
+//             fontWeight: FontWeight.w600,
+//             color: AppColors.textPrimaryColor,
+//           ),
+//         ),
+//       ]),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // HORIZONTAL ACTION ROW
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildHorizontalActionRow(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     final result = submission.getLatestResult()?.result;
+//     final isLow = result?.isLowRisk() ?? true;
+//     final isHigh = result?.isHighRisk() ?? false;
+//     final isModerate = result?.isModerateRisk() ?? false;
+
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Text(
+//           'Next Steps',
+//           style: GoogleFonts.poppins(
+//               fontSize: size.customWidth(context) * 0.042,
+//               fontWeight: FontWeight.bold,
+//               color: AppColors.textPrimaryColor),
+//         ),
+//         SizedBox(height: size.customHeight(context) * 0.012),
+//         Row(
+//           children: [
+//             Expanded(
+//               child: _actionCard(
+//                 context,
+//                 icon: Icons.play_lesson_outlined,
+//                 label: 'Therapy\nExercises',
+//                 sublabel: isLow ? 'Recommended' : 'Optional',
+//                 gradient: isLow
+//                     ? [AppColors.primaryColor, AppColors.secondaryColor]
+//                     : [
+//                         AppColors.greyColor.withOpacity(0.6),
+//                         AppColors.greyColor,
+//                       ],
+//                 isPrimary: isLow,
+//                 onTap: () => Get.toNamed(AppRoutes.therapy),
+//               ),
+//             ),
+//             SizedBox(width: size.customWidth(context) * 0.03),
+//             Expanded(
+//               child: _actionCard(
+//                 context,
+//                 icon: Icons.person_search_rounded,
+//                 label: 'Find\nTherapist',
+//                 sublabel: (isHigh || isModerate) ? 'Recommended' : 'Optional',
+//                 gradient: (isHigh || isModerate)
+//                     ? [
+//                         AppColors.errorColor.withOpacity(0.85),
+//                         AppColors.errorColor,
+//                       ]
+//                     : [
+//                         AppColors.primaryColor.withOpacity(0.6),
+//                         AppColors.primaryColor.withOpacity(0.85),
+//                       ],
+//                 isPrimary: isHigh || isModerate,
+//                 onTap: () => Get.toNamed(
+//                   AppRoutes.expertsList,
+//                   arguments: {
+//                     'childId': submission.childId,
+//                     'childName': submission.getChildName(),
+//                   },
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ],
+//     );
+//   }
+
+//   Widget _actionCard(
+//     BuildContext context, {
+//     required IconData icon,
+//     required String label,
+//     required String sublabel,
+//     required List<Color> gradient,
+//     required bool isPrimary,
+//     required VoidCallback onTap,
+//   }) {
+//     final size = CustomSize();
+//     return GestureDetector(
+//       onTap: onTap,
+//       child: Container(
+//         padding: EdgeInsets.symmetric(
+//           vertical: size.customHeight(context) * 0.022,
+//           horizontal: size.customWidth(context) * 0.04,
+//         ),
+//         decoration: BoxDecoration(
+//           gradient: LinearGradient(
+//             colors: gradient,
+//             begin: Alignment.topLeft,
+//             end: Alignment.bottomRight,
+//           ),
+//           borderRadius: BorderRadius.circular(18),
+//           boxShadow: isPrimary
+//               ? [
+//                   BoxShadow(
+//                     color: gradient.last.withOpacity(0.35),
+//                     blurRadius: 12,
+//                     offset: const Offset(0, 6),
+//                   )
+//                 ]
+//               : [],
+//         ),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Container(
+//               width: 40,
+//               height: 40,
+//               decoration: BoxDecoration(
+//                 color: AppColors.whiteColor.withOpacity(0.2),
+//                 borderRadius: BorderRadius.circular(10),
+//               ),
+//               child: Icon(icon, color: AppColors.whiteColor, size: 22),
+//             ),
+//             SizedBox(height: size.customHeight(context) * 0.012),
+//             Text(
+//               label,
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.038,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.whiteColor,
+//                   height: 1.2),
+//             ),
+//             SizedBox(height: size.customHeight(context) * 0.004),
+//             Container(
+//               padding: EdgeInsets.symmetric(
+//                   horizontal: size.customWidth(context) * 0.02,
+//                   vertical: 2),
+//               decoration: BoxDecoration(
+//                 color: AppColors.whiteColor.withOpacity(0.2),
+//                 borderRadius: BorderRadius.circular(6),
+//               ),
+//               child: Text(
+//                 sublabel,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.026,
+//                     color: AppColors.whiteColor,
+//                     fontWeight: FontWeight.w500),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DOWNLOAD PDF BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildDownloadPdfButton(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       height: size.customHeight(context) * 0.065,
+//       child: ElevatedButton.icon(
+//         onPressed: () => _downloadPdf(context, submission),
+//         icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+//         label: Text(
+//           'Download PDF Report',
+//           style: GoogleFonts.poppins(
+//             fontSize: 15,
+//             fontWeight: FontWeight.w600,
+//           ),
+//         ),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.primaryColor,
+//           foregroundColor: AppColors.whiteColor,
+//           shape: RoundedRectangleBorder(
+//             borderRadius: BorderRadius.circular(14),
+//           ),
+//           elevation: 0,
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DELETE BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildDeleteButton(BuildContext context) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       child: ElevatedButton.icon(
+//         onPressed: () => _showDeleteConfirmation(context),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.errorColor,
+//           padding: EdgeInsets.symmetric(
+//               vertical: size.customHeight(context) * 0.018),
+//           shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(15)),
+//         ),
+//         icon: const Icon(Icons.delete_rounded,
+//             color: AppColors.whiteColor),
+//         label: Text('Delete Submission',
+//             style: GoogleFonts.poppins(
+//                 color: AppColors.whiteColor,
+//                 fontWeight: FontWeight.w600,
+//                 fontSize: size.customWidth(context) * 0.04)),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DELETE DIALOG
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   void _showDeleteConfirmation(BuildContext context) {
+//     final size = CustomSize();
+//     Get.dialog(AlertDialog(
+//       shape: RoundedRectangleBorder(
+//           borderRadius: BorderRadius.circular(20)),
+//       title: Row(children: [
+//         const Icon(Icons.warning_rounded,
+//             color: AppColors.errorColor, size: 28),
+//         SizedBox(width: size.customWidth(context) * 0.02),
+//         Text('Delete Submission',
+//             style: GoogleFonts.poppins(
+//                 fontWeight: FontWeight.bold,
+//                 fontSize: size.customWidth(context) * 0.045)),
+//       ]),
+//       content: Text(
+//         'Are you sure you want to delete this speech recording? '
+//         'This action cannot be undone.',
+//         style: GoogleFonts.poppins(
+//             fontSize: size.customWidth(context) * 0.038,
+//             color: AppColors.textSecondaryColor),
+//       ),
+//       actions: [
+//         TextButton(
+//           onPressed: () => Get.back(),
+//           child: Text('Cancel',
+//               style: GoogleFonts.poppins(
+//                   color: AppColors.textSecondaryColor,
+//                   fontWeight: FontWeight.w600)),
+//         ),
+//         ElevatedButton(
+//           onPressed: () async {
+//             Get.back();
+//             final success =
+//                 await controller.deleteSubmission(submissionId);
+//             if (success) {
+//               controller.currentSubmission.value = null;
+//               Get.back();
+//             }
+//           },
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: AppColors.errorColor,
+//             shape: RoundedRectangleBorder(
+//                 borderRadius: BorderRadius.circular(10)),
+//           ),
+//           child: Text('Delete',
+//               style: GoogleFonts.poppins(
+//                   color: AppColors.whiteColor,
+//                   fontWeight: FontWeight.w600)),
+//         ),
+//       ],
+//     ));
+//   }
+// }
+
+
+// // lib/view/speech/speech_detail_screen.dart
+// //
+// // Updated to display new API response format:
+// //   sa_score, severity_percentage, risk_level, model_type
+// // PDF download also updated to show same fields.
+
+// import 'dart:io';
+// import 'dart:typed_data';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:intl/intl.dart';
+// import 'package:open_file/open_file.dart';
+// import 'package:path_provider/path_provider.dart';
+// import 'package:pdf/pdf.dart';
+// import 'package:pdf/widgets.dart' as pw;
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/constants/custom_size.dart';
+// import 'package:speechspectrum/controllers/speech_controller.dart';
+// import 'package:speechspectrum/models/speech_models.dart';
+// import 'package:speechspectrum/routes/app_routes.dart';
+
+// class SpeechDetailScreen extends StatefulWidget {
+//   const SpeechDetailScreen({super.key});
+
+//   @override
+//   State<SpeechDetailScreen> createState() => _SpeechDetailScreenState();
+// }
+
+// class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
+//   final SpeechController controller = SpeechController.instance;
+//   late String submissionId;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     submissionId = Get.arguments as String;
+
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       _loadDetails();
+//     });
+//   }
+
+//   void _loadDetails() {
+//     final cached = controller.speechSubmissions.firstWhereOrNull(
+//       (s) => s.speechSubmissionId == submissionId,
+//     );
+//     if (cached != null) {
+//       controller.currentSubmission.value = cached;
+//     }
+//     controller.fetchSubmissionDetail(submissionId);
+//   }
+
+//   // ── Risk colour helpers ───────────────────────────────────────────────────
+//   Color _riskColor(AnalysisResult r) {
+//     if (r.isHighRisk()) return AppColors.errorColor;
+//     if (r.isModerateRisk()) return AppColors.warningColor;
+//     return AppColors.successColor;
+//   }
+
+//   IconData _riskIcon(AnalysisResult r) {
+//     if (r.isHighRisk()) return Icons.warning_rounded;
+//     if (r.isModerateRisk()) return Icons.info_rounded;
+//     return Icons.check_circle_rounded;
+//   }
+
+//   // ── PDF generation ────────────────────────────────────────────────────────
+//   Future<void> _downloadPdf(
+//       BuildContext context, SpeechSubmissionDetail submission) async {
+//     try {
+//       final speechResult = submission.getLatestResult();
+//       if (speechResult == null) return;
+
+//       final analysisResult = speechResult.result;
+//       final childName = submission.getChildName();
+
+//       String formattedDate = 'N/A';
+//       try {
+//         formattedDate = DateFormat('MMMM dd, yyyy')
+//             .format(DateTime.parse(submission.submittedAt));
+//       } catch (_) {
+//         formattedDate = DateFormat('MMMM dd, yyyy').format(DateTime.now());
+//       }
+
+//       final pdf = pw.Document();
+
+//       pdf.addPage(
+//         pw.MultiPage(
+//           pageFormat: PdfPageFormat.a4,
+//           margin: const pw.EdgeInsets.all(40),
+//           build: (pw.Context ctx) => [
+//             // ── Header ────────────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(20),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('6C63FF'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(12)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text(
+//                     'Speech Analysis Report',
+//                     style: pw.TextStyle(
+//                       fontSize: 24,
+//                       fontWeight: pw.FontWeight.bold,
+//                       color: PdfColors.white,
+//                     ),
+//                   ),
+//                   pw.SizedBox(height: 6),
+//                   pw.Text(
+//                     'SpeechSpectrum — Confidential Assessment',
+//                     style: const pw.TextStyle(
+//                         fontSize: 12, color: PdfColors.white),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Result summary ─────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(16),
+//               decoration: pw.BoxDecoration(
+//                 border: pw.Border.all(color: PdfColor.fromHex('E0E0E0')),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Column(
+//                 crossAxisAlignment: pw.CrossAxisAlignment.start,
+//                 children: [
+//                   pw.Text('Analysis Result',
+//                       style: pw.TextStyle(
+//                           fontSize: 16,
+//                           fontWeight: pw.FontWeight.bold)),
+//                   pw.SizedBox(height: 10),
+//                   _pdfRow('Child Name',
+//                       childName.isNotEmpty ? childName : 'N/A'),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Risk Level', analysisResult.riskInterpretation),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Assessment Date', formattedDate),
+//                   pw.SizedBox(height: 4),
+//                   _pdfRow('Duration',
+//                       '${submission.recordingDurationSeconds} seconds'),
+//                   if (analysisResult.saScore != null) ...[
+//                     pw.SizedBox(height: 4),
+//                     _pdfRow('SA Score',
+//                         '${analysisResult.saScore!.toStringAsFixed(1)} / 22'),
+//                   ],
+//                 ],
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Interpretation ─────────────────────────────────────────────
+//             pw.Text('Interpretation',
+//                 style: pw.TextStyle(
+//                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
+//             pw.SizedBox(height: 8),
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('F8F9FA'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 _interpretationText(analysisResult),
+//                 style: const pw.TextStyle(fontSize: 11),
+//               ),
+//             ),
+//             pw.SizedBox(height: 20),
+
+//             // ── Disclaimer ─────────────────────────────────────────────────
+//             pw.Container(
+//               padding: const pw.EdgeInsets.all(12),
+//               decoration: pw.BoxDecoration(
+//                 color: PdfColor.fromHex('FFF8E1'),
+//                 borderRadius:
+//                     const pw.BorderRadius.all(pw.Radius.circular(8)),
+//               ),
+//               child: pw.Text(
+//                 'Disclaimer: This is a screening tool, not a diagnostic assessment. '
+//                 'Professional evaluation by a qualified healthcare provider is recommended.',
+//                 style: const pw.TextStyle(fontSize: 10),
+//               ),
+//             ),
+//           ],
+//         ),
+//       );
+
+//       final Uint8List bytes = await pdf.save();
+//       final dir = await getApplicationDocumentsDirectory();
+//       final childSafe = childName.isNotEmpty
+//           ? childName.replaceAll(RegExp(r'[^\w]'), '_')
+//           : 'report';
+//       final file = File('${dir.path}/Speech_Report_$childSafe.pdf');
+//       await file.writeAsBytes(bytes);
+//       await OpenFile.open(file.path);
+//     } catch (e) {
+//       Get.snackbar(
+//         'Error',
+//         'Could not generate PDF: $e',
+//         snackPosition: SnackPosition.BOTTOM,
+//         backgroundColor: AppColors.errorColor,
+//         colorText: AppColors.whiteColor,
+//       );
+//     }
+//   }
+
+//   pw.Widget _pdfRow(String label, String value) {
+//     return pw.Padding(
+//       padding: const pw.EdgeInsets.only(bottom: 4),
+//       child: pw.Row(children: [
+//         pw.Text('$label: ',
+//             style: pw.TextStyle(
+//                 fontWeight: pw.FontWeight.bold, fontSize: 11)),
+//         pw.Text(value, style: const pw.TextStyle(fontSize: 11)),
+//       ]),
+//     );
+//   }
+
+//   String _interpretationText(AnalysisResult r) {
+//     if (r.isLowRisk()) {
+//       return 'The speech pattern shows low-risk indicators and appears within a typical developmental range.';
+//     } else if (r.isModerateRisk()) {
+//       return 'The speech pattern shows moderate-risk characteristics. Consider consulting a speech therapist for a professional assessment.';
+//     } else {
+//       return 'The speech pattern shows high-risk indicators. We strongly recommend consulting a qualified speech therapist as soon as possible.';
+//     }
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // BUILD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = CustomSize();
+
+//     return Scaffold(
+//       backgroundColor: AppColors.lightGreyColor,
+//       body: Obx(() {
+//         if (controller.isLoadingDetail.value &&
+//             controller.currentSubmission.value == null) {
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const CircularProgressIndicator(
+//                     color: AppColors.primaryColor, strokeWidth: 3),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 Text('Loading details...',
+//                     style: GoogleFonts.poppins(
+//                         color: AppColors.textSecondaryColor,
+//                         fontSize: size.customWidth(context) * 0.035)),
+//               ],
+//             ),
+//           );
+//         }
+
+//         final submission = controller.currentSubmission.value;
+//         if (submission == null) {
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 const Icon(Icons.error_outline_rounded,
+//                     size: 64, color: AppColors.errorColor),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 Text('Failed to load submission',
+//                     style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.04,
+//                         color: AppColors.textSecondaryColor)),
+//                 SizedBox(height: size.customHeight(context) * 0.02),
+//                 ElevatedButton(
+//                   onPressed: _loadDetails,
+//                   style: ElevatedButton.styleFrom(
+//                       backgroundColor: AppColors.primaryColor),
+//                   child: Text('Retry',
+//                       style: GoogleFonts.poppins(
+//                           color: AppColors.whiteColor,
+//                           fontWeight: FontWeight.w600)),
+//                 ),
+//               ],
+//             ),
+//           );
+//         }
+
+//         return CustomScrollView(
+//           slivers: [
+//             _buildAppBar(context, submission),
+//             SliverToBoxAdapter(
+//               child: Padding(
+//                 padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     if (controller.isLoadingDetail.value)
+//                       Padding(
+//                         padding: EdgeInsets.only(
+//                             bottom: size.customHeight(context) * 0.015),
+//                         child: Row(
+//                           mainAxisAlignment: MainAxisAlignment.center,
+//                           children: [
+//                             SizedBox(
+//                               width: 14,
+//                               height: 14,
+//                               child: CircularProgressIndicator(
+//                                 color:
+//                                     AppColors.primaryColor.withOpacity(0.6),
+//                                 strokeWidth: 2,
+//                               ),
+//                             ),
+//                             SizedBox(
+//                                 width: size.customWidth(context) * 0.02),
+//                             Text(
+//                               'Refreshing results...',
+//                               style: GoogleFonts.poppins(
+//                                   fontSize:
+//                                       size.customWidth(context) * 0.03,
+//                                   color: AppColors.textSecondaryColor),
+//                             ),
+//                           ],
+//                         ),
+//                       ),
+
+//                     _buildInfoCard(context, submission),
+//                     SizedBox(height: size.customHeight(context) * 0.02),
+//                     _buildResultsSection(context, submission),
+//                     SizedBox(height: size.customHeight(context) * 0.02),
+
+//                     if (submission.hasResults())
+//                       _buildHorizontalActionRow(context, submission),
+//                     if (submission.hasResults())
+//                       SizedBox(
+//                           height: size.customHeight(context) * 0.015),
+
+//                     if (submission.hasResults())
+//                       _buildDownloadPdfButton(context, submission),
+//                     if (submission.hasResults())
+//                       SizedBox(
+//                           height: size.customHeight(context) * 0.015),
+
+//                     _buildDeleteButton(context),
+//                     SizedBox(height: size.customHeight(context) * 0.04),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ],
+//         );
+//       }),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // APP BAR
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildAppBar(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     final hasResults = submission.hasResults();
+//     final result = submission.getLatestResult()?.result;
+
+//     return SliverAppBar(
+//       expandedHeight: size.customHeight(context) * 0.25,
+//       pinned: true,
+//       backgroundColor: AppColors.primaryColor,
+//       flexibleSpace: FlexibleSpaceBar(
+//         background: Container(
+//           decoration: const BoxDecoration(
+//             gradient: LinearGradient(
+//               colors: [AppColors.primaryColor, AppColors.secondaryColor],
+//               begin: Alignment.topLeft,
+//               end: Alignment.bottomRight,
+//             ),
+//           ),
+//           child: SafeArea(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 Container(
+//                   width: 70,
+//                   height: 70,
+//                   decoration: BoxDecoration(
+//                     color: AppColors.whiteColor.withOpacity(0.2),
+//                     shape: BoxShape.circle,
+//                   ),
+//                   child: Icon(
+//                     hasResults && result != null
+//                         ? _riskIcon(result)
+//                         : Icons.pending_rounded,
+//                     size: 40,
+//                     color: AppColors.whiteColor,
+//                   ),
+//                 ),
+//                 SizedBox(height: size.customHeight(context) * 0.015),
+//                 Text(
+//                   'Speech Analysis',
+//                   style: GoogleFonts.poppins(
+//                     color: AppColors.whiteColor,
+//                     fontSize: size.customWidth(context) * 0.06,
+//                     fontWeight: FontWeight.bold,
+//                   ),
+//                 ),
+//                 SizedBox(height: size.customHeight(context) * 0.005),
+//                 Text(
+//                   submission.getChildName(),
+//                   style: GoogleFonts.poppins(
+//                     color: AppColors.whiteColor.withOpacity(0.9),
+//                     fontSize: size.customWidth(context) * 0.035,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//       leading: IconButton(
+//         icon: const Icon(Icons.arrow_back, color: AppColors.whiteColor),
+//         onPressed: () => Get.back(),
+//       ),
+//       actions: [
+//         Obx(() {
+//           final sub = controller.currentSubmission.value;
+//           if (sub == null || !sub.hasResults()) {
+//             return const SizedBox.shrink();
+//           }
+//           return IconButton(
+//             icon: const Icon(Icons.download_outlined,
+//                 color: AppColors.whiteColor),
+//             onPressed: () => _downloadPdf(context, sub),
+//             tooltip: 'Download PDF Report',
+//           );
+//         }),
+//       ],
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // INFO CARD
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildInfoCard(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withOpacity(0.06),
+//             blurRadius: 15,
+//             offset: const Offset(0, 4),
+//           ),
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Text('Recording Information',
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.045,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.textPrimaryColor)),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _infoRow(context, Icons.person_rounded, 'Child',
+//               submission.getChildName()),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.access_time_rounded, 'Duration',
+//               '${submission.recordingDurationSeconds} seconds'),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.calendar_today_outlined, 'Date',
+//               submission.getFormattedDate()),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _infoRow(context, Icons.schedule_rounded, 'Time',
+//               submission.getFormattedTime()),
+//           if (submission.recordingFormat != null) ...[
+//             SizedBox(height: size.customHeight(context) * 0.015),
+//             _infoRow(context, Icons.audio_file_rounded, 'Format',
+//                 submission.recordingFormat!.toUpperCase()),
+//           ],
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _infoRow(BuildContext context, IconData icon, String label,
+//       String value) {
+//     final size = CustomSize();
+//     return Row(children: [
+//       Container(
+//         width: 40,
+//         height: 40,
+//         decoration: BoxDecoration(
+//           color: AppColors.primaryColor.withOpacity(0.1),
+//           borderRadius: BorderRadius.circular(10),
+//         ),
+//         child: Icon(icon, color: AppColors.primaryColor, size: 20),
+//       ),
+//       SizedBox(width: size.customWidth(context) * 0.03),
+//       Expanded(
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(label,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.032,
+//                     color: AppColors.textSecondaryColor)),
+//             Text(value,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.038,
+//                     fontWeight: FontWeight.w600,
+//                     color: AppColors.textPrimaryColor)),
+//           ],
+//         ),
+//       ),
+//     ]);
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // RESULTS SECTION
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildResultsSection(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+
+//     if (!submission.hasResults()) {
+//       return Container(
+//         padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//         decoration: BoxDecoration(
+//           color: AppColors.warningColor.withOpacity(0.1),
+//           borderRadius: BorderRadius.circular(20),
+//           border:
+//               Border.all(color: AppColors.warningColor.withOpacity(0.3)),
+//         ),
+//         child: Column(children: [
+//           const Icon(Icons.pending_rounded,
+//               size: 50, color: AppColors.warningColor),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           Text('Analysis Pending',
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.045,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.warningColor)),
+//           SizedBox(height: size.customHeight(context) * 0.01),
+//           Text(
+//             'The speech analysis is being processed.\nPlease check back later.',
+//             textAlign: TextAlign.center,
+//             style: GoogleFonts.poppins(
+//                 fontSize: size.customWidth(context) * 0.035,
+//                 color: AppColors.textSecondaryColor),
+//           ),
+//         ]),
+//       );
+//     }
+
+//     final analysisResult = submission.getLatestResult()!.result;
+//     final riskColor = _riskColor(analysisResult);
+
+//     final bool isNewFormat = analysisResult.saScore != null;
+//     final String displayScore = isNewFormat
+//         ? analysisResult.saScore!.toStringAsFixed(1)
+//         : '${analysisResult.severityScore}';
+//     final String displaySubScore = isNewFormat
+//         ? 'out of 22'
+//         : 'out of ${analysisResult.maxScore}';
+
+//     return Column(
+//       children: [
+//         // ── Score card ─────────────────────────────────────────────────────
+//         Container(
+//           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
+//           decoration: BoxDecoration(
+//             color: AppColors.whiteColor,
+//             borderRadius: BorderRadius.circular(20),
+//             boxShadow: [
+//               BoxShadow(
+//                   color: Colors.black.withOpacity(0.06),
+//                   blurRadius: 15,
+//                   offset: const Offset(0, 4))
+//             ],
+//           ),
+//           child: Column(
+//             children: [
+//               Text('Analysis Results',
+//                   style: GoogleFonts.poppins(
+//                       fontSize: size.customWidth(context) * 0.045,
+//                       fontWeight: FontWeight.bold,
+//                       color: AppColors.textPrimaryColor)),
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // Score circle
+//               Center(
+//                 child: Stack(
+//                   alignment: Alignment.center,
+//                   children: [
+//                     SizedBox(
+//                       width: size.customWidth(context) * 0.42,
+//                       height: size.customWidth(context) * 0.42,
+//                       child: CircularProgressIndicator(
+//                         value: isNewFormat
+//                             ? (analysisResult.saScore! / 22.0).clamp(0.0, 1.0)
+//                             : (analysisResult.severityScore /
+//                                     analysisResult.maxScore)
+//                                 .clamp(0.0, 1.0),
+//                         strokeWidth: 10,
+//                         backgroundColor: riskColor.withOpacity(0.15),
+//                         valueColor:
+//                             AlwaysStoppedAnimation<Color>(riskColor),
+//                       ),
+//                     ),
+//                     Column(
+//                       mainAxisSize: MainAxisSize.min,
+//                       children: [
+//                         Text(
+//                           displayScore,
+//                           style: GoogleFonts.poppins(
+//                             fontSize: size.customWidth(context) * 0.12,
+//                             fontWeight: FontWeight.bold,
+//                             color: riskColor,
+//                           ),
+//                         ),
+//                         Text(
+//                           displaySubScore,
+//                           style: GoogleFonts.poppins(
+//                             fontSize: size.customWidth(context) * 0.03,
+//                             color: AppColors.textSecondaryColor,
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.025),
+
+//               // Risk badge
+//               Container(
+//                 padding: EdgeInsets.symmetric(
+//                   horizontal: size.customWidth(context) * 0.06,
+//                   vertical: size.customHeight(context) * 0.012,
+//                 ),
+//                 decoration: BoxDecoration(
+//                   color: riskColor.withOpacity(0.1),
+//                   borderRadius: BorderRadius.circular(25),
+//                   border: Border.all(
+//                       color: riskColor.withOpacity(0.4), width: 2),
+//                 ),
+//                 child: Row(
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     Icon(_riskIcon(analysisResult),
+//                         color: riskColor, size: 20),
+//                     SizedBox(width: size.customWidth(context) * 0.02),
+//                     Text(
+//                       analysisResult.riskInterpretation,
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.042,
+//                         fontWeight: FontWeight.bold,
+//                         color: riskColor,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               SizedBox(height: size.customHeight(context) * 0.02),
+
+//               // Interpretation text
+//               Container(
+//                 padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//                 decoration: BoxDecoration(
+//                   color: AppColors.primaryColor.withOpacity(0.05),
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 child: Row(children: [
+//                   const Icon(Icons.info_outline_rounded,
+//                       color: AppColors.primaryColor, size: 18),
+//                   SizedBox(width: size.customWidth(context) * 0.02),
+//                   Expanded(
+//                     child: Text(
+//                       _interpretationText(analysisResult),
+//                       style: GoogleFonts.poppins(
+//                         fontSize: size.customWidth(context) * 0.032,
+//                         color: AppColors.textPrimaryColor,
+//                         height: 1.4,
+//                       ),
+//                     ),
+//                   ),
+//                 ]),
+//               ),
+//             ],
+//           ),
+//         ),
+
+//         // ── Bio-markers card (old format only) ────────────────────────────
+//         if (!isNewFormat && analysisResult.bioMarkers != null) ...[
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _buildBioMarkersCard(context, analysisResult.bioMarkers!),
+//         ],
+//       ],
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // BIO-MARKERS CARD (old format only)
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildBioMarkersCard(
+//       BuildContext context, BioMarkers bioMarkers) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.04),
+//       decoration: BoxDecoration(
+//         color: AppColors.whiteColor,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//               color: Colors.black.withOpacity(0.06),
+//               blurRadius: 15,
+//               offset: const Offset(0, 4))
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(children: [
+//             Container(
+//               width: 36,
+//               height: 36,
+//               decoration: BoxDecoration(
+//                 color: AppColors.primaryColor.withOpacity(0.1),
+//                 borderRadius: BorderRadius.circular(10),
+//               ),
+//               child: const Icon(Icons.analytics_rounded,
+//                   color: AppColors.primaryColor, size: 20),
+//             ),
+//             SizedBox(width: size.customWidth(context) * 0.03),
+//             Text('Bio-markers',
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.042,
+//                     fontWeight: FontWeight.bold,
+//                     color: AppColors.textPrimaryColor)),
+//           ]),
+//           SizedBox(height: size.customHeight(context) * 0.02),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Pitch Instability',
+//             value: bioMarkers.pitchInstability,
+//             unit: 'Hz',
+//             icon: Icons.graphic_eq_rounded,
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Resonance Jitter F1',
+//             value: bioMarkers.resonanceJitterF1,
+//             unit: 'Hz',
+//             icon: Icons.waves_rounded,
+//           ),
+//           SizedBox(height: size.customHeight(context) * 0.015),
+//           _bioMarkerRow(
+//             context,
+//             label: 'Resonance Jitter F2',
+//             value: bioMarkers.resonanceJitterF2,
+//             unit: 'Hz',
+//             icon: Icons.waves_rounded,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _bioMarkerRow(
+//     BuildContext context, {
+//     required String label,
+//     required double value,
+//     required String unit,
+//     required IconData icon,
+//   }) {
+//     final size = CustomSize();
+//     return Container(
+//       padding: EdgeInsets.all(size.customWidth(context) * 0.035),
+//       decoration: BoxDecoration(
+//         color: AppColors.lightGreyColor,
+//         borderRadius: BorderRadius.circular(12),
+//       ),
+//       child: Row(children: [
+//         Icon(icon, color: AppColors.primaryColor, size: 20),
+//         SizedBox(width: size.customWidth(context) * 0.03),
+//         Expanded(
+//           child: Text(label,
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.035,
+//                   color: AppColors.textSecondaryColor)),
+//         ),
+//         Text(
+//           '${value.toStringAsFixed(1)} $unit',
+//           style: GoogleFonts.poppins(
+//             fontSize: size.customWidth(context) * 0.036,
+//             fontWeight: FontWeight.w600,
+//             color: AppColors.textPrimaryColor,
+//           ),
+//         ),
+//       ]),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // HORIZONTAL ACTION ROW
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildHorizontalActionRow(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     final result = submission.getLatestResult()?.result;
+//     final isLow = result?.isLowRisk() ?? true;
+//     final isHigh = result?.isHighRisk() ?? false;
+//     final isModerate = result?.isModerateRisk() ?? false;
+
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Text(
+//           'Next Steps',
+//           style: GoogleFonts.poppins(
+//               fontSize: size.customWidth(context) * 0.042,
+//               fontWeight: FontWeight.bold,
+//               color: AppColors.textPrimaryColor),
+//         ),
+//         SizedBox(height: size.customHeight(context) * 0.012),
+//         Row(
+//           children: [
+//             Expanded(
+//               child: _actionCard(
+//                 context,
+//                 icon: Icons.play_lesson_outlined,
+//                 label: 'Therapy\nExercises',
+//                 sublabel: isLow ? 'Recommended' : 'Optional',
+//                 gradient: isLow
+//                     ? [AppColors.primaryColor, AppColors.secondaryColor]
+//                     : [
+//                         AppColors.greyColor.withOpacity(0.6),
+//                         AppColors.greyColor,
+//                       ],
+//                 isPrimary: isLow,
+//                 onTap: () => Get.toNamed(AppRoutes.therapy),
+//               ),
+//             ),
+//             SizedBox(width: size.customWidth(context) * 0.03),
+//             Expanded(
+//               child: _actionCard(
+//                 context,
+//                 icon: Icons.person_search_rounded,
+//                 label: 'Find\nTherapist',
+//                 sublabel: (isHigh || isModerate) ? 'Recommended' : 'Optional',
+//                 gradient: (isHigh || isModerate)
+//                     ? [
+//                         AppColors.errorColor.withOpacity(0.85),
+//                         AppColors.errorColor,
+//                       ]
+//                     : [
+//                         AppColors.primaryColor.withOpacity(0.6),
+//                         AppColors.primaryColor.withOpacity(0.85),
+//                       ],
+//                 isPrimary: isHigh || isModerate,
+//                 onTap: () => Get.toNamed(
+//                   AppRoutes.expertsList,
+//                   arguments: {
+//                     'childId': submission.childId,
+//                     'childName': submission.getChildName(),
+//                   },
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ],
+//     );
+//   }
+
+//   Widget _actionCard(
+//     BuildContext context, {
+//     required IconData icon,
+//     required String label,
+//     required String sublabel,
+//     required List<Color> gradient,
+//     required bool isPrimary,
+//     required VoidCallback onTap,
+//   }) {
+//     final size = CustomSize();
+//     return GestureDetector(
+//       onTap: onTap,
+//       child: Container(
+//         padding: EdgeInsets.symmetric(
+//           vertical: size.customHeight(context) * 0.022,
+//           horizontal: size.customWidth(context) * 0.04,
+//         ),
+//         decoration: BoxDecoration(
+//           gradient: LinearGradient(
+//             colors: gradient,
+//             begin: Alignment.topLeft,
+//             end: Alignment.bottomRight,
+//           ),
+//           borderRadius: BorderRadius.circular(18),
+//           boxShadow: isPrimary
+//               ? [
+//                   BoxShadow(
+//                     color: gradient.last.withOpacity(0.35),
+//                     blurRadius: 12,
+//                     offset: const Offset(0, 6),
+//                   )
+//                 ]
+//               : [],
+//         ),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Container(
+//               width: 40,
+//               height: 40,
+//               decoration: BoxDecoration(
+//                 color: AppColors.whiteColor.withOpacity(0.2),
+//                 borderRadius: BorderRadius.circular(10),
+//               ),
+//               child: Icon(icon, color: AppColors.whiteColor, size: 22),
+//             ),
+//             SizedBox(height: size.customHeight(context) * 0.012),
+//             Text(
+//               label,
+//               style: GoogleFonts.poppins(
+//                   fontSize: size.customWidth(context) * 0.038,
+//                   fontWeight: FontWeight.bold,
+//                   color: AppColors.whiteColor,
+//                   height: 1.2),
+//             ),
+//             SizedBox(height: size.customHeight(context) * 0.004),
+//             Container(
+//               padding: EdgeInsets.symmetric(
+//                   horizontal: size.customWidth(context) * 0.02,
+//                   vertical: 2),
+//               decoration: BoxDecoration(
+//                 color: AppColors.whiteColor.withOpacity(0.2),
+//                 borderRadius: BorderRadius.circular(6),
+//               ),
+//               child: Text(
+//                 sublabel,
+//                 style: GoogleFonts.poppins(
+//                     fontSize: size.customWidth(context) * 0.026,
+//                     color: AppColors.whiteColor,
+//                     fontWeight: FontWeight.w500),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DOWNLOAD PDF BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildDownloadPdfButton(
+//       BuildContext context, SpeechSubmissionDetail submission) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       height: size.customHeight(context) * 0.065,
+//       child: ElevatedButton.icon(
+//         onPressed: () => _downloadPdf(context, submission),
+//         icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+//         label: Text(
+//           'Download PDF Report',
+//           style: GoogleFonts.poppins(
+//             fontSize: 15,
+//             fontWeight: FontWeight.w600,
+//           ),
+//         ),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.primaryColor,
+//           foregroundColor: AppColors.whiteColor,
+//           shape: RoundedRectangleBorder(
+//             borderRadius: BorderRadius.circular(14),
+//           ),
+//           elevation: 0,
+//         ),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DELETE BUTTON
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   Widget _buildDeleteButton(BuildContext context) {
+//     final size = CustomSize();
+//     return SizedBox(
+//       width: double.infinity,
+//       child: ElevatedButton.icon(
+//         onPressed: () => _showDeleteConfirmation(context),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: AppColors.errorColor,
+//           padding: EdgeInsets.symmetric(
+//               vertical: size.customHeight(context) * 0.018),
+//           shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(15)),
+//         ),
+//         icon: const Icon(Icons.delete_rounded,
+//             color: AppColors.whiteColor),
+//         label: Text('Delete Submission',
+//             style: GoogleFonts.poppins(
+//                 color: AppColors.whiteColor,
+//                 fontWeight: FontWeight.w600,
+//                 fontSize: size.customWidth(context) * 0.04)),
+//       ),
+//     );
+//   }
+
+//   // ─────────────────────────────────────────────────────────────────────────
+//   // DELETE DIALOG
+//   // ─────────────────────────────────────────────────────────────────────────
+
+//   void _showDeleteConfirmation(BuildContext context) {
+//     final size = CustomSize();
+//     Get.dialog(AlertDialog(
+//       shape: RoundedRectangleBorder(
+//           borderRadius: BorderRadius.circular(20)),
+//       title: Row(children: [
+//         const Icon(Icons.warning_rounded,
+//             color: AppColors.errorColor, size: 28),
+//         SizedBox(width: size.customWidth(context) * 0.02),
+//         Text('Delete Submission',
+//             style: GoogleFonts.poppins(
+//                 fontWeight: FontWeight.bold,
+//                 fontSize: size.customWidth(context) * 0.045)),
+//       ]),
+//       content: Text(
+//         'Are you sure you want to delete this speech recording? '
+//         'This action cannot be undone.',
+//         style: GoogleFonts.poppins(
+//             fontSize: size.customWidth(context) * 0.038,
+//             color: AppColors.textSecondaryColor),
+//       ),
+//       actions: [
+//         TextButton(
+//           onPressed: () => Get.back(),
+//           child: Text('Cancel',
+//               style: GoogleFonts.poppins(
+//                   color: AppColors.textSecondaryColor,
+//                   fontWeight: FontWeight.w600)),
+//         ),
+//         ElevatedButton(
+//           onPressed: () async {
+//             Get.back();
+//             final success =
+//                 await controller.deleteSubmission(submissionId);
+//             if (success) {
+//               controller.currentSubmission.value = null;
+//               Get.back();
+//             }
+//           },
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: AppColors.errorColor,
+//             shape: RoundedRectangleBorder(
+//                 borderRadius: BorderRadius.circular(10)),
+//           ),
+//           child: Text('Delete',
+//               style: GoogleFonts.poppins(
+//                   color: AppColors.whiteColor,
+//                   fontWeight: FontWeight.w600)),
+//         ),
+//       ],
+//     ));
+//   }
+// }
+
+
 // lib/view/speech/speech_detail_screen.dart
+//
+// Updated to display new API response format:
+//   sa_score, severity_percentage, risk_level, model_type
+// PDF download also updated to show same fields.
 
 import 'dart:io';
 import 'dart:typed_data';
@@ -3730,15 +10513,13 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
 
       final analysisResult = speechResult.result;
       final childName = submission.getChildName();
-      final bioMarkers = analysisResult.bioMarkers;
 
       String formattedDate = 'N/A';
       try {
         formattedDate = DateFormat('MMMM dd, yyyy')
             .format(DateTime.parse(submission.submittedAt));
       } catch (_) {
-        formattedDate =
-            DateFormat('MMMM dd, yyyy').format(DateTime.now());
+        formattedDate = DateFormat('MMMM dd, yyyy').format(DateTime.now());
       }
 
       final pdf = pw.Document();
@@ -3748,7 +10529,7 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(40),
           build: (pw.Context ctx) => [
-            // ── Header ───────────────────────────────────────────────────
+            // ── Header ────────────────────────────────────────────────────
             pw.Container(
               padding: const pw.EdgeInsets.all(20),
               decoration: pw.BoxDecoration(
@@ -3778,7 +10559,7 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
             ),
             pw.SizedBox(height: 20),
 
-            // ── Result summary ────────────────────────────────────────────
+            // ── Result summary ─────────────────────────────────────────────
             pw.Container(
               padding: const pw.EdgeInsets.all(16),
               decoration: pw.BoxDecoration(
@@ -3796,58 +10577,28 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
                   pw.SizedBox(height: 10),
                   _pdfRow('Child Name',
                       childName.isNotEmpty ? childName : 'N/A'),
+
+                pw.SizedBox(height: 4),
+                  _pdfRow('Score',
+                      '${analysisResult.saScore!.toStringAsFixed(2)} / 22'),
                   pw.SizedBox(height: 4),
                   _pdfRow('Risk Level', analysisResult.riskInterpretation),
-                  pw.SizedBox(height: 4),
-                  _pdfRow('Severity Score',
-                      '${analysisResult.severityScore} / ${analysisResult.maxScore}'),
                   pw.SizedBox(height: 4),
                   _pdfRow('Assessment Date', formattedDate),
                   pw.SizedBox(height: 4),
                   _pdfRow('Duration',
                       '${submission.recordingDurationSeconds} seconds'),
-                  if (submission.recordingFormat != null) ...[
-                    pw.SizedBox(height: 4),
-                    _pdfRow('Format',
-                        submission.recordingFormat!.toUpperCase()),
-                  ],
+                  // if (analysisResult.saScore != null) ...[
+                  //   pw.SizedBox(height: 4),
+                  //   _pdfRow('SA Score',
+                  //       '${analysisResult.saScore!.toStringAsFixed(1)} / 22'),
+                  // ],
                 ],
               ),
             ),
             pw.SizedBox(height: 20),
 
-            // ── Bio-markers ───────────────────────────────────────────────
-            if (bioMarkers != null) ...[
-              pw.Text('Bio-markers',
-                  style: pw.TextStyle(
-                      fontSize: 14,
-                      fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 8),
-              pw.Container(
-                padding: const pw.EdgeInsets.all(12),
-                decoration: pw.BoxDecoration(
-                  color: PdfColor.fromHex('F8F9FA'),
-                  borderRadius:
-                      const pw.BorderRadius.all(pw.Radius.circular(8)),
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    _pdfRow('Pitch Instability',
-                        '${bioMarkers.pitchInstability.toStringAsFixed(1)} Hz'),
-                    pw.SizedBox(height: 4),
-                    _pdfRow('Resonance Jitter F1',
-                        '${bioMarkers.resonanceJitterF1.toStringAsFixed(1)} Hz'),
-                    pw.SizedBox(height: 4),
-                    _pdfRow('Resonance Jitter F2',
-                        '${bioMarkers.resonanceJitterF2.toStringAsFixed(1)} Hz'),
-                  ],
-                ),
-              ),
-              pw.SizedBox(height: 20),
-            ],
-
-            // ── Interpretation ────────────────────────────────────────────
+            // ── Interpretation ─────────────────────────────────────────────
             pw.Text('Interpretation',
                 style: pw.TextStyle(
                     fontSize: 14, fontWeight: pw.FontWeight.bold)),
@@ -3866,7 +10617,7 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
             ),
             pw.SizedBox(height: 20),
 
-            // ── Disclaimer ────────────────────────────────────────────────
+            // ── Disclaimer ─────────────────────────────────────────────────
             pw.Container(
               padding: const pw.EdgeInsets.all(12),
               decoration: pw.BoxDecoration(
@@ -3889,8 +10640,7 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
       final childSafe = childName.isNotEmpty
           ? childName.replaceAll(RegExp(r'[^\w]'), '_')
           : 'report';
-      final file =
-          File('${dir.path}/Speech_Report_$childSafe.pdf');
+      final file = File('${dir.path}/Speech_Report_$childSafe.pdf');
       await file.writeAsBytes(bytes);
       await OpenFile.open(file.path);
     } catch (e) {
@@ -3988,17 +10738,14 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
             _buildAppBar(context, submission),
             SliverToBoxAdapter(
               child: Padding(
-                padding:
-                    EdgeInsets.all(size.customWidth(context) * 0.05),
+                padding: EdgeInsets.all(size.customWidth(context) * 0.05),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Subtle refresh indicator
                     if (controller.isLoadingDetail.value)
                       Padding(
                         padding: EdgeInsets.only(
-                            bottom:
-                                size.customHeight(context) * 0.015),
+                            bottom: size.customHeight(context) * 0.015),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -4006,14 +10753,13 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
                               width: 14,
                               height: 14,
                               child: CircularProgressIndicator(
-                                color: AppColors.primaryColor
-                                    .withOpacity(0.6),
+                                color:
+                                    AppColors.primaryColor.withOpacity(0.6),
                                 strokeWidth: 2,
                               ),
                             ),
                             SizedBox(
-                                width:
-                                    size.customWidth(context) * 0.02),
+                                width: size.customWidth(context) * 0.02),
                             Text(
                               'Refreshing results...',
                               style: GoogleFonts.poppins(
@@ -4030,14 +10776,12 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
                     _buildResultsSection(context, submission),
                     SizedBox(height: size.customHeight(context) * 0.02),
 
-                    // ── Find Therapist button ─────────────────────────────
                     if (submission.hasResults())
-                      _buildFindTherapistButton(context, submission),
+                      _buildHorizontalActionRow(context, submission),
                     if (submission.hasResults())
                       SizedBox(
                           height: size.customHeight(context) * 0.015),
 
-                    // ── Download PDF Report button ─────────────────────────
                     if (submission.hasResults())
                       _buildDownloadPdfButton(context, submission),
                     if (submission.hasResults())
@@ -4125,7 +10869,6 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
         onPressed: () => Get.back(),
       ),
       actions: [
-        // Download icon in app bar (only when results exist)
         Obx(() {
           final sub = controller.currentSubmission.value;
           if (sub == null || !sub.hasResults()) {
@@ -4266,9 +11009,17 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
     final analysisResult = submission.getLatestResult()!.result;
     final riskColor = _riskColor(analysisResult);
 
+    final bool isNewFormat = analysisResult.saScore != null;
+    final String displayScore = isNewFormat
+        ? analysisResult.saScore!.toStringAsFixed(1)
+        : '${analysisResult.severityScore}';
+    final String displaySubScore = isNewFormat
+        ? 'out of 22'
+        : 'out of ${analysisResult.maxScore}';
+
     return Column(
       children: [
-        // ── Score circle card ──────────────────────────────────────────────
+        // ── Score card ─────────────────────────────────────────────────────
         Container(
           padding: EdgeInsets.all(size.customWidth(context) * 0.05),
           decoration: BoxDecoration(
@@ -4299,11 +11050,13 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
                       width: size.customWidth(context) * 0.42,
                       height: size.customWidth(context) * 0.42,
                       child: CircularProgressIndicator(
-                        value: analysisResult.severityScore /
-                            analysisResult.maxScore,
+                        value: isNewFormat
+                            ? (analysisResult.saScore! / 22.0).clamp(0.0, 1.0)
+                            : (analysisResult.severityScore /
+                                    analysisResult.maxScore)
+                                .clamp(0.0, 1.0),
                         strokeWidth: 10,
-                        backgroundColor:
-                            riskColor.withOpacity(0.15),
+                        backgroundColor: riskColor.withOpacity(0.15),
                         valueColor:
                             AlwaysStoppedAnimation<Color>(riskColor),
                       ),
@@ -4312,19 +11065,17 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '${analysisResult.severityScore}',
+                          displayScore,
                           style: GoogleFonts.poppins(
-                            fontSize:
-                                size.customWidth(context) * 0.13,
+                            fontSize: size.customWidth(context) * 0.12,
                             fontWeight: FontWeight.bold,
                             color: riskColor,
                           ),
                         ),
                         Text(
-                          'out of ${analysisResult.maxScore}',
+                          displaySubScore,
                           style: GoogleFonts.poppins(
-                            fontSize:
-                                size.customWidth(context) * 0.03,
+                            fontSize: size.customWidth(context) * 0.03,
                             color: AppColors.textSecondaryColor,
                           ),
                         ),
@@ -4336,7 +11087,7 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
 
               SizedBox(height: size.customHeight(context) * 0.025),
 
-              // Risk label badge
+              // Risk badge
               Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: size.customWidth(context) * 0.06,
@@ -4370,8 +11121,7 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
 
               // Interpretation text
               Container(
-                padding:
-                    EdgeInsets.all(size.customWidth(context) * 0.04),
+                padding: EdgeInsets.all(size.customWidth(context) * 0.04),
                 decoration: BoxDecoration(
                   color: AppColors.primaryColor.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
@@ -4396,17 +11146,17 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
           ),
         ),
 
-        SizedBox(height: size.customHeight(context) * 0.02),
-
-        // ── Bio-markers card ───────────────────────────────────────────────
-        if (analysisResult.bioMarkers != null)
+        // ── Bio-markers card (old format only) ────────────────────────────
+        if (!isNewFormat && analysisResult.bioMarkers != null) ...[
+          SizedBox(height: size.customHeight(context) * 0.02),
           _buildBioMarkersCard(context, analysisResult.bioMarkers!),
+        ],
       ],
     );
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // BIO-MARKERS CARD
+  // BIO-MARKERS CARD (old format only)
   // ─────────────────────────────────────────────────────────────────────────
 
   Widget _buildBioMarkersCard(
@@ -4510,40 +11260,151 @@ class _SpeechDetailScreenState extends State<SpeechDetailScreen> {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // FIND THERAPIST BUTTON
+  // HORIZONTAL ACTION ROW
   // ─────────────────────────────────────────────────────────────────────────
 
-  Widget _buildFindTherapistButton(
+  Widget _buildHorizontalActionRow(
       BuildContext context, SpeechSubmissionDetail submission) {
     final size = CustomSize();
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: () {
-          Get.toNamed(
-            AppRoutes.expertsList,
-            arguments: {
-              'childId': submission.childId,
-              'childName': submission.getChildName(),
-            },
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryColor,
-          padding: EdgeInsets.symmetric(
-              vertical: size.customHeight(context) * 0.018),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15)),
-          elevation: 2,
-        ),
-        icon: const Icon(Icons.person_search_rounded,
-            color: AppColors.whiteColor),
-        label: Text(
-          'Find Therapist for Consultation',
+    final result = submission.getLatestResult()?.result;
+    final isLow = result?.isLowRisk() ?? true;
+    final isHigh = result?.isHighRisk() ?? false;
+    final isModerate = result?.isModerateRisk() ?? false;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Next Steps',
           style: GoogleFonts.poppins(
-              color: AppColors.whiteColor,
-              fontWeight: FontWeight.w600,
-              fontSize: size.customWidth(context) * 0.04),
+              fontSize: size.customWidth(context) * 0.042,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimaryColor),
+        ),
+        SizedBox(height: size.customHeight(context) * 0.012),
+        Row(
+          children: [
+            Expanded(
+              child: _actionCard(
+                context,
+                icon: Icons.play_lesson_outlined,
+                label: 'Therapy\nExercises',
+                sublabel: isLow ? 'Recommended' : 'Optional',
+                gradient: isLow
+                    ? [AppColors.primaryColor, AppColors.secondaryColor]
+                    : [
+                        AppColors.greyColor.withOpacity(0.6),
+                        AppColors.greyColor,
+                      ],
+                isPrimary: isLow,
+                onTap: () => Get.toNamed(AppRoutes.therapy),
+              ),
+            ),
+            SizedBox(width: size.customWidth(context) * 0.03),
+            Expanded(
+              child: _actionCard(
+                context,
+                icon: Icons.person_search_rounded,
+                label: 'Find\nTherapist',
+                sublabel: (isHigh || isModerate) ? 'Recommended' : 'Optional',
+                gradient: (isHigh || isModerate)
+                    ? [
+                        AppColors.errorColor.withOpacity(0.85),
+                        AppColors.errorColor,
+                      ]
+                    : [
+                        AppColors.primaryColor.withOpacity(0.6),
+                        AppColors.primaryColor.withOpacity(0.85),
+                      ],
+                isPrimary: isHigh || isModerate,
+                onTap: () => Get.toNamed(
+                  AppRoutes.expertsList,
+                  arguments: {
+                    'childId': submission.childId,
+                    'childName': submission.getChildName(),
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _actionCard(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String sublabel,
+    required List<Color> gradient,
+    required bool isPrimary,
+    required VoidCallback onTap,
+  }) {
+    final size = CustomSize();
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          vertical: size.customHeight(context) * 0.022,
+          horizontal: size.customWidth(context) * 0.04,
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: gradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: isPrimary
+              ? [
+                  BoxShadow(
+                    color: gradient.last.withOpacity(0.35),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  )
+                ]
+              : [],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.whiteColor.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: AppColors.whiteColor, size: 22),
+            ),
+            SizedBox(height: size.customHeight(context) * 0.012),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                  fontSize: size.customWidth(context) * 0.038,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.whiteColor,
+                  height: 1.2),
+            ),
+            SizedBox(height: size.customHeight(context) * 0.004),
+            Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: size.customWidth(context) * 0.02,
+                  vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.whiteColor.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                sublabel,
+                style: GoogleFonts.poppins(
+                    fontSize: size.customWidth(context) * 0.026,
+                    color: AppColors.whiteColor,
+                    fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -242,10 +242,302 @@
 //   }
 // }
 
+// // lib/controllers/parent_speech_controller.dart
+// //
+// // ISOLATED controller — only uses ParentSpeechService.
+// // Never touches ExpertChildDataController or screening endpoints.
+// //
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/services/parent_speech_service.dart';
+
+// class ParentSpeechController extends GetxController {
+//   final ParentSpeechService _service = ParentSpeechService();
+
+//   // ── State ──────────────────────────────────────────────────────────────────
+//   final isLoadingSpeech = false.obs;
+//   final isLoadingSpeechDetail = false.obs;
+
+//   final speechList = <ParentSpeechItem>[].obs;
+//   final filteredSpeechList = <ParentSpeechItem>[].obs;
+//   final selectedSpeech = Rxn<ParentSpeechItem>();
+
+//   final speechSearch = ''.obs;
+
+//   String? _lastChildId;
+
+//   // ── Fetch list ─────────────────────────────────────────────────────────────
+//   Future<void> fetchSpeech(String childId,
+//       {bool forceRefresh = false}) async {
+//     if (!forceRefresh &&
+//         _lastChildId == childId &&
+//         speechList.isNotEmpty) {
+//       return;
+//     }
+//     _lastChildId = childId;
+//     try {
+//       isLoadingSpeech.value = true;
+//       speechList.clear();
+//       filteredSpeechList.clear();
+
+//       final list = await _service.getSpeechByChild(childId);
+
+//       speechList.assignAll(list);
+//       filteredSpeechList.assignAll(list);
+
+//       debugPrint(
+//           '✅ [ParentSpeechController] loaded ${list.length} speech records for child $childId');
+//       for (final item in list) {
+//         debugPrint(
+//             '   → speechSubmissionId="${item.speechSubmissionId}"');
+//       }
+//     } catch (e) {
+//       _showError(_clean(e));
+//     } finally {
+//       isLoadingSpeech.value = false;
+//     }
+//   }
+
+//   // ── Filter ─────────────────────────────────────────────────────────────────
+//   void filterSpeech(String query) {
+//     speechSearch.value = query;
+//     if (query.trim().isEmpty) {
+//       filteredSpeechList.assignAll(speechList);
+//       return;
+//     }
+//     final q = query.toLowerCase();
+//     filteredSpeechList.assignAll(speechList.where((s) {
+//       if (!s.hasResults) return false;
+//       return s.latestResult!.result.riskInterpretation
+//           .toLowerCase()
+//           .contains(q);
+//     }).toList());
+//   }
+
+//   // ── Fetch detail ───────────────────────────────────────────────────────────
+//   //
+//   // Always call with item.speechSubmissionId from ParentSpeechItem.
+//   // This hits /api/speech/:id  — NOT the screening endpoint.
+//   //
+//   Future<void> fetchSpeechDetail(String speechSubmissionId) async {
+//     final id = speechSubmissionId.trim();
+//     if (id.isEmpty) {
+//       _showError('Cannot load detail — speech submission ID is empty.');
+//       return;
+//     }
+
+//     debugPrint(
+//         '🔍 [ParentSpeechController] fetchSpeechDetail id="$id"');
+
+//     // ── Cache-first: if already in list, serve immediately ─────────────────
+//     final cached =
+//         speechList.where((s) => s.speechSubmissionId == id).toList();
+
+//     if (cached.isNotEmpty) {
+//       selectedSpeech.value = cached.first;
+//       debugPrint('✅ [ParentSpeechController] served from cache');
+//       // Silently refresh in background
+//       _fetchDetailFromApi(id, silent: true);
+//       return;
+//     }
+
+//     // ── Not cached — fetch from /api/speech/:id ────────────────────────────
+//     await _fetchDetailFromApi(id, silent: false);
+//   }
+
+//   Future<void> _fetchDetailFromApi(String speechSubmissionId,
+//       {required bool silent}) async {
+//     try {
+//       if (!silent) isLoadingSpeechDetail.value = true;
+
+//       debugPrint(
+//           '📡 [ParentSpeechController] calling getSpeechDetail("$speechSubmissionId")');
+
+//       final result = await _service.getSpeechDetail(speechSubmissionId);
+//       if (result.status) {
+//         selectedSpeech.value = result.data;
+//         debugPrint(
+//             '✅ [ParentSpeechController] detail OK: ${result.data.speechSubmissionId}');
+//       } else {
+//         if (!silent) _showError(result.message);
+//       }
+//     } catch (e) {
+//       if (!silent) _showError(_clean(e));
+//     } finally {
+//       if (!silent) isLoadingSpeechDetail.value = false;
+//     }
+//   }
+
+//   // ── Helpers ────────────────────────────────────────────────────────────────
+//   void clearAll() {
+//     speechList.clear();
+//     filteredSpeechList.clear();
+//     selectedSpeech.value = null;
+//     speechSearch.value = '';
+//     _lastChildId = null;
+//   }
+
+//   String _clean(dynamic e) =>
+//       e.toString().replaceAll('Exception: ', '').trim();
+
+//   void _showError(String msg) {
+//     Get.snackbar(
+//       'Error',
+//       msg,
+//       snackPosition: SnackPosition.BOTTOM,
+//       backgroundColor: AppColors.errorColor,
+//       colorText: Colors.white,
+//       margin: const EdgeInsets.all(16),
+//       borderRadius: 14,
+//       duration: const Duration(seconds: 4),
+//       icon:
+//           const Icon(Icons.error_rounded, color: Colors.white, size: 20),
+//     );
+//   }
+// }
+
+
+// // lib/controllers/parent_speech_controller.dart
+// //
+// // ISOLATED controller — only uses ParentSpeechService.
+// //
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:speechspectrum/constants/app_colors.dart';
+// import 'package:speechspectrum/services/parent_speech_service.dart';
+
+// class ParentSpeechController extends GetxController {
+//   final ParentSpeechService _service = ParentSpeechService();
+
+//   // ── State ──────────────────────────────────────────────────────────────────
+//   final isLoadingSpeech = false.obs;
+//   final isLoadingSpeechDetail = false.obs;
+
+//   final speechList = <ParentSpeechItem>[].obs;
+//   final filteredSpeechList = <ParentSpeechItem>[].obs;
+//   final selectedSpeech = Rxn<ParentSpeechItem>();
+
+//   final speechSearch = ''.obs;
+
+//   String? _lastChildId;
+
+//   // ── Fetch list ─────────────────────────────────────────────────────────────
+//   Future<void> fetchSpeech(String childId,
+//       {bool forceRefresh = false}) async {
+//     if (!forceRefresh &&
+//         _lastChildId == childId &&
+//         speechList.isNotEmpty) {
+//       return;
+//     }
+//     _lastChildId = childId;
+//     try {
+//       isLoadingSpeech.value = true;
+//       speechList.clear();
+//       filteredSpeechList.clear();
+
+//       final list = await _service.getSpeechByChild(childId);
+
+//       speechList.assignAll(list);
+//       filteredSpeechList.assignAll(list);
+
+//       debugPrint(
+//           '✅ [ParentSpeechController] loaded ${list.length} records for child $childId');
+//     } catch (e) {
+//       _showError(_clean(e));
+//     } finally {
+//       isLoadingSpeech.value = false;
+//     }
+//   }
+
+//   // ── Filter ─────────────────────────────────────────────────────────────────
+//   void filterSpeech(String query) {
+//     speechSearch.value = query;
+//     if (query.trim().isEmpty) {
+//       filteredSpeechList.assignAll(speechList);
+//       return;
+//     }
+//     final q = query.toLowerCase();
+//     filteredSpeechList.assignAll(speechList.where((s) {
+//       if (!s.hasResults) return false;
+//       return s.latestResult!.result.displayRiskLabel
+//           .toLowerCase()
+//           .contains(q);
+//     }).toList());
+//   }
+
+//   // ── Fetch detail ───────────────────────────────────────────────────────────
+//   Future<void> fetchSpeechDetail(String speechSubmissionId) async {
+//     final id = speechSubmissionId.trim();
+//     if (id.isEmpty) {
+//       _showError('Cannot load detail — speech submission ID is empty.');
+//       return;
+//     }
+
+//     debugPrint(
+//         '🔍 [ParentSpeechController] fetchSpeechDetail id="$id"');
+
+//     // Cache-first
+//     final cached =
+//         speechList.where((s) => s.speechSubmissionId == id).toList();
+//     if (cached.isNotEmpty) {
+//       selectedSpeech.value = cached.first;
+//       _fetchDetailFromApi(id, silent: true);
+//       return;
+//     }
+
+//     await _fetchDetailFromApi(id, silent: false);
+//   }
+
+//   Future<void> _fetchDetailFromApi(String speechSubmissionId,
+//       {required bool silent}) async {
+//     try {
+//       if (!silent) isLoadingSpeechDetail.value = true;
+
+//       final result = await _service.getSpeechDetail(speechSubmissionId);
+//       if (result.status) {
+//         selectedSpeech.value = result.data;
+//       } else {
+//         if (!silent) _showError(result.message);
+//       }
+//     } catch (e) {
+//       if (!silent) _showError(_clean(e));
+//     } finally {
+//       if (!silent) isLoadingSpeechDetail.value = false;
+//     }
+//   }
+
+//   // ── Helpers ────────────────────────────────────────────────────────────────
+//   void clearAll() {
+//     speechList.clear();
+//     filteredSpeechList.clear();
+//     selectedSpeech.value = null;
+//     speechSearch.value = '';
+//     _lastChildId = null;
+//   }
+
+//   String _clean(dynamic e) =>
+//       e.toString().replaceAll('Exception: ', '').trim();
+
+//   void _showError(String msg) {
+//     Get.snackbar(
+//       'Error',
+//       msg,
+//       snackPosition: SnackPosition.BOTTOM,
+//       backgroundColor: AppColors.errorColor,
+//       colorText: Colors.white,
+//       margin: const EdgeInsets.all(16),
+//       borderRadius: 14,
+//       duration: const Duration(seconds: 4),
+//       icon: const Icon(Icons.error_rounded, color: Colors.white, size: 20),
+//     );
+//   }
+// }
+
 // lib/controllers/parent_speech_controller.dart
 //
 // ISOLATED controller — only uses ParentSpeechService.
-// Never touches ExpertChildDataController or screening endpoints.
+// Updated for new API format: sa_score, risk_level, severity_percentage.
 //
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -287,11 +579,7 @@ class ParentSpeechController extends GetxController {
       filteredSpeechList.assignAll(list);
 
       debugPrint(
-          '✅ [ParentSpeechController] loaded ${list.length} speech records for child $childId');
-      for (final item in list) {
-        debugPrint(
-            '   → speechSubmissionId="${item.speechSubmissionId}"');
-      }
+          '✅ [ParentSpeechController] loaded ${list.length} records for child $childId');
     } catch (e) {
       _showError(_clean(e));
     } finally {
@@ -309,17 +597,14 @@ class ParentSpeechController extends GetxController {
     final q = query.toLowerCase();
     filteredSpeechList.assignAll(speechList.where((s) {
       if (!s.hasResults) return false;
-      return s.latestResult!.result.riskInterpretation
-          .toLowerCase()
-          .contains(q);
+      final analysis = s.latestResult!.result;
+      return analysis.riskInterpretation.toLowerCase().contains(q) ||
+          analysis.riskLevel.toLowerCase().contains(q) ||
+          analysis.severityPercentage.toLowerCase().contains(q);
     }).toList());
   }
 
   // ── Fetch detail ───────────────────────────────────────────────────────────
-  //
-  // Always call with item.speechSubmissionId from ParentSpeechItem.
-  // This hits /api/speech/:id  — NOT the screening endpoint.
-  //
   Future<void> fetchSpeechDetail(String speechSubmissionId) async {
     final id = speechSubmissionId.trim();
     if (id.isEmpty) {
@@ -330,19 +615,15 @@ class ParentSpeechController extends GetxController {
     debugPrint(
         '🔍 [ParentSpeechController] fetchSpeechDetail id="$id"');
 
-    // ── Cache-first: if already in list, serve immediately ─────────────────
+    // Cache-first: show from list immediately, then refresh from API silently
     final cached =
         speechList.where((s) => s.speechSubmissionId == id).toList();
-
     if (cached.isNotEmpty) {
       selectedSpeech.value = cached.first;
-      debugPrint('✅ [ParentSpeechController] served from cache');
-      // Silently refresh in background
       _fetchDetailFromApi(id, silent: true);
       return;
     }
 
-    // ── Not cached — fetch from /api/speech/:id ────────────────────────────
     await _fetchDetailFromApi(id, silent: false);
   }
 
@@ -351,14 +632,9 @@ class ParentSpeechController extends GetxController {
     try {
       if (!silent) isLoadingSpeechDetail.value = true;
 
-      debugPrint(
-          '📡 [ParentSpeechController] calling getSpeechDetail("$speechSubmissionId")');
-
       final result = await _service.getSpeechDetail(speechSubmissionId);
       if (result.status) {
         selectedSpeech.value = result.data;
-        debugPrint(
-            '✅ [ParentSpeechController] detail OK: ${result.data.speechSubmissionId}');
       } else {
         if (!silent) _showError(result.message);
       }
