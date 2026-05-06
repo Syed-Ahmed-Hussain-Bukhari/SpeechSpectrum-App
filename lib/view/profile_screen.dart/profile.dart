@@ -916,20 +916,36 @@ class ProfileScreen extends StatelessWidget {
                       onTap: () => Get.toNamed(AppRoutes.history),
                     ),
 
-                    _buildProfileOption(
-                      context: context,
-                      icon: Icons.notifications_outlined,
-                      title: 'Notifications',
-                      subtitle: 'Manage notifications',
-                      onTap: () {},
-                    ),
+                    // _buildProfileOption(
+                    //   context: context,
+                    //   icon: Icons.notifications_outlined,
+                    //   title: 'Notifications',
+                    //   subtitle: 'Manage notifications',
+                    //   onTap: () {},
+                    // ),
+
+                    // _buildProfileOption(
+                    //   context: context,
+                    //   icon: Icons.help_outline,
+                    //   title: 'Help & Support',
+                    //   subtitle: 'Get assistance',
+                    //   onTap: () => Get.toNamed(AppRoutes.help),
+                    // ),
+
+                      _buildProfileOption(
+                        context: context,
+                        icon: Icons.play_lesson_outlined,
+                        title: 'Therapy Exercises',
+                        subtitle: 'Speech & ASD video sessions',
+                        onTap: () => Get.toNamed(AppRoutes.therapy),
+                      ),
 
                     _buildProfileOption(
                       context: context,
                       icon: Icons.help_outline,
-                      title: 'Help & Support',
-                      subtitle: 'Get assistance',
-                      onTap: () => Get.toNamed(AppRoutes.help),
+                     title: 'FAQs',
+                     subtitle: 'Common questions answered',
+                      onTap: () => Get.toNamed(AppRoutes.faq),
                     ),
 
                     _buildProfileOption(

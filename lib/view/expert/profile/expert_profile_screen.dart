@@ -120,20 +120,28 @@ class ExpertProfileScreen extends StatelessWidget {
                           Get.toNamed(AppRoutes.expertLocations),
                     ),
                     SizedBox(height: size.customHeight(context) * 0.015),
-                    _buildOption(
-                      context: context,
-                      icon: Icons.notifications_outlined,
-                      title: 'Notifications',
-                      subtitle: 'Manage notifications',
-                      onTap: () {},
-                    ),
+                    // _buildOption(
+                    //   context: context,
+                    //   icon: Icons.notifications_outlined,
+                    //   title: 'Notifications',
+                    //   subtitle: 'Manage notifications',
+                    //   onTap: () {},
+                    // ),
                     SizedBox(height: size.customHeight(context) * 0.015),
+                    // _buildOption(
+                    //   context: context,
+                    //   icon: Icons.help_outline,
+                    //   title: 'Help & Support',
+                    //   subtitle: 'Get assistance',
+                    //   onTap: () => Get.toNamed(AppRoutes.help),
+                    // ),
+
                     _buildOption(
                       context: context,
                       icon: Icons.help_outline,
-                      title: 'Help & Support',
-                      subtitle: 'Get assistance',
-                      onTap: () => Get.toNamed(AppRoutes.help),
+                     title: 'FAQs',
+                     subtitle: 'Common questions answered',
+                      onTap: () => Get.toNamed(AppRoutes.faq),
                     ),
                     SizedBox(height: size.customHeight(context) * 0.015),
                     _buildOption(
@@ -145,12 +153,12 @@ class ExpertProfileScreen extends StatelessWidget {
                       onTap: () => _showLogoutDialog(context, controller),
                     ),
                     SizedBox(height: size.customHeight(context) * 0.02),
-                    Text(
-                      'App Version 2.3',
-                      style: GoogleFonts.poppins(
-                          fontSize: size.customWidth(context) * 0.032,
-                          color: AppColors.textSecondaryColor),
-                    ),
+                    // Text(
+                    //   'App Version 2.3',
+                    //   style: GoogleFonts.poppins(
+                    //       fontSize: size.customWidth(context) * 0.032,
+                    //       color: AppColors.textSecondaryColor),
+                    // ),
                     SizedBox(height: size.customHeight(context) * 0.03),
                   ],
                 ),

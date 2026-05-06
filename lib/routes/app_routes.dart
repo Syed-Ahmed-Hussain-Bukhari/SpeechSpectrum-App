@@ -68,6 +68,7 @@ import 'package:speechspectrum/view/questionnaire/questionnaire_result_screen.da
 import 'package:speechspectrum/view/questionnaire/questionnaire_screen.dart';
 import 'package:speechspectrum/view/result/result_screen.dart';
 import 'package:speechspectrum/view/setting/about_screen.dart';
+import 'package:speechspectrum/view/setting/faqScreen.dart';
 import 'package:speechspectrum/view/setting/help_and_support.dart';
 import 'package:speechspectrum/view/setting/privacy_and_policy_screen.dart';
 import 'package:speechspectrum/view/setting/settings.dart';
@@ -75,6 +76,7 @@ import 'package:speechspectrum/view/setting/terms_and_conditions_screen.dart';
 import 'package:speechspectrum/view/speech/speech_detail_screen.dart';
 import 'package:speechspectrum/view/speech/speech_recording_screen.dart';
 import 'package:speechspectrum/view/speech/speech_submissions_screen.dart';
+import 'package:speechspectrum/view/therapy/therapy.dart';
 import '../view/splash_screen.dart';
 import '../view/onboarding_screen.dart';
 import '../view/auth/login_screen.dart';
@@ -210,6 +212,10 @@ class AppRoutes {
 
   static const String parentSpeechDetail = '/parent-Speech-Detail';
   static const String parentScreeningDetail = '/parent-Screening-Detail';
+
+  static const String faq = '/faq';
+
+   static const String therapy = '/therapy';
 
   static final List<GetPage> routes = [
     GetPage<Route<dynamic>>(
@@ -539,6 +545,10 @@ GetPage(
 
     GetPage(name: AppRoutes.parentSpeechDetail, page: () => const ParentSpeechDetailScreen()),
     GetPage(name: AppRoutes.parentScreeningDetail, page: () => const ParentScreeningDetailScreen()),
+   
+    GetPage(name: AppRoutes.faq, page: () => const FAQScreen()),
+     GetPage(name: AppRoutes.therapy, page: () => const TherapyScreen()),
+
 
 
    GetPage<Route<dynamic>>(

@@ -2279,6 +2279,37 @@ class AnimatedDrawer extends StatelessWidget {
                     screenHeight: screenHeight,
                   ),
 
+                  SizedBox(height: screenHeight * 0.01),
+                  _buildSectionLabel(context, 'RESOURCES', screenWidth),
+
+                  _buildMenuItem(
+                    context: context,
+                    icon: Icons.play_lesson_outlined,
+                    selectedIcon: Icons.play_lesson,
+                    title: 'Therapy Exercises',
+                    index: 20,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Get.toNamed(AppRoutes.therapy);
+                    },
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
+                  ),
+
+                  _buildMenuItem(
+                    context: context,
+                    icon: Icons.quiz_outlined,
+                    selectedIcon: Icons.quiz,
+                    title: 'FAQs',
+                    index: 21,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Get.toNamed(AppRoutes.faq);
+                    },
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
+                  ),
+
                   SizedBox(height: screenHeight * 0.02),
                   _buildSectionLabel(context, 'SETTINGS', screenWidth),
 
@@ -2340,19 +2371,19 @@ class AnimatedDrawer extends StatelessWidget {
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
                   ),
-                  _buildMenuItem(
-                    context: context,
-                    icon: Icons.help_outline,
-                    selectedIcon: Icons.help,
-                    title: 'Help',
-                    index: 15,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Get.toNamed(AppRoutes.help);
-                    },
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight,
-                  ),
+                  // _buildMenuItem(
+                  //   context: context,
+                  //   icon: Icons.help_outline,
+                  //   selectedIcon: Icons.help,
+                  //   title: 'Help',
+                  //   index: 15,
+                  //   onTap: () {
+                  //     Navigator.pop(context);
+                  //     Get.toNamed(AppRoutes.help);
+                  //   },
+                  //   screenWidth: screenWidth,
+                  //   screenHeight: screenHeight,
+                  // ),
 
                   SizedBox(height: screenHeight * 0.02),
                 ],
