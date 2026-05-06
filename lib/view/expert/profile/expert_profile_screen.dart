@@ -64,10 +64,10 @@ class ExpertProfileScreen extends StatelessWidget {
               ),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined,
+                  icon: const Icon(Icons.settings,
                       color: Colors.white),
                   onPressed: () =>
-                      Get.toNamed(AppRoutes.expertEditProfile),
+                      Get.toNamed(AppRoutes.settings),
                 ),
                 SizedBox(width: size.customWidth(context) * 0.02),
               ],
